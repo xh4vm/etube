@@ -1,0 +1,8 @@
+aioredis==2.0.1 
+async-timeout==4.0.2
+elasticsearch==7.17.4
+fastapi==0.79.0
+pydantic==1.9.1
+uvicorn==0.18.2
+uvloop==0.16.0
+wheel==0.37.1

@@ -1,0 +1,11 @@
+asgiref==3.5.2
+Django==4.0.4
+django-cors-headers==3.13.0
+django-debug-toolbar==3.4.0
+django-split-settings==1.1.0
+djangorestframework==3.13.1
+psycopg2-binary==2.9.3
+python-dotenv==0.20.0
+pytz==2022.1
+flake8==4.0.0
+sqlparse==0.4.2

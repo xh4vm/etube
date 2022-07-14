@@ -1,0 +1,109 @@
+version: '3.8'
+services:
+
+  backend-admin:
+    build: ./backend/admin
+    container_name: backend-admin
+    env_file: 
+      - .env
+    volumes:
+      - ./backend/admin:/opt/app
+      - ./backend/admin/static:/var/www/static:ro
+    ports:
+      - ${ADMIN_APP_PORT}:8000
+    networks:
+      - etube
+
+  backend-client:
+    build: ./backend/client
+    container_name: backend-client
+    env_file: 
+      - .env
+    volumes:
+      - ./backend/client:/opt/app
+    ports:
+      - ${CLIENT_APP_PORT}:8000
+    networks:
+      - etube
+
+  db:
+    image: postgres:13-alpine
+    container_name: db
+    env_file: .env
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    networks:
+      - etube
+    ports:
+      - ${DB_PORT}:5432
+    restart: unless-stopped
+    volumes:
+      - etube-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U ${DB_USER} -D ${DB_NAME} > /dev/null; if [[ $$? == 0 ]]; then echo 0; else echo 1; fi
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  redis:
+    image: redis:7.0-alpine
+    container_name: redis
+    restart: unless-stopped
+    volumes:
+      - etube-redis-data:/data
+    networks:
+      - etube
+    ports:
+      - ${REDIS_PORT}:6379
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  elasticsearch:
+    image: docker.io/elastic/elasticsearch:8.2.0
+    container_name: elasticsearch
+    env_file: .env
+    ports:
+      - ${ES_PORT}:9200
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ELASTIC_USERNAME=${ES_USER}
+      - ELASTIC_PASSWORD=${ES_PASSWORD}
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    networks:
+      - etube
+    volumes:
+      - etube-elasticsearch-data:/usr/share/elasticsearch/data:rw
+    healthcheck:
+      test: curl http://elasticsearch:9200 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # etl:
+  #   build: ./etl
+  #   restart: unless-stopped
+  #   depends_on:
+  #     elasticsearch:
+  #       condition: service_healthy
+  #     db:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   networks:
+  #     - etube
+  #   env_file: .env    
+
+networks:
+  etube:
+    driver: bridge
+  
+volumes:
+  etube-postgres-data:
+  etube-elasticsearch-data:
+  etube-redis-data:
