@@ -4,7 +4,7 @@ WORKDIR /opt
 COPY requirements.txt ./
 
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential python-dev \
-     && pip install --upgrade pip \
+     && pip install --upgrade "pip>=22.1" \
      && pip install -r requirements.txt
 
 
