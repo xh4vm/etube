@@ -20,6 +20,10 @@ cli-admin:
 cli-client:
 	docker exec -it backend-client bash
 
+.PHONY: backend-nginx cli
+cli-nginx:
+	docker exec -it nginx bash
+
 .PHONY: clean all docker images and pyc-files
 clean-all: clean-pyc clean-all-dockers
 
