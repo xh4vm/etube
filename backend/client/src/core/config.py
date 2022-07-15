@@ -1,4 +1,5 @@
 from logging import config as logging_config
+
 from pydantic import BaseSettings, Field
 
 from .logger import LOGGING
@@ -10,7 +11,7 @@ class Settings(BaseSettings):
 
 
 class AppSettings(Settings):
-    project_name : str = Field(..., env='PROJECT_NAME')
+    project_name: str = Field(..., env='PROJECT_NAME')
 
 
 class RedisSettings(Settings):
