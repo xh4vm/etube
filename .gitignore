@@ -1,5 +1,5 @@
 # Byte-compiled / optimized / DLL files
-__pycache__/
+*__pycache__
 *.py[cod]
 *$py.class
 
@@ -133,3 +133,8 @@ dmypy.json
 
 .python-version
 .env
+
+*commands.txt
+*logfile.log
+*.DS_Store
+*.idea

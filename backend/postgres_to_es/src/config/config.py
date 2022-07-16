@@ -1,14 +1,12 @@
-import logging
-
 import backoff
 from pydantic import BaseSettings, Field
 
-logger = logging.getLogger(__name__)
+from models.models import Film, Genre, Person
 
 
 class Settings(BaseSettings):
     class Config:
-        env_file = '../../.env'
+        env_file = '../../../.env'
 
 
 class PostgreSQLSettings(Settings):
@@ -17,6 +15,7 @@ class PostgreSQLSettings(Settings):
     password: str = Field(..., env='DB_PASSWORD')
     host: str = Field(..., env='DB_HOST')
     port: int = Field(..., env='DB_PORT')
+
 
 class RedisSettings(Settings):
     host: str = Field(..., env='REDIS_HOST')
@@ -31,14 +30,10 @@ class ElasticsearchSettings(Settings):
     port: int = Field(..., env='ES_PORT')
 
 
-# class ESIndex(Settings):
-#     movies: str = Field(..., env='INDEX_MOVIES')
-
-
 POSTGRES_DSN = PostgreSQLSettings()
 REDIS_CONFIG = RedisSettings()
 ELASTIC_CONFIG = ElasticsearchSettings()
-# ES_INDEX = ESIndex()
+
 
 BACKOFF_CONFIG = {'wait_gen': backoff.expo, 'exception': Exception, 'max_value': 128}
 
@@ -50,3 +45,24 @@ class CelerySettings(Settings):
 
 
 CELERY_CONFIG = CelerySettings()
+
+
+# Классы, определяющие параметры переноса данных
+# из Postgres в ES, включая названия индексов.
+from etl.extractor import (FilmsPostgresExtractor, GenresPostgresExtracor,
+                           PersonsPostgresExtractor)
+
+class FilmIndex:
+    extractor = FilmsPostgresExtractor
+    model = Film
+    index = 'movies'
+
+class GenreIndex:
+    extractor = GenresPostgresExtracor
+    model = Genre
+    index = 'genres'
+
+class PersonIndex:
+    extractor = PersonsPostgresExtractor
+    model = Person
+    index = 'persons'

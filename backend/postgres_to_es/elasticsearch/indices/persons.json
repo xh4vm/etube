@@ -1,4 +1,4 @@
-genre_index = {
+{
   "settings": {
     "refresh_interval": "1s",
     "analysis": {
@@ -45,7 +45,7 @@ genre_index = {
       "id": {
         "type": "keyword"
       },
-      "name": {
+      "full_name": {
         "type": "text",
         "analyzer": "ru_en",
         "fields": {
@@ -53,10 +53,6 @@ genre_index = {
             "type": "keyword"
           }
         }
-      },
-      "description": {
-        "type": "text",
-        "analyzer": "ru_en"
       }
     }
   }
