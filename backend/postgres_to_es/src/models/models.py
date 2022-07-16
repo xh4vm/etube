@@ -55,7 +55,7 @@ class Film(UUIDModelMixin, TimeStampedModelMixin):
         # Преобразование объекта Person в словарь по схеме индекса.
         return [person.index_data() for person in persons] if persons is not None else []
 
-    def index_data(self):
+    def index_data(self) -> dict:
         obj_dict = self.dict()
         obj_dict['id'] = str(obj_dict['id'])
         obj_dict.pop('updated_at')

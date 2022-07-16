@@ -30,7 +30,7 @@ class Transformer:
                 },
             ) + '\n'
 
-    def transform_data(self, batch: list, index: str, model: pydantic.main.ModelMetaclass):
+    def transform_data(self, batch: list, index: str, model: pydantic.main.ModelMetaclass) -> tuple:
         # Валидация данных и трансформация для последующей загрузки в ES.
         for doc in batch:
             doc_data = model(**dict(zip(doc.keys(), doc)))

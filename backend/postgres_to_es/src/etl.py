@@ -16,8 +16,8 @@ from http import HTTPStatus
 import pydantic
 from celery import Celery
 
-from config.config import (CELERY_CONFIG, POSTGRES_DSN, REDIS_CONFIG,
-                           FilmIndex, GenreIndex, PersonIndex)
+from config.config import CELERY_CONFIG, POSTGRES_DSN, REDIS_CONFIG
+from config.indices import FilmIndex, GenreIndex, PersonIndex
 from etl.loader import Loader
 from etl.transformer import Transformer
 from logger.logger import manager_logger as logger

@@ -1,8 +1,6 @@
 import backoff
 from pydantic import BaseSettings, Field
 
-from models.models import Film, Genre, Person
-
 
 class Settings(BaseSettings):
     class Config:
@@ -45,24 +43,3 @@ class CelerySettings(Settings):
 
 
 CELERY_CONFIG = CelerySettings()
-
-
-# Классы, определяющие параметры переноса данных
-# из Postgres в ES, включая названия индексов.
-from etl.extractor import (FilmsPostgresExtractor, GenresPostgresExtracor,
-                           PersonsPostgresExtractor)
-
-class FilmIndex:
-    extractor = FilmsPostgresExtractor
-    model = Film
-    index = 'movies'
-
-class GenreIndex:
-    extractor = GenresPostgresExtracor
-    model = Genre
-    index = 'genres'
-
-class PersonIndex:
-    extractor = PersonsPostgresExtractor
-    model = Person
-    index = 'persons'
