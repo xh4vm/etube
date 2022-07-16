@@ -49,28 +49,20 @@ def transfer(extractor_class: type, transformer_model: pydantic.main.ModelMetacl
     logger.info('Трансфер данных завершен.')
 
 
+def init_transfer():
+    transfer(FilmIndex.extractor, FilmIndex.model, FilmIndex.index)
+    transfer(GenreIndex.extractor, GenreIndex.model, GenreIndex.index)
+    transfer(PersonIndex.extractor, PersonIndex.model, PersonIndex.index)
+
+
 @celery.on_after_configure.connect
 def setup_etl_periodic_task(sender, **kwargs):
     sender.add_periodic_task(
         30.0,
-        transfer.s(kwargs['extractor'], kwargs['model'], kwargs['index']),
+        init_transfer.s(),
         name='Update ETL every 30 seconds.'
     )
 
 
 if __name__ == '__main__':
-    # setup_etl_periodic_task(
-    #     celery,
-    #     extractor=FilmIndex.extractor, model=FilmIndex.model, index=FilmIndex.index,
-    # )
-    # setup_etl_periodic_task(
-    #     celery,
-    #     extractor=GenreIndex.extractor, model=GenreIndex.model, index=GenreIndex.index,
-    # )
-    # setup_etl_periodic_task(
-    #     celery,
-    #     extractor=PersonIndex.extractor, model=PersonIndex.model, index=PersonIndex.index,
-    # )
-    transfer(FilmIndex.extractor, FilmIndex.model, FilmIndex.index)
-    transfer(GenreIndex.extractor, GenreIndex.model, GenreIndex.index)
-    transfer(PersonIndex.extractor, PersonIndex.model, PersonIndex.index)
+    init_transfer()
