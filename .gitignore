@@ -136,5 +136,5 @@ dmypy.json
 
 *commands.txt
 *logfile.log
-*.DS_Store
+.DS_Store
 *.idea
