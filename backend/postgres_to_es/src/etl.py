@@ -25,7 +25,6 @@ from state.state import RedisState
 
 celery = Celery(CELERY_CONFIG.name, backend=CELERY_CONFIG.backend, broker=CELERY_CONFIG.broker)
 
-@celery.task
 def transfer(extractor_class: type, transformer_model: pydantic.main.ModelMetaclass, index: str) -> None:
     logger.info('Запуск трансфера данных.')
     # Время последнего обновления данных в ES.
@@ -49,6 +48,7 @@ def transfer(extractor_class: type, transformer_model: pydantic.main.ModelMetacl
     logger.info('Трансфер данных завершен.')
 
 
+@celery.task
 def init_transfer():
     transfer(FilmIndex.extractor, FilmIndex.model, FilmIndex.index)
     transfer(GenreIndex.extractor, GenreIndex.model, GenreIndex.index)
@@ -62,7 +62,3 @@ def setup_etl_periodic_task(sender, **kwargs):
         init_transfer.s(),
         name='Update ETL every 30 seconds.'
     )
-
-
-if __name__ == '__main__':
-    init_transfer()
