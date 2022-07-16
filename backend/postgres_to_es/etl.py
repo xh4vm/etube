@@ -16,12 +16,12 @@ from http import HTTPStatus
 import pydantic
 from celery import Celery
 
-from config.config import CELERY_CONFIG, POSTGRES_DSN, REDIS_CONFIG
-from config.indices import FilmIndex, GenreIndex, PersonIndex
-from etl.loader import Loader
-from etl.transformer import Transformer
-from logger.logger import manager_logger as logger
-from state.state import RedisState
+from src.config.config import CELERY_CONFIG, POSTGRES_DSN, REDIS_CONFIG
+from src.config.indices import FILM_INDEX, GENRE_INDEX, PERSON_INDEX
+from src.etl.loader import Loader
+from src.etl.transformer import Transformer
+from src.logger.logger import manager_logger as logger
+from src.state.state import RedisState
 
 celery = Celery(CELERY_CONFIG.name, backend=CELERY_CONFIG.backend, broker=CELERY_CONFIG.broker)
 
@@ -50,9 +50,9 @@ def transfer(extractor_class: type, transformer_model: pydantic.main.ModelMetacl
 
 @celery.task
 def init_transfer():
-    transfer(FilmIndex.extractor, FilmIndex.model, FilmIndex.index)
-    transfer(GenreIndex.extractor, GenreIndex.model, GenreIndex.index)
-    transfer(PersonIndex.extractor, PersonIndex.model, PersonIndex.index)
+    transfer(FILM_INDEX.extractor, FILM_INDEX.model, FILM_INDEX.index)
+    # transfer(GENRE_INDEX.extractor, GENRE_INDEX.model, GENRE_INDEX.index)
+    # transfer(PERSON_INDEX.extractor, PERSON_INDEX.model, PERSON_INDEX.index)
 
 
 @celery.on_after_configure.connect

@@ -29,7 +29,7 @@ class GenrePersonBase(UUIDModelMixin, TimeStampedModelMixin):
 
 class Genre(GenrePersonBase):
     name: str
-    description: Optional[str]
+    description: Optional[str] = None
 
 
 class Person(GenrePersonBase):
@@ -37,15 +37,15 @@ class Person(GenrePersonBase):
 
 
 class Film(UUIDModelMixin, TimeStampedModelMixin):
-    rating: Optional[float]
+    rating: Optional[float] = None
     title: str
-    description: Optional[str]
-    creation_date: Optional[date]
+    description: Optional[str] = None
+    creation_date: Optional[date] = None
     type: str
     directors: list[Person]
     actors: list[Person]
     writers: list[Person]
-    genres: list
+    genres: list[str]
 
     def _get_short_persons(self, persons: list[Optional[dict]]) -> Union[list[str], list]:
         # Метод разворачивания словарей с персонами в массив имен.
@@ -58,10 +58,13 @@ class Film(UUIDModelMixin, TimeStampedModelMixin):
     def index_data(self) -> dict:
         obj_dict = self.dict()
         obj_dict['id'] = str(obj_dict['id'])
+        obj_dict['imdb_rating'] = obj_dict['rating']
+        obj_dict['director'] = self._get_short_persons(obj_dict['directors'])
         obj_dict.pop('updated_at')
         obj_dict.pop('creation_date')
         obj_dict.pop('type')
-        obj_dict['directors'] = self._get_short_persons(obj_dict['directors'])
+        obj_dict.pop('rating')
+        obj_dict.pop('directors')
         obj_dict['actors_names'] = self._get_short_persons(obj_dict['actors'])
         obj_dict['writers_names'] = self._get_short_persons(obj_dict['writers'])
         obj_dict['actors'] = self._get_persons_dict(self.actors)

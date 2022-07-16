@@ -7,10 +7,10 @@ import psycopg2
 from psycopg2.extensions import connection
 from psycopg2.extras import DictCursor
 
-from config.config import BACKOFF_CONFIG, PostgreSQLSettings
-from logger.logger import extractor_logger as logger
-from models.schema import SCHEMA, PersonFilmWorkRoleEnum, Schema
-from state.state import BaseState
+from ..config.config import BACKOFF_CONFIG, PostgreSQLSettings
+from ..logger.logger import extractor_logger as logger
+from ..models.schema import SCHEMA, PersonFilmWorkRoleEnum, Schema
+from ..state.state import BaseState
 
 
 class PostgreSQLExtractor(ABC):
@@ -64,6 +64,9 @@ class FilmsPostgresExtractor(PostgreSQLExtractor):
         """Метод получения сырых данных из бд.
         В результате возвращаю генератор, которых позволяет брать
         данные из бд сразу пачкой по chunk_size штук"""
+
+        bottom_limit = self._state.get(f'bottom_limit_{self.index}', default_value=str(datetime.min))
+
         query = (
             f'SELECT fw.id, fw.title, fw.description, fw.rating, fw.creation_date, fw.type, '
             f'GREATEST(fw.updated_at, MAX(p.updated_at), MAX(g.updated_at)) as updated_at, '
@@ -78,7 +81,7 @@ class FilmsPostgresExtractor(PostgreSQLExtractor):
             f'LEFT JOIN {SCHEMA}.{Schema.person} AS p ON p.id = pfw.person_id '
             f'LEFT JOIN {SCHEMA}.{Schema.genre_film_work} AS gfw ON gfw.film_work_id = fw.id '
             f'LEFT JOIN {SCHEMA}.{Schema.genre} AS g ON g.id = gfw.genre_id '
-            f"WHERE GREATEST(fw.updated_at, p.updated_at, g.updated_at) > '{self.bottom_limit}' "
+            f"WHERE GREATEST(fw.updated_at, p.updated_at, g.updated_at) > '{bottom_limit}' "
             f'GROUP BY fw.id '
             f'ORDER BY GREATEST(fw.updated_at, MAX(p.updated_at), MAX(g.updated_at));'
         )
@@ -86,12 +89,16 @@ class FilmsPostgresExtractor(PostgreSQLExtractor):
 
 
 class GenresPostgresExtracor(PostgreSQLExtractor):
+    
     def find_modified_docs(self) -> Iterator[tuple[Any]]:
         # Запрос на получение измененных жанров.
+
+        bottom_limit = self._state.get(f'bottom_limit_{self.index}', default_value=str(datetime.min))
+
         query = (
             f"SELECT g.id, g.name, g.description, g.updated_at "
             f"FROM {SCHEMA}.genre g "
-            f"WHERE g.updated_at > '{self.bottom_limit}'"
+            f"WHERE g.updated_at > '{bottom_limit}'"
             f'ORDER BY g.updated_at;'
         )
         return self.executor(query)
@@ -100,10 +107,13 @@ class GenresPostgresExtracor(PostgreSQLExtractor):
 class PersonsPostgresExtractor(PostgreSQLExtractor):
     def find_modified_docs(self) -> Iterator[tuple[Any]]:
         # Запрос на получение измененных персон.
+
+        bottom_limit = self._state.get(f'bottom_limit_{self.index}', default_value=str(datetime.min))
+
         query = (
             f"SELECT p.id, p.full_name as name, p.updated_at "
             f"FROM {SCHEMA}.person p "
-            f"WHERE p.updated_at > '{self.bottom_limit}'"
+            f"WHERE p.updated_at > '{bottom_limit}'"
             f'ORDER BY p.updated_at;'
         )
         return self.executor(query)

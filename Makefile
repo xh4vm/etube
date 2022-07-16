@@ -8,6 +8,10 @@ run:
 .PHONY: daemon build services
 buildd: collectstatic buildd-dockers
 
+.PHONY: start postman/newman test API
+postman-test: 
+	docker run --net host -v `pwd`/backend/postgres_to_es/postman/ETLTests.json:/tmp/ETLTests.json -t postman/newman_alpine33 run /tmp/ETLTests.json
+
 .PHONY: daemon run services
 rund:
 	docker compose up -d

@@ -34,9 +34,6 @@ services:
       - ./backend/configs:/etc/nginx/conf.d:ro
       - ./backend/static/errors:/var/www/errors/:ro
       - ./backend/admin/static:/var/www/static:ro
-      # - ./backend/admin/static/admin:/var/www/admin/static/:ro
-      # - ./backend/admin/static/debug_toolbar:/var/www/debug_toolbar/static/:ro
-      # - ./backend/admin/static/rest_framework:/var/www/rest_framework/static/:ro
       - ./backend/static/log/access.log:/var/log/nginx/access.log:rw
       - ./backend/static/log/error.log:/var/log/nginx/error.log:rw
     ports:
@@ -104,19 +101,22 @@ services:
       timeout: 10s
       retries: 5
 
-  # etl:
-  #   build: ./etl
-  #   restart: unless-stopped
-  #   depends_on:
-  #     elasticsearch:
-  #       condition: service_healthy
-  #     db:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
-  #   networks:
-  #     - etube
-  #   env_file: .env    
+  etl:
+    build: ./backend/postgres_to_es
+    container_name: etl
+    restart: unless-stopped
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend/postgres_to_es/logfile.log:/opt/etl/logfile.log:rw
+    networks:
+      - etube
+    env_file: .env
 
 networks:
   etube:

@@ -1,5 +1,6 @@
 import enum
 
+
 SCHEMA = 'content'
 
 class PersonFilmWorkRoleEnum(str, enum.Enum):
