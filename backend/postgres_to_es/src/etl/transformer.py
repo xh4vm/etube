@@ -37,5 +37,4 @@ class Transformer:
             self.updated_at = doc_data.updated_at.strftime('%Y-%m-%d %H:%M:%S.%f%z')
             self.data_str += self.index_settings(index, doc_data.id)
             self.data_str += json.dumps(doc_data.index_data()) + '\n'
-
         return self.data_str, self.updated_at
