@@ -12,6 +12,9 @@ buildd: collectstatic buildd-dockers
 postman-test: 
 	docker run --net host -v `pwd`/backend/postgres_to_es/postman/ETLTests.json:/tmp/ETLTests.json -t postman/newman_alpine33 run /tmp/ETLTests.json
 
+.PHONY: transfer data from sqlite into postgresql
+s2p: create-venv pip-install-s2p load_data_from_s2p
+
 .PHONY: daemon run services
 rund:
 	docker compose up -d
@@ -48,6 +51,14 @@ pip-install-build:
 .PHONY: install requirements-pre-commit to venv
 pip-install-pre-commit:
 	./venv/bin/pip3 install -r requirements-pre-commit.txt
+
+.PHONY: install requirements for sqlite to postgres script
+pip-install-s2p:
+	./venv/bin/pip3 install -r ./backend/sqlite_to_postgres/requirements.txt
+
+.PHONY: load data from sqlite to postgres
+load_data_from_s2p:
+	./venv/bin/python3 backend/sqlite_to_postgres/load_data.py
 
 .PHONY: collect static files
 collectstatic-with-venv:
