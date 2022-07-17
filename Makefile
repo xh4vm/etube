@@ -90,3 +90,21 @@ clean-all-dockers:
 .PHONY: clean docker images
 clean-dockers:
 	T="backend-admin backend-client db swagger"; docker stop $$T; docker rm $$T; docker container prune -f
+
+
+include .env
+db = db
+app = etl
+
+create_schema:
+	docker exec -it ${db} psql --username=${DB_USER} --dbname=${DB_NAME} -c \
+	'CREATE SCHEMA IF NOT EXISTS content;'
+migrate:
+	docker-compose exec backend-admin ./manage.py migrate
+fill_db:
+	docker-compose exec backend-admin python ./sqlite_to_postgres/load_data.py
+db_connect:
+	docker exec -it ${db} psql --username=${DB_USER} --dbname=${DB_NAME}
+
+app_connect:
+	docker exec -it ${app} sh

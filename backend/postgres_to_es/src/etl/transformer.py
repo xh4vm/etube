@@ -12,8 +12,6 @@ import uuid
 
 import pydantic
 
-from ..logger.logger import transform_logger as logger
-
 
 class Transformer:
 
@@ -35,7 +33,6 @@ class Transformer:
     def transform_data(self, batch: list, index: str, model: pydantic.main.ModelMetaclass) -> tuple:
         # Валидация данных и трансформация для последующей загрузки в ES.
         for doc in batch:
-
             doc_data = model(**dict(zip(doc.keys(), doc)))
             self.updated_at = doc_data.updated_at.strftime('%Y-%m-%d %H:%M:%S.%f%z')
             self.data_str += self.index_settings(index, doc_data.id)
