@@ -6,7 +6,7 @@
 	},
 	"item": [
 		{
-			"name": "Проверка количества элементов",
+			"name": "Проверка количества элементов Movies",
 			"event": [
 				{
 					"listen": "test",
@@ -42,7 +42,7 @@
 			"response": []
 		},
 		{
-			"name": "Запрос на поиск N/A элементов",
+			"name": "Запрос на поиск N/A элементов индекса Movies",
 			"event": [
 				{
 					"listen": "test",
@@ -91,7 +91,7 @@
 			"response": []
 		},
 		{
-			"name": "Запрос на поиск данных по слову camp",
+			"name": "Запрос на поиск данных по слову camp в индексе Movies",
 			"event": [
 				{
 					"listen": "test",
@@ -141,7 +141,7 @@
 			"response": []
 		},
 		{
-			"name": "Запрос данных по актеру",
+			"name": "Запрос данных по актеру в индекса Movies",
 			"event": [
 				{
 					"listen": "test",
@@ -189,7 +189,7 @@
 			"response": []
 		},
 		{
-			"name": "Запрос данных с одним сценаристом",
+			"name": "Запрос данных с одним сценаристом в индексе Movies",
 			"event": [
 				{
 					"listen": "test",
@@ -238,7 +238,7 @@
 			"response": []
 		},
 		{
-			"name": "Запрос данных без режиссера",
+			"name": "Запрос данных без режиссера в индексе Movies",
 			"event": [
 				{
 					"listen": "test",
@@ -288,7 +288,7 @@
 			"response": []
 		},
 		{
-			"name": "Проверка количества жанров",
+			"name": "Проверка количества жанров в индексе Movies",
 			"event": [
 				{
 					"listen": "test",
@@ -329,6 +329,178 @@
 					],
 					"path": [
 						"movies",
+						"_search"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Проверка количества элементов в индексе Genres",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Success answer\", function() {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Compare number of records\", function() {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData['hits']['total']['value']).to.equal(26);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/genres/_search",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"genres",
+						"_search"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Запрос на поиск данных по слову ant в индексе Genres",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Success answer\", function() {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Compare number of records\", function() {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData['hits']['total']['value']).to.equal(1);",
+							"    // Если данные загружены правильно, то сортировка по score даст именно этот id",
+							"    pm.expect(jsonData['hits']['hits'][0]['_id']).to.equal('b92ef010-5e4c-4fd0-99d6-41b6456272cd');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"query\": {\n        \"multi_match\": {\n            \"query\": \"ant\",\n            \"fuzziness\": \"auto\",\n            \"fields\": [\n                \"name\",\n                \"description\"\n            ]\n        }\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/genres/_search",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"genres",
+						"_search"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Проверка количества элементов в индексе Persons",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Success answer\", function() {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Compare number of records\", function() {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData['hits']['total']['value']).to.equal(4166);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/persons/_search",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"persons",
+						"_search"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Запрос на поиск данных по слову antos в индексе Persons",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Success answer\", function() {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Compare number of records\", function() {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData['hits']['total']['value']).to.equal(1);",
+							"    // Если данные загружены правильно, то сортировка по score даст именно этот id",
+							"    pm.expect(jsonData['hits']['hits'][0]['_id']).to.equal('1163951e-d74a-41b9-87a6-903eab9b17bc');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"query\": {\n        \"multi_match\": {\n            \"query\": \"ant\",\n            \"fuzziness\": \"auto\",\n            \"fields\": [\n                \"name\"\n                ]\n        }\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/genres/_search",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"genres",
 						"_search"
 					]
 				}
