@@ -22,7 +22,7 @@ class UUIDMixin(models.Model):
 
 class Genre(UUIDMixin, TimeStampedMixin):
     name = models.CharField(_('name'), max_length=255, unique=True)
-    description = models.TextField(_('description'), blank=True)
+    description = models.TextField(_('description'), blank=True, null=True)
 
     class Meta:
         db_table = 'content"."genre'
@@ -40,10 +40,10 @@ class FilmWorkType(models.TextChoices):
 
 class FilmWork(UUIDMixin, TimeStampedMixin):
     title = models.CharField(_('title'), max_length=255)
-    description = models.CharField(_('description'), blank=True, max_length=4096)
-    creation_date = models.DateField(_('creation_date'), blank=True,)
-    file_path = models.CharField(_('file_path'), max_length=4096, blank=True, default='')
-    rating = models.FloatField(_('rating'), null=True, validators=[MinValueValidator(0), MaxValueValidator(100)])
+    description = models.CharField(_('description'), null=True, blank=True, max_length=4096)
+    creation_date = models.DateField(_('creation_date'), null=True, blank=True,)
+    file_path = models.CharField(_('file_path'), max_length=4096, null=True, blank=True, default='')
+    rating = models.FloatField(_('rating'), blank=True, null=True, validators=[MinValueValidator(0), MaxValueValidator(100)])
     type = models.CharField(_('type'), choices=FilmWorkType.choices, default=FilmWorkType.MOVIE, max_length=255)
 
     genres = models.ManyToManyField('Genre', through='GenreFilmWork', related_name='films')

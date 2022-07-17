@@ -5,7 +5,7 @@ from typing import Optional
 import backoff
 from redis import Redis
 
-from config.config import BACKOFF_CONFIG, RedisSettings
+from ..config.config import BACKOFF_CONFIG, RedisSettings
 
 
 def redis_conn_is_alive(redis_conn: Redis) -> bool:

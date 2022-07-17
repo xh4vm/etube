@@ -7,10 +7,10 @@ import psycopg2
 from psycopg2.extensions import connection
 from psycopg2.extras import DictCursor
 
-from config.config import BACKOFF_CONFIG, PostgreSQLSettings
-from logger.logger import extractor_logger as logger
-from models.schema import SCHEMA, PersonFilmWorkRoleEnum, Schema
-from state.state import BaseState
+from ..config.config import BACKOFF_CONFIG, PostgreSQLSettings
+from ..logger.logger import extractor_logger as logger
+from ..models.schema import SCHEMA, PersonFilmWorkRoleEnum, Schema
+from ..state.state import BaseState
 
 
 class PostgreSQLExtractor(ABC):

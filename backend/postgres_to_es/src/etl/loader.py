@@ -12,8 +12,8 @@ from typing import Any
 import backoff
 import requests
 
-from config.config import BACKOFF_CONFIG, ELASTIC_CONFIG
-from logger.logger import loader_logger as logger
+from ..config.config import BACKOFF_CONFIG, ELASTIC_CONFIG
+from ..logger.logger import loader_logger as logger
 
 
 class Loader:
