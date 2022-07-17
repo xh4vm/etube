@@ -1,7 +1,7 @@
-import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from src.core.config import APP_CONFIG
+
 
 app = FastAPI(
     title=APP_CONFIG.project_name,
@@ -10,8 +10,11 @@ app = FastAPI(
     default_response_class=ORJSONResponse,
 )
 
-if __name__ == '__main__':
-    uvicorn.run(
-        'main:app',
-        port=8000,
-    )
+from .api.v1.films import router as film_router
+app.include_router(router=film_router)
+
+from .api.v1.genres import router as genre_router
+app.include_router(router=genre_router)
+
+from .api.v1.persons import router as person_router
+app.include_router(router=person_router)

@@ -3,7 +3,7 @@ FROM python:3.10-slim AS client-build
 WORKDIR /opt
 COPY requirements.txt ./
 
-RUN pip install --upgrade pip \
+RUN pip install --upgrade "pip>=22.1" \
      && pip install -r requirements.txt
 
 

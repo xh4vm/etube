@@ -26,21 +26,21 @@ services:
     networks:
       - etube
 
-#  nginx:
-#    image: nginx:latest
-#    container_name: nginx
-#    volumes:
-#      - ./backend/nginx.conf:/etc/nginx/nginx.conf:ro
-#      - ./backend/configs:/etc/nginx/conf.d:ro
-#      - ./backend/static/errors:/var/www/errors/:ro
-#      - ./backend/admin/static:/var/www/static:ro
-#      - ./backend/static/log/access.log:/var/log/nginx/access.log:rw
-#      - ./backend/static/log/error.log:/var/log/nginx/error.log:rw
-#    ports:
-#      - "80:80"
-#      - "8000:8000"
-#    networks:
-#      - etube
+  nginx:
+   image: nginx:latest
+   container_name: nginx
+   volumes:
+     - ./backend/nginx.conf:/etc/nginx/nginx.conf:ro
+     - ./backend/configs:/etc/nginx/conf.d:ro
+     - ./backend/static/errors:/var/www/errors/:ro
+     - ./backend/admin/static:/var/www/static:ro
+     - ./backend/static/log/access.log:/var/log/nginx/access.log:rw
+     - ./backend/static/log/error.log:/var/log/nginx/error.log:rw
+   ports:
+     - "80:80"
+     - "8000:8000"
+   networks:
+     - etube
 
   db:
     image: postgres:13-alpine
