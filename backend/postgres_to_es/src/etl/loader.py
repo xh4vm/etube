@@ -7,6 +7,7 @@
 
 """
 
+from http import HTTPStatus
 from typing import Any
 
 import backoff
@@ -31,10 +32,10 @@ class Loader:
         url = f'{ELASTIC_CONFIG.protocol}://{ELASTIC_CONFIG.host}:{ELASTIC_CONFIG.port}/{index}/_bulk'
         headers = {'Content-Type': 'application/json'}
         response = requests.post(url, data=data, headers=headers)
-        
+
         logger.info(f'Response load status code: {response.status_code}')
 
-        if response.status_code != 200:
+        if response.status_code != HTTPStatus.OK:
             logger.info(f'Response content: {response.content}')
             raise ValueError('Loader failed...')
 

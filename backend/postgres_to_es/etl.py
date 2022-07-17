@@ -51,8 +51,8 @@ def transfer(extractor_class: type, transformer_model: pydantic.main.ModelMetacl
 @celery.task
 def init_transfer():
     transfer(FILM_INDEX.extractor, FILM_INDEX.model, FILM_INDEX.index)
-    # transfer(GENRE_INDEX.extractor, GENRE_INDEX.model, GENRE_INDEX.index)
-    # transfer(PERSON_INDEX.extractor, PERSON_INDEX.model, PERSON_INDEX.index)
+    transfer(GENRE_INDEX.extractor, GENRE_INDEX.model, GENRE_INDEX.index)
+    transfer(PERSON_INDEX.extractor, PERSON_INDEX.model, PERSON_INDEX.index)
 
 
 @celery.on_after_configure.connect
