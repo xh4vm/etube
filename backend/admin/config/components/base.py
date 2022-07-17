@@ -73,6 +73,7 @@ USE_I18N = True
 
 USE_TZ = True
 
+# DEFAULT_AUTO_FIELD = 'django.db.index_models.BigAutoField'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGGING = {

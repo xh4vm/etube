@@ -8,6 +8,10 @@ run:
 .PHONY: daemon build services
 buildd: collectstatic buildd-dockers
 
+.PHONY: start postman/newman test API
+postman-test:
+	docker run --net host -v `pwd`/backend/postgres_to_es/postman/ETLTests.json:/tmp/ETLTests.json -t postman/newman_alpine33 run /tmp/ETLTests.json
+
 .PHONY: daemon run services
 rund:
 	docker compose up -d
@@ -19,6 +23,10 @@ cli-admin:
 .PHONY: backend-client cli
 cli-client:
 	docker exec -it backend-client bash
+
+.PHONY: backend-nginx cli
+cli-nginx:
+	docker exec -it nginx bash
 
 .PHONY: clean all docker images and pyc-files
 clean-all: clean-pyc clean-all-dockers
@@ -71,3 +79,17 @@ clean-all-dockers:
 .PHONY: clean docker images
 clean-dockers:
 	T="backend-admin backend-client db swagger"; docker stop $$T; docker rm $$T; docker container prune -f
+
+
+include .env
+db = db
+
+create_schema:
+	docker exec -it ${db} psql --username=${DB_USER} --dbname=${DB_NAME} -c \
+	'CREATE SCHEMA IF NOT EXISTS content;'
+migrate:
+	docker-compose exec backend-admin ./manage.py migrate
+fill_db:
+	docker-compose exec backend-admin python ./sqlite_to_postgres/load_data.py
+db_connect:
+	docker exec -it ${db} psql --username=${DB_USER} --dbname=${DB_NAME}
