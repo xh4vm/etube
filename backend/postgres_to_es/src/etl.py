@@ -41,6 +41,7 @@ def transfer(extractor_class: type, transformer_model: pydantic.main.ModelMetacl
         data_to_load, updated_at = transformer.transform_data(batch, index, transformer_model)
         # Загрузка данных в ES.
         response = loader.connector(index=index, data=data_to_load)
+
         # Изменение значения времени последнего обновления данных в ES.
         if response and response.status_code == HTTPStatus.OK:
             etl_state.set(f'bottom_limit_{index}', updated_at)

@@ -20,6 +20,7 @@ class Loader:
 
     def __init__(self, index: str):
         self.params = ELASTIC_CONFIG.dict()
+        self.protocol = self.params.get('protocol')
         self.host = self.params.get('host')
         self.port = self.params.get('port')
         self.index_name = index
@@ -30,7 +31,7 @@ class Loader:
         index: str,
         data: Any = None,
     ) -> Any:
-        url = ''.join([self.host, ':', str(self.port), '/', index, '/_bulk'])
+        url = ''.join([self.protocol, '://', self.host, ':', str(self.port), '/', index, '/_bulk'])
         headers = {'Content-Type': 'application/json'}
         response = requests.post(url, data=data, headers=headers)
         return response
