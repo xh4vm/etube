@@ -1,7 +1,8 @@
 from datetime import timedelta
-from aioredis import Redis
-import orjson
 from typing import Any, Optional
+
+import orjson
+from aioredis import Redis
 
 from .base import BaseCache
 

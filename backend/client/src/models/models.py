@@ -1,7 +1,7 @@
-import orjson
-
-from pydantic import BaseModel
 from typing import Optional
+
+import orjson
+from pydantic import BaseModel
 
 
 def orjson_dumps(v, *, default):

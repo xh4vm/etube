@@ -1,8 +1,8 @@
 from pydantic import Field
 from pydantic.main import ModelMetaclass
 
-from .config import Settings
 from ..models.models import FilmModel, GenreModel, PersonModel
+from .config import Settings
 
 
 class FilmIndex(Settings):
