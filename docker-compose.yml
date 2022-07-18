@@ -34,8 +34,8 @@ services:
      - ./backend/configs:/etc/nginx/conf.d:ro
      - ./backend/static/errors:/var/www/errors/:ro
      - ./backend/admin/static:/var/www/static:ro
-     - ./backend/static/log/access.log:/var/log/nginx/access.log:rw
-     - ./backend/static/log/error.log:/var/log/nginx/error.log:rw
+     - ./backend/static/log/access_log:/var/log/nginx/access.log:rw
+     - ./backend/static/log/error_log:/var/log/nginx/error.log:rw
    ports:
      - "80:80"
      - "8000:8000"

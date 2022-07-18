@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
 from typing import Any, Optional
-
 from pydantic import BaseModel
 from pydantic.main import ModelMetaclass
 

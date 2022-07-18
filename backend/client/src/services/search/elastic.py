@@ -1,5 +1,4 @@
 from typing import Any, Optional
-
 from elasticsearch import AsyncElasticsearch, NotFoundError
 
 from .base import BaseSearch, SearchParams, SearchResult
