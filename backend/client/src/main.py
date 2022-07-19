@@ -11,8 +11,8 @@ from .db import elastic, redis
 API_PATH = f'{APP_CONFIG.api_path}/{APP_CONFIG.version}'
 app = FastAPI(
     title=APP_CONFIG.project_name,
-    docs_url=f'{APP_CONFIG.api_path}/{APP_CONFIG.swagger_path}',
-    openapi_url=f'{APP_CONFIG.api_path}/{APP_CONFIG.json_swagger_path}',
+    docs_url=f'{APP_CONFIG.api_path}{APP_CONFIG.swagger_path}',
+    openapi_url=f'{APP_CONFIG.api_path}{APP_CONFIG.json_swagger_path}',
     default_response_class=ORJSONResponse,
 )
 
