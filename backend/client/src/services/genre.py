@@ -5,4 +5,4 @@ from .base import BaseService
 class GenreService(BaseService):
     index = GENRE_INDEX.index
     model = GENRE_INDEX.model
-    search_fileds = GENRE_INDEX.search_fields
+    search_fields = GENRE_INDEX.search_fields

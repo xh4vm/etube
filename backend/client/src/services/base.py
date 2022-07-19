@@ -36,26 +36,53 @@ class BaseService:
 
         if data is None:
             data: ObjectApiResponse = await self.search_svc.get_by_id(id=id, index=self.index)
-            
+
             if data is None:
                 return None
-            
+
             await self.cache_svc.set(key=cache_key, data=data.body)
-            
+
         return self.model.parse_obj(data['_source'])
 
-    async def search(self, page: int, page_size: int, value: str) -> list[ModelMetaclass]:
-        search_params = SearchParams(page=page, page_size=page_size, search_value=value)
+    async def search(
+            self,
+            page: int = 1,
+            page_size: int = 10,
+            search_fields: list = None,
+            search_value: str = None,
+            custom_index: str = None,
+    ) -> list[ModelMetaclass]:
+        # Поиск данных с условиями.
+        # Если параметры search_field и search_value не заданы,
+        # возвращается список документов соответствующего индекса,
+        # ограниченный параметром page_size.
+        # custom_index - применяется вместо self.index при поиске фильмов,
+        # соответствующих ранее выбранному жанру или персоне.
+        search_params = SearchParams(
+            page=page,
+            page_size=page_size,
+            search_fields=search_fields,
+            search_value=search_value,
+        )
+        # Если custom_index задан, нужно искать фильмы. В противном случае ищем в self.index.
+        active_index = custom_index if custom_index else self.index
+
         cache_key = f'{self.index}.search({search_params}'
 
-        data = self.cache_svc.get(key=cache_key)
+        # AttributeError: 'coroutine' object has no attribute 'items':
+        # data = self.cache_svc.get(key=cache_key)
+        data = None
 
         if data is None:
-            data: SearchResult = self.search_svc.search(index=self.index, params=search_params)
+            data: SearchResult = await self.search_svc.search(index=active_index, params=search_params)
 
             if data.total == 0:
                 return []
 
+            # TypeError: RedisCache.set() got an unexpected keyword argument 'value':
             # await self.cache_svc.set(key=cache_key, value=data)
+
+        if custom_index:
+            return data.items
 
         return (self.model(**elem) for elem in data.items)

@@ -15,16 +15,43 @@ class ModelClass(BaseModel):
         json_dumps = orjson_dumps
 
 
-class FilmModel(ModelClass):
+class FilmModelBrief(ModelClass):
+    # Краткая версия модели для отображения при множественном поиске.
     title: str
+
+
+class FilmModel(FilmModelBrief):
+    # Полная версия модели для отображения при поиске одного фильма.
+    # Является валидирующей для входящих из эластика данных.
     description: str
     imdb_rating: Optional[float]
+    director: list
+    actors_names: list
+    writers_names: list
+    genre: list
+    description: str = None
 
 
-class GenreModel(ModelClass):
+class GenreModelBrief(ModelClass):
+    # Краткая версия модели для отображения при множественном поиске.
+    # Является валидирующей для входящих из эластика данных.
     name: str
+
+
+class GenreModel(GenreModelBrief):
+    # Полная версия модели для отображения при поиске одного жанра.
+    # Список фильмов в виде словаря {название: рейтинг}.
     description: Optional[str]
+    films: dict = None
 
 
-class PersonModel(ModelClass):
+class PersonModelBrief(ModelClass):
+    # Краткая версия модели для отображения при множественном поиске.
+    # Является валидирующей для входящих из эластика данных.
     name: str
+
+
+class PersonModel(PersonModelBrief):
+    # Полная версия модели для отображения при поиске одного человека.
+    # Список фильмов в виде словаря, в котором ключи - роль человека в фильме.
+    films: dict = None
