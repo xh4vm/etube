@@ -18,6 +18,7 @@ async def genre_details(genre_id: str, genre_service: GenreService = Depends(giv
         search_value=genre.name,
     )
     film_titles = {film['title']: film['imdb_rating'] for film in films}
+
     if not genre:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Genre not found')
 
@@ -31,6 +32,5 @@ async def genres_list(
         search='',
         genre_service: GenreService = Depends(giver_service),
 ) -> list[GenreModelBrief]:
-    search_fields = ['name', 'description']
-    genres = await genre_service.search(page, page_size, search_fields, search)
+    genres = await genre_service.search(page=page, page_size=page_size, search_value=search)
     return [GenreModelBrief(id=genre.id, name=genre.name) for genre in genres]

@@ -1,18 +1,22 @@
-from typing import Optional
+from typing import Optional, Generic, TypeVar
 import orjson
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from pydantic.main import ModelMetaclass
 
 
 def orjson_dumps(v, *, default):
     return orjson.dumps(v, default=default).decode()
 
 
-class ModelClass(BaseModel):
-    id: str
-
+class JSONModel(BaseModel):
+    
     class Config:
         json_loads = orjson.loads
         json_dumps = orjson_dumps
+
+
+class ModelClass(JSONModel):
+    id: str
 
 
 class FilmModelBrief(ModelClass):
@@ -23,12 +27,11 @@ class FilmModelBrief(ModelClass):
 class FilmModel(FilmModelBrief):
     # Полная версия модели для отображения при поиске одного фильма.
     # Является валидирующей для входящих из эластика данных.
-    description: str
     imdb_rating: Optional[float]
-    director: list
-    actors_names: list
-    writers_names: list
-    genre: list
+    director: list[str]
+    actors_names: list[str]
+    writers_names: list[str]
+    genre: list[str]
     description: str = None
 
 
@@ -55,3 +58,28 @@ class PersonModel(PersonModelBrief):
     # Полная версия модели для отображения при поиске одного человека.
     # Список фильмов в виде словаря, в котором ключи - роль человека в фильме.
     films: dict = None
+
+
+PTYPE = TypeVar('PTYPE')
+
+
+class PageModel(JSONModel, Generic[PTYPE]):
+
+    next_page: Optional[int] = Field(
+        title='Номер следующей страницы', example=3
+    )
+    prev_page: Optional[int] = Field(
+        title='Номер предыдущей страницы', example=1
+    )
+    page: Optional[int] = Field(
+        default=1, title='Номер текущей страницы', example=2
+    )
+    page_size: Optional[int] = Field(
+        default=50, title='Длина выборки', example=2
+    )
+    total: Optional[int] = Field(
+        default=0, title='Общая мощность выборки', example=1000
+    )
+    items: list[PTYPE] = Field(
+        default=[], title='Список объектов', example=[]
+    )
