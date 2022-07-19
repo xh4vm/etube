@@ -40,8 +40,9 @@ class GenreModelBrief(ModelClass):
 
 class GenreModel(GenreModelBrief):
     # Полная версия модели для отображения при поиске одного жанра.
+    # Список фильмов в виде словаря {название: рейтинг}.
     description: Optional[str]
-    films: list = None
+    films: dict = None
 
 
 class PersonModelBrief(ModelClass):
@@ -52,4 +53,5 @@ class PersonModelBrief(ModelClass):
 
 class PersonModel(PersonModelBrief):
     # Полная версия модели для отображения при поиске одного человека.
-    films: list = None
+    # Список фильмов в виде словаря, в котором ключи - роль человека в фильме.
+    films: dict = None

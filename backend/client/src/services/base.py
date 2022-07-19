@@ -48,7 +48,7 @@ class BaseService:
             self,
             page: int = 1,
             page_size: int = 10,
-            search_field: str = None,
+            search_fields: list = None,
             search_value: str = None,
             custom_index: str = None,
     ) -> list[ModelMetaclass]:
@@ -61,7 +61,7 @@ class BaseService:
         search_params = SearchParams(
             page=page,
             page_size=page_size,
-            search_field=search_field,
+            search_fields=search_fields,
             search_value=search_value,
         )
         # Если custom_index задан, нужно искать фильмы. В противном случае ищем в self.index.

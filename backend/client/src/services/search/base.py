@@ -7,12 +7,12 @@ from pydantic.main import ModelMetaclass
 class SearchParams(BaseModel):
     page: int = 1
     page_size: int = 50
-    search_field: Optional[str] = None
+    search_fields: Optional[list] = None
     search_value: Optional[str] = None
     sort_field: Optional[str] = None
 
     def __repr__(self) -> str:
-        return (f'page={self.page},page_size={self.page_size}search_field={self.search_field},'
+        return (f'page={self.page},page_size={self.page_size}search_fields={self.search_fields},'
             f'search_value={self.search_value},sort_field={self.sort_field}')
 
 
