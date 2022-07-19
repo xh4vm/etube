@@ -26,16 +26,14 @@ async def shutdown():
     await redis.redis.wait_closed()
     await elastic.es.close()
 
-from api.v1.films import router as film_router
 
+from api.v1.films import router as film_router
 app.include_router(router=film_router)
 
 from api.v1.genres import router as genre_router
-
 app.include_router(router=genre_router)
 
 from api.v1.persons import router as person_router
-
 app.include_router(router=person_router)
 
 if __name__ == '__main__':

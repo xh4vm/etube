@@ -10,7 +10,7 @@ class SearchParams(BaseModel):
     page_size: int = 50
     search_field: Optional[str] = None
     search_value: Optional[str] = None
-    sort_field: Optional[str] = None 
+    sort_field: Optional[str] = None
 
     def __repr__(self) -> str:
         return (f'page={self.page},page_size={self.page_size}search_field={self.search_field},'

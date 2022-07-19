@@ -1,7 +1,7 @@
 from pydantic import Field
 from pydantic.main import ModelMetaclass
 
-from ..models.models import FilmModel, GenreModel, PersonModel
+from ..models.models import FilmModel, GenreModelBrief, PersonModelBrief
 from .config import Settings
 
 
@@ -13,13 +13,13 @@ class FilmIndex(Settings):
 
 class GenreIndex(Settings):
     index: str = Field(..., env='INDEX_GENRES')
-    model: ModelMetaclass = GenreModel
+    model: ModelMetaclass = GenreModelBrief
     search_fields: list[str] = ['name', 'description']
 
 
 class PersonIndex(Settings):
     index: str = Field(..., env='INDEX_PERSONS')
-    model: ModelMetaclass = PersonModel
+    model: ModelMetaclass = PersonModelBrief
     search_fields: list[str] = ['name']
 
 

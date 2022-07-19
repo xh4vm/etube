@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from functools import lru_cache
-from typing import Optional
+from typing import Optional, Generator, Any
 
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
@@ -54,27 +54,40 @@ class BaseService:
     async def get_by_id(self, id: str) -> Optional[ModelMetaclass]:
         cache_key = f'{self.index}.get_by_id({id})'
         data = await self.cache_svc.get(cache_key)
-        print(data)
-        data = None
         if not data:
             data = await self.search_svc.get_by_id(id=id, index=self.index)
             if not data:
                 return None
-            # await self.cache_svc.set(key=cache_key)
+            await self.cache_svc.set(key=cache_key)
         return self.model(**data['_source'])
 
-    async def search(self, page: int, page_size: int, value: str) -> list[ModelMetaclass]:
-        search_params = SearchParams(page=page, page_size=page_size, search_value=value)
-        cache_key = f'{self.index}.search({search_params}'
-
+    async def search(
+        self,
+        page: int = 1,
+        page_size: int = 10,
+        search_field: str = None,
+        search_value: str = None,
+        custom_index: str = None,
+    ) -> Generator:
+        search_params = SearchParams(
+            page=page,
+            page_size=page_size,
+            search_field=search_field,
+            search_value=search_value,
+        )
+        active_index = self.index
+        if custom_index:
+            print('CI', custom_index)
+            active_index = custom_index
+        cache_key = f'{active_index}.search({search_params}'
         data = self.cache_svc.get(key=cache_key)
-
         if data is None:
-            data: SearchResult = self.search_svc.search(index=self.index, params=search_params)
-
+            data: SearchResult = await self.search_svc.search(index=active_index, params=search_params)
             if data.total == 0:
                 return []
+            await self.cache_svc.set(key=cache_key, value=data)
 
-            # await self.cache_svc.set(key=cache_key, value=data)
+        if custom_index:
+            return data.items
 
         return (self.model(**elem) for elem in data.items)
