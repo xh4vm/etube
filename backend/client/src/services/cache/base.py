@@ -6,7 +6,7 @@ class BaseCache:
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def get(self, key: str, default_value: Optional[str] = None) -> str:
+    def get(self, key: str, default_value: Optional[str] = None) -> Optional[str]:
         '''Получение данных из кеша'''
 
     @abstractmethod

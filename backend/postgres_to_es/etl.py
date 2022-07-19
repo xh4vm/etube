@@ -58,7 +58,7 @@ def init_transfer():
 @celery.on_after_configure.connect
 def setup_etl_periodic_task(sender, **kwargs):
     sender.add_periodic_task(
-        30.0,
+        300.0,
         init_transfer.s(),
-        name='Update ETL every 30 seconds.'
+        name='Update ETL every 300 seconds.'
     )

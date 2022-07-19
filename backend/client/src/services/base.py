@@ -1,21 +1,11 @@
 from abc import ABCMeta, abstractmethod
-from functools import lru_cache
-from typing import Optional, Generator, Any
+from typing import Optional
 
-from aioredis import Redis
-from elasticsearch import AsyncElasticsearch
-from fastapi import Depends
+from elastic_transport import ObjectApiResponse
 from pydantic.main import ModelMetaclass
 
-from db.elastic import get_elasticsearch
-from db.redis import get_redis
-
 from .cache.base import BaseCache
-from .cache.redis import RedisCache
 from .search.base import BaseSearch, SearchParams, SearchResult
-from .search.elastic import ElasticSearch
-
-CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
 
 class BaseService:
@@ -27,65 +17,70 @@ class BaseService:
 
     @property
     @abstractmethod
-    def index(self):
+    def index(self) -> str:
         '''Название индекса для поиска'''
 
     @property
     @abstractmethod
-    def fields(self):
+    def fields(self) -> list[str]:
         '''Поля по которым будет производиться поиск'''
 
     @property
     @abstractmethod
-    def model(self):
+    def model(self) -> ModelMetaclass:
         '''Название pydantic модели для получения результата'''
 
-    @classmethod
-    @lru_cache()
-    def get_service(
-        cls,
-        redis: Redis = Depends(get_redis),
-        elastic: AsyncElasticsearch = Depends(get_elasticsearch)
-    ):
-        cache: BaseCache = RedisCache(redis=redis)
-        search: BaseSearch = ElasticSearch(elastic=elastic)
-        return cls(cache_svc=cache, search_svc=search)
-
     async def get_by_id(self, id: str) -> Optional[ModelMetaclass]:
-        cache_key = f'{self.index}.get_by_id({id})'
+        cache_key = f'{self.index}.get_by_id(id={id})'
         data = await self.cache_svc.get(cache_key)
-        if not data:
-            data = await self.search_svc.get_by_id(id=id, index=self.index)
-            if not data:
+
+        if data is None:
+            data: ObjectApiResponse = await self.search_svc.get_by_id(id=id, index=self.index)
+
+            if data is None:
                 return None
-            await self.cache_svc.set(key=cache_key)
-        return self.model(**data['_source'])
+
+            await self.cache_svc.set(key=cache_key, data=data.body)
+
+        return self.model.parse_obj(data['_source'])
 
     async def search(
-        self,
-        page: int = 1,
-        page_size: int = 10,
-        search_field: str = None,
-        search_value: str = None,
-        custom_index: str = None,
-    ) -> Generator:
+            self,
+            page: int = 1,
+            page_size: int = 10,
+            search_field: str = None,
+            search_value: str = None,
+            custom_index: str = None,
+    ) -> list[ModelMetaclass]:
+        # Поиск данных с условиями.
+        # Если параметры search_field и search_value не заданы,
+        # возвращается список документов соответствующего индекса,
+        # ограниченный параметром page_size.
+        # custom_index - применяется вместо self.index при поиске фильмов,
+        # соответствующих ранее выбранному жанру или персоне.
         search_params = SearchParams(
             page=page,
             page_size=page_size,
             search_field=search_field,
             search_value=search_value,
         )
-        active_index = self.index
-        if custom_index:
-            print('CI', custom_index)
-            active_index = custom_index
-        cache_key = f'{active_index}.search({search_params}'
-        data = self.cache_svc.get(key=cache_key)
+        # Если custom_index задан, нужно искать фильмы. В противном случае ищем в self.index.
+        active_index = custom_index if custom_index else self.index
+
+        cache_key = f'{self.index}.search({search_params}'
+
+        # AttributeError: 'coroutine' object has no attribute 'items':
+        # data = self.cache_svc.get(key=cache_key)
+        data = None
+
         if data is None:
             data: SearchResult = await self.search_svc.search(index=active_index, params=search_params)
+
             if data.total == 0:
                 return []
-            await self.cache_svc.set(key=cache_key, value=data)
+
+            # TypeError: RedisCache.set() got an unexpected keyword argument 'value':
+            # await self.cache_svc.set(key=cache_key, value=data)
 
         if custom_index:
             return data.items

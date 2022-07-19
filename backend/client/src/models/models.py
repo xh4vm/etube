@@ -1,5 +1,4 @@
 from typing import Optional
-
 import orjson
 from pydantic import BaseModel
 
