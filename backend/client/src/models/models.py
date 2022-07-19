@@ -1,5 +1,6 @@
-from typing import Optional, Generic, TypeVar
+import enum
 import orjson
+from typing import Optional, Generic, TypeVar
 from pydantic import BaseModel, Field
 from pydantic.main import ModelMetaclass
 
@@ -33,6 +34,13 @@ class FilmModel(FilmModelBrief):
     writers_names: list[str]
     genre: list[str]
     description: str = None
+
+
+class FilmSortModel(str, enum.Enum):
+    TITLE_ASC = 'title.raw'
+    TITLE_DESC = '-title.raw'
+    IMDB_RATING_ASC = 'imdb_rating'
+    IMDB_RATING_DESC = '-imdb_rating'
 
 
 class GenreModelBrief(ModelClass):
