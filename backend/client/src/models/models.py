@@ -18,13 +18,13 @@ class ModelClass(BaseModel):
 class FilmModelBrief(ModelClass):
     # Краткая версия модели для отображения при множественном поиске.
     title: str
+    imdb_rating: Optional[float]
 
 
 class FilmModel(FilmModelBrief):
     # Полная версия модели для отображения при поиске одного фильма.
     # Является валидирующей для входящих из эластика данных.
     description: str
-    imdb_rating: Optional[float]
     director: list
     actors_names: list
     writers_names: list

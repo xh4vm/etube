@@ -18,7 +18,7 @@ class ElasticSearch(BaseSearch):
 
     async def search(self, index: str, params: SearchParams) -> SearchResult:
         query = {'query': {'match_all': {}}}
-        if len(params.search_value):
+        if params.search_value:
             query = {'query': {'multi_match': {
                     'query': params.search_value,
                     'fields': params.search_fields

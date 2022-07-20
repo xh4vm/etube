@@ -35,7 +35,7 @@ class BaseService:
         data = await self.cache_svc.get(cache_key)
 
         if data is None:
-            data: ObjectApiResponse = await self.search_svc.get_by_id(id=id, index=self.index)
+            data: ObjectApiResponse = await self.search_svc.get_by_id(index=self.index, id=id)
 
             if data is None:
                 return None
