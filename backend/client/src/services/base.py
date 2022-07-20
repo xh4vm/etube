@@ -6,7 +6,7 @@ from pydantic.main import ModelMetaclass
 
 from .cache.base import BaseCache
 from .search.base import BaseSearch, SearchParams, SearchResult
-from ..models.models import PageModel
+from ..models.base import PageModel
 
 
 class BaseService:
@@ -35,6 +35,11 @@ class BaseService:
     @abstractmethod
     def full_model(self) -> ModelMetaclass:
         '''Название pydantic модели для получения полного результата'''
+
+    @property
+    @abstractmethod
+    def model_sort(self) -> ModelMetaclass:
+        '''Название pydantic модели для вариантов сортировки'''
 
     async def get_by_id(self, id: str) -> Optional[ModelMetaclass]:
         cache_key = f'{self.index}.get_by_id(id={id})'
@@ -66,12 +71,16 @@ class BaseService:
         # custom_index - применяется вместо self.index при поиске фильмов,
         # соответствующих ранее выбранному жанру или персоне.
 
-        search_params = SearchParams(
+        # Фильтрую плохие индексы. В поиск идут только валидные
+        sort_fields = list(filter(lambda x: self.model_sort.find_elem(x) is not None, sort_fields.split(','))) \
+            if sort_fields is not None else None
+
+        search_params: SearchParams[self.model_sort] = SearchParams(
             page=page,
             page_size=page_size,
             search_fields=search_fields or self.search_fields,
             search_value=search_value,
-            sort_fields=sort_fields.split(',') if sort_fields else None,
+            sort_fields=sort_fields,
         )
         # Если custom_index задан, нужно искать фильмы. В противном случае ищем в self.index.
         active_index = custom_index if custom_index else self.index

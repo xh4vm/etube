@@ -7,3 +7,4 @@ class PersonService(BaseService):
     brief_model = PERSON_INDEX.brief_model
     full_model = PERSON_INDEX.full_model
     search_fields = PERSON_INDEX.search_fields
+    model_sort = PERSON_INDEX.model_sort

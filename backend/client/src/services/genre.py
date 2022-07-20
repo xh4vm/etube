@@ -7,3 +7,4 @@ class GenreService(BaseService):
     brief_model = GENRE_INDEX.brief_model
     full_model = GENRE_INDEX.full_model
     search_fields = GENRE_INDEX.search_fields
+    model_sort = GENRE_INDEX.model_sort

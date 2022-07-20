@@ -3,7 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from src.services.genre import GenreService
 from src.services.giver import genre_service as giver_service
-from src.models.models import GenreModelBrief, GenreModelFull, PageModel
+from src.models.genre import GenreModelBrief, GenreModelFull
+from src.models.base import PageModel
 
 
 router = APIRouter(prefix='/genre', tags=['Genres'])

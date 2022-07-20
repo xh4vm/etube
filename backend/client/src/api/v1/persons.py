@@ -3,7 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from src.services.person import PersonService
 from src.services.giver import person_service as giver_service
-from src.models.models import PersonModelFull, PersonModelBrief, PageModel
+from src.models.person import PersonModelFull, PersonModelBrief
+from src.models.base import PageModel
 
 
 router = APIRouter(prefix='/person', tags=['Persons'])
