@@ -1,25 +1,29 @@
 from pydantic import Field
 from pydantic.main import ModelMetaclass
 
-from ..models.models import FilmModel, GenreModelBrief, PersonModelBrief
+from ..models.models import (FilmModelBrief, FilmModelFull, GenreModelBrief, GenreModelFull,
+                             PersonModelBrief, PersonModelFull)
 from .config import Settings
 
 
 class FilmIndex(Settings):
     index: str = Field(..., env='INDEX_MOVIES')
-    model: ModelMetaclass = FilmModel
+    brief_model: ModelMetaclass = FilmModelBrief
+    full_model: ModelMetaclass = FilmModelFull
     search_fields: list[str] = ['title', 'description']
 
 
 class GenreIndex(Settings):
     index: str = Field(..., env='INDEX_GENRES')
-    model: ModelMetaclass = GenreModelBrief
+    brief_model: ModelMetaclass = GenreModelBrief
+    full_model: ModelMetaclass = GenreModelFull
     search_fields: list[str] = ['name', 'description']
 
 
 class PersonIndex(Settings):
     index: str = Field(..., env='INDEX_PERSONS')
-    model: ModelMetaclass = PersonModelBrief
+    brief_model: ModelMetaclass = PersonModelBrief
+    full_model: ModelMetaclass = PersonModelFull
     search_fields: list[str] = ['name']
 
 

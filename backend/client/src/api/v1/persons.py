@@ -3,14 +3,14 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from src.services.person import PersonService
 from src.services.giver import person_service as giver_service
-from src.models.models import PersonModel, PersonModelBrief
+from src.models.models import PersonModelFull, PersonModelBrief
 
 
 router = APIRouter(prefix='/person', tags=['Persons'])
 
 
-@router.get(path='/{person_id}', name='Person Detail', response_model=PersonModel)
-async def person_details(person_id: str, person_service: PersonService = Depends(giver_service)) -> PersonModel:
+@router.get(path='/{person_id}', name='Person Detail', response_model=PersonModelFull)
+async def person_details(person_id: str, person_service: PersonService = Depends(giver_service)) -> PersonModelFull:
     person = await person_service.get_by_id(id=person_id)
     films = await person_service.search(
         custom_index='movies',
@@ -28,7 +28,7 @@ async def person_details(person_id: str, person_service: PersonService = Depends
     if not person:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Person not found')
 
-    return PersonModel(id=person.id, name=person.name, films=person_films)
+    return PersonModelFull(id=person.id, name=person.name, films=person_films)
 
 
 @router.get(path='s', name='List Of Persons', response_model=list[PersonModelBrief])

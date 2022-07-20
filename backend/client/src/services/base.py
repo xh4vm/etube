@@ -6,6 +6,7 @@ from pydantic.main import ModelMetaclass
 
 from .cache.base import BaseCache
 from .search.base import BaseSearch, SearchParams, SearchResult
+from ..models.models import PageModel
 
 
 class BaseService:
@@ -22,12 +23,17 @@ class BaseService:
 
     @property
     @abstractmethod
-    def fields(self) -> list[str]:
+    def search_fields(self) -> list[str]:
         '''Поля по которым будет производиться поиск'''
 
     @property
     @abstractmethod
-    def model(self) -> ModelMetaclass:
+    def brief_model(self) -> ModelMetaclass:
+        '''Название pydantic модели для получения результата'''
+
+    @property
+    @abstractmethod
+    def full_model(self) -> ModelMetaclass:
         '''Название pydantic модели для получения результата'''
 
     async def get_by_id(self, id: str) -> Optional[ModelMetaclass]:
@@ -42,36 +48,37 @@ class BaseService:
 
             await self.cache_svc.set(key=cache_key, data=data.body)
 
-        return self.model.parse_obj(data['_source'])
+        return self.full_model.parse_obj(data['_source'])
 
     async def search(
             self,
             page: int = 1,
             page_size: int = 10,
-            search_fields: list = None,
-            search_value: str = None,
-            custom_index: str = None,
-    ) -> list[ModelMetaclass]:
+            search_fields: Optional[list[str]] = None,
+            search_value: Optional[str] = None,
+            sort_fields: Optional[str] = None,
+            custom_index: Optional[str] = None,
+    ) -> PageModel[ModelMetaclass]:
         # Поиск данных с условиями.
         # Если параметры search_field и search_value не заданы,
         # возвращается список документов соответствующего индекса,
         # ограниченный параметром page_size.
         # custom_index - применяется вместо self.index при поиске фильмов,
         # соответствующих ранее выбранному жанру или персоне.
+
         search_params = SearchParams(
             page=page,
             page_size=page_size,
-            search_fields=search_fields,
+            search_fields=search_fields or self.search_fields,
             search_value=search_value,
+            sort_field=sort_fields.split(',') if sort_fields else None,
         )
         # Если custom_index задан, нужно искать фильмы. В противном случае ищем в self.index.
         active_index = custom_index if custom_index else self.index
 
         cache_key = f'{self.index}.search({search_params}'
 
-        # AttributeError: 'coroutine' object has no attribute 'items':
-        # data = self.cache_svc.get(key=cache_key)
-        data = None
+        data = await self.cache_svc.get(key=cache_key)
 
         if data is None:
             data: SearchResult = await self.search_svc.search(index=active_index, params=search_params)
@@ -79,10 +86,18 @@ class BaseService:
             if data.total == 0:
                 return []
 
-            # TypeError: RedisCache.set() got an unexpected keyword argument 'value':
-            # await self.cache_svc.set(key=cache_key, value=data)
+            await self.cache_svc.set(key=cache_key, data=data.dict())
+        else:
+            data = SearchResult(**data)
 
         if custom_index:
             return data.items
 
-        return (self.model(**elem) for elem in data.items)
+        return PageModel(
+            next_page=search_params.page + 1 if search_params.page * search_params.page_size < data.total else None,
+            prev_page=search_params.page - 1 if search_params.page > 1 else None,
+            page=search_params.page,
+            page_size=search_params.page_size,
+            total=data.total,
+            items=[self.brief_model(**elem) for elem in data.items]
+        )

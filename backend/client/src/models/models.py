@@ -1,18 +1,22 @@
-from typing import Optional
+import enum
 import orjson
-from pydantic import BaseModel
+from typing import Optional, Generic, TypeVar
+from pydantic import BaseModel, Field
 
 
 def orjson_dumps(v, *, default):
     return orjson.dumps(v, default=default).decode()
 
 
-class ModelClass(BaseModel):
-    id: str
-
+class JSONModel(BaseModel):
+    
     class Config:
         json_loads = orjson.loads
         json_dumps = orjson_dumps
+
+
+class ModelClass(JSONModel):
+    id: str
 
 
 class FilmModelBrief(ModelClass):
@@ -21,15 +25,21 @@ class FilmModelBrief(ModelClass):
     imdb_rating: Optional[float]
 
 
-class FilmModel(FilmModelBrief):
+class FilmModelFull(FilmModelBrief):
     # Полная версия модели для отображения при поиске одного фильма.
     # Является валидирующей для входящих из эластика данных.
-    description: str
-    director: list
-    actors_names: list
-    writers_names: list
-    genre: list
+    director: list[str]
+    actors_names: list[str]
+    writers_names: list[str]
+    genre: list[str]
     description: str = None
+
+
+class FilmModelSort(str, enum.Enum):
+    TITLE_ASC = 'title.raw'
+    TITLE_DESC = '-title.raw'
+    IMDB_RATING_ASC = 'imdb_rating'
+    IMDB_RATING_DESC = '-imdb_rating'
 
 
 class GenreModelBrief(ModelClass):
@@ -38,7 +48,7 @@ class GenreModelBrief(ModelClass):
     name: str
 
 
-class GenreModel(GenreModelBrief):
+class GenreModelFull(GenreModelBrief):
     # Полная версия модели для отображения при поиске одного жанра.
     # Список фильмов в виде словаря {название: рейтинг}.
     description: Optional[str]
@@ -51,7 +61,32 @@ class PersonModelBrief(ModelClass):
     name: str
 
 
-class PersonModel(PersonModelBrief):
+class PersonModelFull(PersonModelBrief):
     # Полная версия модели для отображения при поиске одного человека.
     # Список фильмов в виде словаря, в котором ключи - роль человека в фильме.
     films: dict = None
+
+
+PTYPE = TypeVar('PTYPE')
+
+
+class PageModel(JSONModel, Generic[PTYPE]):
+
+    next_page: Optional[int] = Field(
+        title='Номер следующей страницы', example=3
+    )
+    prev_page: Optional[int] = Field(
+        title='Номер предыдущей страницы', example=1
+    )
+    page: Optional[int] = Field(
+        default=1, title='Номер текущей страницы', example=2
+    )
+    page_size: Optional[int] = Field(
+        default=50, title='Длина выборки', example=2
+    )
+    total: Optional[int] = Field(
+        default=0, title='Общая мощность выборки', example=1000
+    )
+    items: list[PTYPE] = Field(
+        default=[], title='Список объектов', example=[]
+    )

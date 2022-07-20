@@ -18,20 +18,27 @@ class ElasticSearch(BaseSearch):
 
     async def search(self, index: str, params: SearchParams) -> SearchResult:
         query = {'query': {'match_all': {}}}
-        if params.search_value:
-            query = {'query': {'multi_match': {
-                    'query': params.search_value,
-                    'fields': params.search_fields
-                }}}
+        if params.search_value and params.search_fields and len(params.search_value):
+            query = {
+                'query': {
+                    'multi_match': {
+                        'query': params.search_value,
+                        'fields': params.search_fields,
+                        'fuzziness': 'auto',
+                        'operator': 'and'
+                    }
+                }
+            }
 
         docs = await self.elastic.search(
             index=index,
             body=query,
             size=params.page_size,
-        )
-        data = SearchResult(
-            total=len(docs.get('hits').get('hits')),
-            items=[doc['_source'] for doc in docs.get('hits').get('hits')],
+            sort=params.sort_fields,
+            from_=(params.page - 1) * params.page_size
         )
 
-        return data
+        return SearchResult(
+            total=docs.get('hits').get('total').get('value'),
+            items=[doc['_source'] for doc in docs.get('hits').get('hits')],
+        )
