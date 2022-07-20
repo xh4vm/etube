@@ -4,14 +4,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from src.services.search.base import SearchParams
 from src.services.film import FilmService
 from src.services.giver import film_service as giver_service
-from src.models.models import FilmModel, FilmModelBrief, PageModel
+from src.models.models import FilmModelFull, FilmModelBrief, PageModel
 
 
 router = APIRouter(prefix='/film', tags=['Films'])
 
 
-@router.get(path='/{film_id}', name='Film Detail', response_model=FilmModel)
-async def film_details(film_id: str, film_service: FilmService = Depends(giver_service)) -> FilmModel:
+@router.get(path='/{film_id}', name='Film Detail', response_model=FilmModelFull)
+async def film_details(film_id: str, film_service: FilmService = Depends(giver_service)) -> FilmModelFull:
     film = await film_service.get_by_id(id=film_id)
 
     if not film:

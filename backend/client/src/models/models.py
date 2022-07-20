@@ -2,7 +2,6 @@ import enum
 import orjson
 from typing import Optional, Generic, TypeVar
 from pydantic import BaseModel, Field
-from pydantic.main import ModelMetaclass
 
 
 def orjson_dumps(v, *, default):
@@ -23,12 +22,12 @@ class ModelClass(JSONModel):
 class FilmModelBrief(ModelClass):
     # Краткая версия модели для отображения при множественном поиске.
     title: str
+    imdb_rating: Optional[float]
 
 
-class FilmModel(FilmModelBrief):
+class FilmModelFull(FilmModelBrief):
     # Полная версия модели для отображения при поиске одного фильма.
     # Является валидирующей для входящих из эластика данных.
-    imdb_rating: Optional[float]
     director: list[str]
     actors_names: list[str]
     writers_names: list[str]
@@ -36,7 +35,7 @@ class FilmModel(FilmModelBrief):
     description: str = None
 
 
-class FilmSortModel(str, enum.Enum):
+class FilmModelSort(str, enum.Enum):
     TITLE_ASC = 'title.raw'
     TITLE_DESC = '-title.raw'
     IMDB_RATING_ASC = 'imdb_rating'
@@ -49,7 +48,7 @@ class GenreModelBrief(ModelClass):
     name: str
 
 
-class GenreModel(GenreModelBrief):
+class GenreModelFull(GenreModelBrief):
     # Полная версия модели для отображения при поиске одного жанра.
     # Список фильмов в виде словаря {название: рейтинг}.
     description: Optional[str]
@@ -62,7 +61,7 @@ class PersonModelBrief(ModelClass):
     name: str
 
 
-class PersonModel(PersonModelBrief):
+class PersonModelFull(PersonModelBrief):
     # Полная версия модели для отображения при поиске одного человека.
     # Список фильмов в виде словаря, в котором ключи - роль человека в фильме.
     films: dict = None
