@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from src.services.genre import GenreService
 from src.services.giver import genre_service as giver_service
-from src.models.models import GenreModelBrief, GenreModelFull
+from src.models.models import GenreModelBrief, GenreModelFull, PageModel
 
 
 router = APIRouter(prefix='/genre', tags=['Genres'])
@@ -25,12 +25,12 @@ async def genre_details(genre_id: str, genre_service: GenreService = Depends(giv
     return GenreModelFull(id=genre.id, name=genre.name, films=film_titles)
 
 
-@router.get(path='s', name='List Of Genres', response_model=list[GenreModelBrief])
+@router.get(path='s', name='List Of Genres', response_model=PageModel[GenreModelBrief])
 async def genres_list(
         page=1,
         page_size=10,
         search='',
+        sort=None,
         genre_service: GenreService = Depends(giver_service),
-) -> list[GenreModelBrief]:
-    genres = await genre_service.search(page=page, page_size=page_size, search_value=search)
-    return [GenreModelBrief(id=genre.id, name=genre.name) for genre in genres]
+) -> PageModel[GenreModelBrief]:
+    return await genre_service.search(page=page, page_size=page_size, search_value=search, sort_fields=sort)

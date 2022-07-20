@@ -29,12 +29,12 @@ class BaseService:
     @property
     @abstractmethod
     def brief_model(self) -> ModelMetaclass:
-        '''Название pydantic модели для получения результата'''
+        '''Название pydantic модели для получения усеченного результата'''
 
     @property
     @abstractmethod
     def full_model(self) -> ModelMetaclass:
-        '''Название pydantic модели для получения результата'''
+        '''Название pydantic модели для получения полного результата'''
 
     async def get_by_id(self, id: str) -> Optional[ModelMetaclass]:
         cache_key = f'{self.index}.get_by_id(id={id})'
@@ -71,7 +71,7 @@ class BaseService:
             page_size=page_size,
             search_fields=search_fields or self.search_fields,
             search_value=search_value,
-            sort_field=sort_fields.split(',') if sort_fields else None,
+            sort_fields=sort_fields.split(',') if sort_fields else None,
         )
         # Если custom_index задан, нужно искать фильмы. В противном случае ищем в self.index.
         active_index = custom_index if custom_index else self.index
