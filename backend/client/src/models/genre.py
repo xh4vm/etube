@@ -1,6 +1,7 @@
 from typing import Optional
 
 from .base import ModelClass, StrEnum
+from .film import FilmModelBrief
 
 
 class GenreModelBrief(ModelClass):
@@ -13,7 +14,7 @@ class GenreModelFull(GenreModelBrief):
     # Полная версия модели для отображения при поиске одного жанра.
     # Список фильмов в виде словаря {название: рейтинг}.
     description: Optional[str]
-    films: dict = None
+    films: list[FilmModelBrief] = None
 
 
 class GenreModelSort(StrEnum):

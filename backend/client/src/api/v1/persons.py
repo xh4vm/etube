@@ -1,9 +1,11 @@
 from http import HTTPStatus
 from fastapi import APIRouter, Depends, HTTPException
 
+from src.services.film import FilmService
 from src.services.person import PersonService
-from src.services.giver import person_service as giver_service
-from src.models.person import PersonModelFull, PersonModelBrief
+from src.models.film import FilmModelBrief, FilmModelSort, FilmModelFull
+from src.services.giver import person_service as giver_service, film_service as other_giver_service
+from src.models.person import PersonModelFull, PersonModelBrief, PersonModelRole
 from src.models.base import PageModel
 
 
@@ -11,20 +13,29 @@ router = APIRouter(prefix='/person', tags=['Persons'])
 
 
 @router.get(path='/{person_id}', name='Person Detail', response_model=PersonModelFull)
-async def person_details(person_id: str, person_service: PersonService = Depends(giver_service)) -> PersonModelFull:
-    person = await person_service.get_by_id(id=person_id)
-    films = await person_service.search(
-        custom_index='movies',
-        search_fields=['director', 'actors_names', 'writers_names'],
+async def person_details(
+    person_id: str, 
+    film_service: FilmService = Depends(other_giver_service),
+    person_service: PersonService = Depends(giver_service)
+) -> PersonModelFull:
+    '''Информация о персоне и топ {PAGE_SIZE} фильмов этого с участием этой персоны'''
+
+    person: PersonModelFull = await person_service.get_by_id(id=person_id)
+    films : PageModel[FilmModelFull] = await film_service.search(
+        search_fields=['director', f'actors_names', f'writers_names'],
         search_value=person.name,
+        sort_fields=FilmModelSort.IMDB_RATING_DESC.value,
+        model_mapping=FilmModelFull
     )
 
-    person_films = {'director': [], 'actor': [], 'writer': []}
-    for film in films:
-        title = film['title']
-        person_films['director'].append(title) if person.name in film['director'] else None
-        person_films['actor'].append(title) if person.name in film['actors_names'] else None
-        person_films['writer'].append(title) if person.name in film['writers_names'] else None
+    person_films = {PersonModelRole.DIRECTOR: [], PersonModelRole.ACTOR: [], PersonModelRole.WRITER: []}
+    for film in films.items:
+        if person.name in film.director:
+            person_films[PersonModelRole.DIRECTOR].append(FilmModelBrief.parse_obj(film))
+        elif person.name in film.actors_names:
+            person_films[PersonModelRole.ACTOR].append(FilmModelBrief.parse_obj(film))
+        elif person.name in film.writers_names:
+            person_films[PersonModelRole.WRITER].append(FilmModelBrief.parse_obj(film))
 
     if not person:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Person not found')

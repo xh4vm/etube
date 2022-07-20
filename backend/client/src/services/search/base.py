@@ -1,15 +1,16 @@
 from abc import ABCMeta, abstractmethod
 from typing import Any, Generic, Optional, TypeVar
-from pydantic import BaseModel, validator
+from pydantic import BaseModel
 from pydantic.main import ModelMetaclass
+from src.core.config import APP_CONFIG
 
 
 SFTYPE = TypeVar('SFTYPE')
 
 
 class SearchParams(BaseModel, Generic[SFTYPE]):
-    page: int = 1
-    page_size: int = 50
+    page: int = APP_CONFIG.page
+    page_size: int = APP_CONFIG.page_size
     search_fields: Optional[list[str]] = None
     search_value: Optional[str] = None
     sort_fields: Optional[list[SFTYPE]] = None

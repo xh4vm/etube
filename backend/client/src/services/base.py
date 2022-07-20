@@ -7,6 +7,7 @@ from pydantic.main import ModelMetaclass
 from .cache.base import BaseCache
 from .search.base import BaseSearch, SearchParams, SearchResult
 from ..models.base import PageModel
+from src.core.config import APP_CONFIG
 
 
 class BaseService:
@@ -57,19 +58,13 @@ class BaseService:
 
     async def search(
             self,
-            page: int = 1,
-            page_size: int = 10,
+            page: int = APP_CONFIG.page,
+            page_size: int = APP_CONFIG.page_size,
             search_fields: Optional[list[str]] = None,
             search_value: Optional[str] = None,
             sort_fields: Optional[str] = None,
-            custom_index: Optional[str] = None,
+            model_mapping: Optional[ModelMetaclass] = None
     ) -> PageModel[ModelMetaclass]:
-        # Поиск данных с условиями.
-        # Если параметры search_field и search_value не заданы,
-        # возвращается список документов соответствующего индекса,
-        # ограниченный параметром page_size.
-        # custom_index - применяется вместо self.index при поиске фильмов,
-        # соответствующих ранее выбранному жанру или персоне.
 
         # Фильтрую плохие индексы. В поиск идут только валидные
         sort_fields = list(filter(lambda x: self.model_sort.find_elem(x) is not None, sort_fields.split(','))) \
@@ -82,31 +77,28 @@ class BaseService:
             search_value=search_value,
             sort_fields=sort_fields,
         )
-        # Если custom_index задан, нужно искать фильмы. В противном случае ищем в self.index.
-        active_index = custom_index if custom_index else self.index
 
         cache_key = f'{self.index}.search({search_params}'
 
         data = await self.cache_svc.get(key=cache_key)
 
         if data is None:
-            data: SearchResult = await self.search_svc.search(index=active_index, params=search_params)
+            data: SearchResult = await self.search_svc.search(index=self.index, params=search_params)
 
-            if data.total == 0:
-                return []
+            # if data.total == 0:
+            #     return []
 
             await self.cache_svc.set(key=cache_key, data=data.dict())
         else:
             data = SearchResult(**data)
 
-        if custom_index:
-            return data.items
-
+        model_mapping = model_mapping or self.brief_model
+        
         return PageModel(
             next_page=search_params.page + 1 if search_params.page * search_params.page_size < data.total else None,
             prev_page=search_params.page - 1 if search_params.page > 1 else None,
             page=search_params.page,
             page_size=search_params.page_size,
             total=data.total,
-            items=[self.brief_model(**elem) for elem in data.items]
+            items=[model_mapping(**elem) for elem in data.items]
         )

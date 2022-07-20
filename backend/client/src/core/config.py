@@ -13,6 +13,8 @@ class Settings(BaseSettings):
 class AppSettings(Settings):
     project_name: str = Field(..., env='PROJECT_NAME')
     api_path: str = Field(..., env='API_PATH')
+    page: int = Field(..., env='PAGE_DEFAULT')
+    page_size: int = Field(..., env='PAGE_SIZE_DEFAULT')
     version: str = Field(..., env='API_VERSION')
     swagger_path: str = Field(..., env='SWAGGER_PATH')
     json_swagger_path: str = Field(..., env='JSON_SWAGGER_PATH')
