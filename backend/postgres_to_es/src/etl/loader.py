@@ -7,30 +7,31 @@
 
 """
 
+from http import HTTPStatus
 from typing import Any
 
 import backoff
 import requests
 
-from config.config import BACKOFF_CONFIG, ELASTIC_CONFIG
-from logger.logger import loader_logger as logger
+from ..config.config import BACKOFF_CONFIG, ELASTIC_CONFIG
+from ..logger.logger import loader_logger as logger
 
 
 class Loader:
-
     def __init__(self, index: str):
-        self.params = ELASTIC_CONFIG.dict()
-        self.host = self.params.get('host')
-        self.port = self.params.get('port')
         self.index_name = index
 
     @backoff.on_exception(**BACKOFF_CONFIG, logger=logger)
-    def connector(
-        self,
-        index: str,
-        data: Any = None,
-    ) -> Any:
-        url = ''.join([self.host, ':', str(self.port), '/', index, '/_bulk'])
+    def connector(self, index: str, data: Any = None,) -> Any:
+
+        url = f'{ELASTIC_CONFIG.protocol}://{ELASTIC_CONFIG.host}:{ELASTIC_CONFIG.port}/{index}/_bulk'
         headers = {'Content-Type': 'application/json'}
         response = requests.post(url, data=data, headers=headers)
+
+        logger.info(f'Response load status code: {response.status_code}')
+
+        if response.status_code != HTTPStatus.OK:
+            logger.info(f'Response content: {response.content}')
+            raise ValueError('Loader failed...')
+
         return response

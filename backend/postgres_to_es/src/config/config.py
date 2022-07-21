@@ -4,7 +4,7 @@ from pydantic import BaseSettings, Field
 
 class Settings(BaseSettings):
     class Config:
-        env_file = '../../../.env'
+        env_file = '../../.env'
 
 
 class PostgreSQLSettings(Settings):

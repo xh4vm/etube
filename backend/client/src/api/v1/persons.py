@@ -1,0 +1,56 @@
+from http import HTTPStatus
+
+from fastapi import APIRouter, Depends, HTTPException
+from src.core.config import APP_CONFIG
+from src.models.base import PageModel
+from src.models.film import FilmModelBrief, FilmModelFull, FilmModelSort
+from src.models.person import (PersonModelBrief, PersonModelFull,
+                               PersonModelRole)
+from src.services.film import FilmService
+from src.services.giver import film_service as other_giver_service
+from src.services.giver import person_service as giver_service
+from src.services.person import PersonService
+
+router = APIRouter(prefix='/person', tags=['Persons'])
+
+
+@router.get(path='/{person_id}', name='Person Detail', response_model=PersonModelFull)
+async def person_details(
+    person_id: str,
+    film_service: FilmService = Depends(other_giver_service),
+    person_service: PersonService = Depends(giver_service),
+) -> PersonModelFull:
+    """Информация о персоне и топ {PAGE_SIZE} фильмов этого с участием этой персоны"""
+
+    person: PersonModelFull = await person_service.get_by_id(id=person_id)
+    films: PageModel[FilmModelFull] = await film_service.search(
+        search_fields=['director', 'actors_names', 'writers_names'],
+        search_value=person.name,
+        sort_fields=FilmModelSort.IMDB_RATING_DESC.value,
+        model_mapping=FilmModelFull,
+    )
+
+    person_films = {PersonModelRole.DIRECTOR: [], PersonModelRole.ACTOR: [], PersonModelRole.WRITER: []}
+    for film in films.items:
+        if person.name in film.director:
+            person_films[PersonModelRole.DIRECTOR].append(FilmModelBrief.parse_obj(film))
+        elif person.name in film.actors_names:
+            person_films[PersonModelRole.ACTOR].append(FilmModelBrief.parse_obj(film))
+        elif person.name in film.writers_names:
+            person_films[PersonModelRole.WRITER].append(FilmModelBrief.parse_obj(film))
+
+    if not person:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Person not found')
+
+    return PersonModelFull(id=person.id, name=person.name, films=person_films)
+
+
+@router.get(path='s', name='List Of Persons', response_model=PageModel[PersonModelBrief])
+async def persons_list(
+    page=APP_CONFIG.page,
+    page_size=APP_CONFIG.page_size,
+    search='',
+    sort=None,
+    person_service: PersonService = Depends(giver_service),
+) -> PageModel[PersonModelBrief]:
+    return await person_service.search(page=page, page_size=page_size, search_value=search, sort_fields=sort)

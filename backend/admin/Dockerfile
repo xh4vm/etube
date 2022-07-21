@@ -3,8 +3,8 @@ FROM python:3.10-slim AS admin-build
 WORKDIR /opt
 COPY requirements.txt ./
 
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential python-dev \
-     && pip install --upgrade pip \
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential python-dev python3-dev \
+     && pip install --upgrade "pip>=22.1" \
      && pip install -r requirements.txt
 
 
