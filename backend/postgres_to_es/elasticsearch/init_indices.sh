@@ -6,6 +6,8 @@ INDEXES=(
     $INDEX_PERSONS
 )
 
+sleep 1
+
 for INDEX in ${INDEXES[*]}
 do
     if [ "$(curl -s -o /dev/null -w '%{http_code}' http://elasticsearch:9200/$INDEX)" == "200" ]; then

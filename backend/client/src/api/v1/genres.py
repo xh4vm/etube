@@ -21,7 +21,7 @@ async def genre_details(
     '''Информация о жанре и топ {PAGE_SIZE} фильмов этого жанра'''
     
     genre = await genre_service.get_by_id(id=genre_id)
-    films : PageModel[FilmModelBrief] = await film_service.search(
+    films: PageModel[FilmModelBrief] = await film_service.search(
         search_fields=['genre'],
         search_value=genre.name,
         sort_fields=FilmModelSort.IMDB_RATING_DESC.value,

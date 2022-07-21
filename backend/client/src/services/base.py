@@ -70,7 +70,7 @@ class BaseService:
         sort_fields = list(filter(lambda x: self.model_sort.find_elem(x) is not None, sort_fields.split(','))) \
             if sort_fields is not None else None
 
-        search_params: SearchParams[self.model_sort] = SearchParams(
+        search_params: SearchParams[BaseService.model_sort] = SearchParams(
             page=page,
             page_size=page_size,
             search_fields=search_fields or self.search_fields,
@@ -84,9 +84,6 @@ class BaseService:
 
         if data is None:
             data: SearchResult = await self.search_svc.search(index=self.index, params=search_params)
-
-            # if data.total == 0:
-            #     return []
 
             await self.cache_svc.set(key=cache_key, data=data.dict())
         else:

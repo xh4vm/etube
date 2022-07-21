@@ -21,7 +21,7 @@ async def person_details(
     '''Информация о персоне и топ {PAGE_SIZE} фильмов этого с участием этой персоны'''
 
     person: PersonModelFull = await person_service.get_by_id(id=person_id)
-    films : PageModel[FilmModelFull] = await film_service.search(
+    films: PageModel[FilmModelFull] = await film_service.search(
         search_fields=['director', f'actors_names', f'writers_names'],
         search_value=person.name,
         sort_fields=FilmModelSort.IMDB_RATING_DESC.value,

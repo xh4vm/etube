@@ -1,7 +1,6 @@
 from http import HTTPStatus
 from fastapi import APIRouter, Depends, HTTPException
 
-from src.services.search.base import SearchParams
 from src.services.film import FilmService
 from src.services.giver import film_service as giver_service
 from src.models.film import FilmModelFull, FilmModelBrief

@@ -140,3 +140,4 @@ dmypy.json
 *logfile.log
 .DS_Store
 *.idea
+*movies_database.sqlite
