@@ -18,16 +18,11 @@ from ..logger.logger import loader_logger as logger
 
 
 class Loader:
-
     def __init__(self, index: str):
         self.index_name = index
 
     @backoff.on_exception(**BACKOFF_CONFIG, logger=logger)
-    def connector(
-        self,
-        index: str,
-        data: Any = None,
-    ) -> Any:
+    def connector(self, index: str, data: Any = None,) -> Any:
 
         url = f'{ELASTIC_CONFIG.protocol}://{ELASTIC_CONFIG.host}:{ELASTIC_CONFIG.port}/{index}/_bulk'
         headers = {'Content-Type': 'application/json'}

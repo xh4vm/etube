@@ -1,4 +1,6 @@
+import logging
 from logging import config as logging_config
+
 from pydantic import BaseSettings, Field
 
 from .logger import LOGGING
@@ -6,7 +8,7 @@ from .logger import LOGGING
 
 class Settings(BaseSettings):
     class Config:
-        #Для локального запуска
+        # Для локального запуска
         env_file = '../../../.env'
 
 
@@ -39,3 +41,5 @@ ELASTIC_CONFIG = ElasticsearchSettings()
 APP_CONFIG = AppSettings()
 
 logging_config.dictConfig(LOGGING)
+
+service_logger = logging.getLogger('SERVICE')

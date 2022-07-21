@@ -24,3 +24,7 @@ class FilmModelSort(StrEnum):
     TITLE_DESC = 'title.raw:desc'
     IMDB_RATING_ASC = 'imdb_rating'
     IMDB_RATING_DESC = 'imdb_rating:desc'
+
+
+class FilmModelFilter(StrEnum):
+    GENRE = 'genre'

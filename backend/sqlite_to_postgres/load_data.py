@@ -1,17 +1,15 @@
+import logging
 import os
 import pathlib
 import sqlite3
+from contextlib import contextmanager
 from typing import Any
 
 import psycopg2
-
-from psycopg2.extras import DictCursor, register_uuid
-from contextlib import contextmanager
 from dotenv import load_dotenv
-import logging
-
-from sqlite_loader import SQLiteLoader
 from postgres_saver import PostgresSaver
+from psycopg2.extras import DictCursor, register_uuid
+from sqlite_loader import SQLiteLoader
 
 
 @contextmanager

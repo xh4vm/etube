@@ -1,6 +1,5 @@
 import logging
 
-
 logging.basicConfig(
     filename='./src/logger/logfile.log',
     level=logging.INFO,

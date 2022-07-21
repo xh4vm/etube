@@ -1,11 +1,11 @@
 from typing import Any, Optional
+
 from elasticsearch import AsyncElasticsearch, NotFoundError
 
 from .base import BaseSearch, SearchParams, SearchResult
 
 
 class ElasticSearch(BaseSearch):
-
     def __init__(self, elastic: AsyncElasticsearch):
         self.elastic = elastic
 
@@ -17,25 +17,37 @@ class ElasticSearch(BaseSearch):
         return doc
 
     async def search(self, index: str, params: SearchParams) -> SearchResult:
-        query = {'query': {'match_all': {}}}
+        query = {'query': {'bool': {'must': [{'match_all': {}}]}}}
+
         if params.search_value and params.search_fields and len(params.search_value):
             query = {
                 'query': {
-                    'multi_match': {
-                        'query': params.search_value,
-                        'fields': params.search_fields,
-                        'fuzziness': 'auto',
-                        'operator': 'and'
+                    'bool': {
+                        'must': [
+                            {
+                                'multi_match': {
+                                    'query': params.search_value,
+                                    'fields': params.search_fields,
+                                    'fuzziness': 'auto',
+                                    'operator': 'and',
+                                }
+                            }
+                        ]
                     }
                 }
             }
+
+        if params.filters is not None:
+            for filter_ in params.filters:
+
+                query['query']['bool']['must'].append({'term': {filter_[0]: filter_[1]}})
 
         docs = await self.elastic.search(
             index=index,
             body=query,
             size=params.page_size,
             sort=params.sort_fields,
-            from_=(params.page - 1) * params.page_size
+            from_=(params.page - 1) * params.page_size,
         )
 
         return SearchResult(

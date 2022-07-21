@@ -1,6 +1,7 @@
 from sqlite3 import Cursor
+
 from psycopg2.extras import DictCursor
-from schema import Schema, SCHEMA_NAME
+from schema import SCHEMA_NAME, Schema
 
 
 class TestCountRecords:

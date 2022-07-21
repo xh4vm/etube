@@ -1,11 +1,8 @@
-import psycopg2
+import os
+
 import pytest
 from dotenv import load_dotenv
-from pathlib import Path
-from psycopg2.extras import DictCursor
-import os
-from load_data import get_postgresql_dsl, sqlite_conn_context, pg_conn_context
-
+from load_data import get_postgresql_dsl, pg_conn_context, sqlite_conn_context
 
 load_dotenv()
 

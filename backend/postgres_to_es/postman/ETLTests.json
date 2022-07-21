@@ -372,7 +372,7 @@
 			"response": []
 		},
 		{
-			"name": "Запрос на поиск данных по слову ant в индексе Genres",
+			"name": "Запрос на поиск данных по слову gerge в индексе Persons",
 			"event": [
 				{
 					"listen": "test",
@@ -384,9 +384,9 @@
 							"",
 							"pm.test(\"Compare number of records\", function() {",
 							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData['hits']['total']['value']).to.equal(1);",
+							"    pm.expect(jsonData['hits']['total']['value']).to.equal(37);",
 							"    // Если данные загружены правильно, то сортировка по score даст именно этот id",
-							"    pm.expect(jsonData['hits']['hits'][0]['_id']).to.equal('b92ef010-5e4c-4fd0-99d6-41b6456272cd');",
+							"    pm.expect(jsonData['hits']['hits'][0]['_id']).to.equal('a5a8f573-3cee-4ccc-8a2b-91cb9f55250a');",
 							"});"
 						],
 						"type": "text/javascript"
@@ -401,7 +401,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"query\": {\n        \"multi_match\": {\n            \"query\": \"ant\",\n            \"fuzziness\": \"auto\",\n            \"fields\": [\n                \"name\",\n                \"description\"\n            ]\n        }\n    }\n}",
+					"raw": "{\n    \"query\": {\n        \"multi_match\": {\n            \"query\": \"gerge\",\n            \"fuzziness\": \"auto\",\n            \"fields\": [\n                \"name\"\n            ]\n        }\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -409,12 +409,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_url}}/genres/_search",
+					"raw": "{{base_url}}/persons/_search",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
-						"genres",
+						"persons",
 						"_search"
 					]
 				}
@@ -458,7 +458,7 @@
 			"response": []
 		},
 		{
-			"name": "Запрос на поиск данных по слову antos в индексе Persons",
+			"name": "Запрос на поиск данных по слову antos в индексе Genres",
 			"event": [
 				{
 					"listen": "test",
@@ -472,7 +472,7 @@
 							"    var jsonData = pm.response.json();",
 							"    pm.expect(jsonData['hits']['total']['value']).to.equal(1);",
 							"    // Если данные загружены правильно, то сортировка по score даст именно этот id",
-							"    pm.expect(jsonData['hits']['hits'][0]['_id']).to.equal('1163951e-d74a-41b9-87a6-903eab9b17bc');",
+							"    pm.expect(jsonData['hits']['hits'][0]['_id']).to.equal('1cacff68-643e-4ddd-8f57-84b62538081a');",
 							"});"
 						],
 						"type": "text/javascript"
@@ -487,7 +487,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"query\": {\n        \"multi_match\": {\n            \"query\": \"ant\",\n            \"fuzziness\": \"auto\",\n            \"fields\": [\n                \"name\"\n                ]\n        }\n    }\n}",
+					"raw": "{\n    \"query\": {\n        \"multi_match\": {\n            \"query\": \"drma\",\n            \"fuzziness\": \"auto\",\n            \"fields\": [\n                \"name\",\n            \"description\"\n                ]\n        }\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"

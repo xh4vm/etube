@@ -23,3 +23,7 @@ class PersonModelFull(PersonModelBrief):
 class PersonModelSort(StrEnum):
     NAME_ASC = 'name.raw'
     NAME_DESC = 'name.raw:desc'
+
+
+class PersonModelFilter(StrEnum):
+    pass

@@ -4,9 +4,9 @@
 from pydantic import Field
 
 from ..etl.extractor import (FilmsPostgresExtractor, GenresPostgresExtracor,
-                           PersonsPostgresExtractor)
-from .config import Settings
+                             PersonsPostgresExtractor)
 from ..models.models import Film, Genre, Person
+from .config import Settings
 
 
 class FilmIndex(Settings):
@@ -14,15 +14,18 @@ class FilmIndex(Settings):
     model = Film
     index: str = Field(..., env='INDEX_MOVIES')
 
+
 class GenreIndex(Settings):
     extractor = GenresPostgresExtracor
     model = Genre
     index: str = Field(..., env='INDEX_GENRES')
 
+
 class PersonIndex(Settings):
     extractor = PersonsPostgresExtractor
     model = Person
     index: str = Field(..., env='INDEX_PERSONS')
+
 
 FILM_INDEX = FilmIndex()
 GENRE_INDEX = GenreIndex()

@@ -7,8 +7,8 @@ class BaseCache:
 
     @abstractmethod
     def get(self, key: str, default_value: Optional[str] = None) -> Optional[str]:
-        '''Получение данных из кеша'''
+        """Получение данных из кеша"""
 
     @abstractmethod
     def set(self, key: str, data: Any) -> None:
-        '''Установка данных в кеш'''
+        """Установка данных в кеш"""

@@ -8,3 +8,4 @@ class FilmService(BaseService):
     full_model = FILM_INDEX.full_model
     search_fields = FILM_INDEX.search_fields
     model_sort = FILM_INDEX.model_sort
+    model_filter = FILM_INDEX.model_filter

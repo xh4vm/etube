@@ -1,9 +1,10 @@
-from typing import Any, Iterator, Optional
 import logging
-from dataclasses import fields, is_dataclass, asdict
-from psycopg2.extras import DictCursor, execute_values
+from dataclasses import asdict, fields, is_dataclass
+from typing import Any, Iterator, Optional
 
-from schema import Genre, Schema, FilmWork, Person, GenreFilmWork, PersonFilmWork, SCHEMA_NAME
+from psycopg2.extras import DictCursor, execute_values
+from schema import (SCHEMA_NAME, FilmWork, Genre, GenreFilmWork, Person,
+                    PersonFilmWork, Schema)
 
 
 class PostgresSaver:
@@ -81,11 +82,11 @@ class PostgresSaver:
             Schema.person_film_work: None,
         }
 
-        self.logger.info(f'Start saving all data to PostgreSQL database instance.')
+        self.logger.info('Start saving all data to PostgreSQL database instance.')
 
         for obj in data:
             self._stack_or_flush_all_data(obj)
 
         self._stack_or_flush_all_data(obj=last_obj, is_last=True)
 
-        self.logger.info(f'Success finish saving all data to PostgreSQL database instance.')
+        self.logger.info('Success finish saving all data to PostgreSQL database instance.')

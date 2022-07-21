@@ -1,20 +1,20 @@
 from typing import Any, Optional
+
 import orjson
 from aioredis import Redis
+from src.core.config import REDIS_CONFIG
 
 from .base import BaseCache
-from src.core.config import REDIS_CONFIG
 
 
 class RedisCache(BaseCache):
-
     def __init__(self, redis: Redis, expire: int = REDIS_CONFIG.expire):
         self.redis = redis
         self.expire = expire
 
     async def get(self, key: str, default_value: Optional[str] = None) -> Optional[str]:
         data = await self.redis.get(key)
-        
+
         if data is None:
             return default_value
 

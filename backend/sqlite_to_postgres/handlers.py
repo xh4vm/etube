@@ -1,11 +1,11 @@
+import logging
+import uuid
 from datetime import date, datetime
 from typing import Optional
-import uuid
-from schema import Genre, Person, FilmWork, GenreFilmWork, PersonFilmWork
-from enums import FilmWorkType, PersonFilmWorkRole
-import logging
 
 from dateutil.parser import parse
+from enums import FilmWorkType, PersonFilmWorkRole
+from schema import FilmWork, Genre, GenreFilmWork, Person, PersonFilmWork
 
 
 class Handler:
@@ -31,7 +31,7 @@ class GenreHandler(Handler):
     def get_dataclass(self) -> Optional[Genre]:
 
         if self.id is None:
-            self.logger.debug(f'Genre id is none. Getting next element.')
+            self.logger.debug('Genre id is none. Getting next element.')
             return None
 
         return Genre(
@@ -52,7 +52,7 @@ class PersonHandler(Handler):
     def get_dataclass(self) -> Optional[Person]:
 
         if self.id is None:
-            self.logger.debug(f'Person id is none. Getting next element.')
+            self.logger.debug('Person id is none. Getting next element.')
             return None
 
         return Person(full_name=self.full_name, created_at=self.created_at, updated_at=self.updated_at, id=self.id)
@@ -82,7 +82,7 @@ class FilmWorkHandler(Handler):
     def get_dataclass(self) -> Optional[FilmWork]:
 
         if self.id is None:
-            self.logger.debug(f'FilmWork id is none. Getting next element.')
+            self.logger.debug('FilmWork id is none. Getting next element.')
             return None
 
         return FilmWork(
@@ -108,7 +108,7 @@ class GenreFilmWorkHandler(Handler):
     def get_dataclass(self) -> Optional[Genre]:
 
         if self.id is None:
-            self.logger.debug(f'GenreFilmWork id is none. Getting next element.')
+            self.logger.debug('GenreFilmWork id is none. Getting next element.')
             return None
 
         return GenreFilmWork(
@@ -129,7 +129,7 @@ class PersonFilmWorkHandler(Handler):
     def get_dataclass(self) -> Optional[Person]:
 
         if self.id is None:
-            self.logger.debug(f'PersonFilmWork id is none. Getting next element.')
+            self.logger.debug('PersonFilmWork id is none. Getting next element.')
             return None
 
         return PersonFilmWork(

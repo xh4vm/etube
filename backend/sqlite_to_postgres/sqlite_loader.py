@@ -1,8 +1,9 @@
+import logging
 import sqlite3
 from typing import Any, Iterator
-import logging
 
-from handlers import GenreHandler, PersonHandler, FilmWorkHandler, GenreFilmWorkHandler, PersonFilmWorkHandler
+from handlers import (FilmWorkHandler, GenreFilmWorkHandler, GenreHandler,
+                      PersonFilmWorkHandler, PersonHandler)
 from schema import Schema
 
 
@@ -22,18 +23,20 @@ class SQLiteLoader:
 
     def load_movies(self) -> Iterator[type]:
         query = (
-            f'SELECT m.id as {Schema.film_work}_id, m.title as {Schema.film_work}_title, m.description as {Schema.film_work}_description, '
-            f'm.creation_date as {Schema.film_work}_creation_date, m.file_path as {Schema.film_work}_file_path, m.rating as {Schema.film_work}_rating, '
-            f'm.type as {Schema.film_work}_type, m.created_at as {Schema.film_work}_created_at, m.updated_at as {Schema.film_work}_updated_at, '
-            f'g.id as {Schema.genre}_id, g.name as {Schema.genre}_name, '
-            f'g.description as {Schema.genre}_description, g.created_at as {Schema.genre}_created_at, g.updated_at as {Schema.genre}_updated_at, '
-            f'p.id as {Schema.person}_id, p.full_name as {Schema.person}_full_name, p.created_at as {Schema.person}_created_at, '
-            f'p.updated_at as {Schema.person}_updated_at, '
+            f'SELECT m.id as {Schema.film_work}_id, m.title as {Schema.film_work}_title, '
+            f'm.description as {Schema.film_work}_description, m.creation_date as {Schema.film_work}_creation_date, '
+            f'm.file_path as {Schema.film_work}_file_path, m.rating as {Schema.film_work}_rating, '
+            f'm.type as {Schema.film_work}_type, m.created_at as {Schema.film_work}_created_at, '
+            f'm.updated_at as {Schema.film_work}_updated_at, g.id as {Schema.genre}_id, '
+            f'g.name as {Schema.genre}_name, g.description as {Schema.genre}_description, '
+            f'g.created_at as {Schema.genre}_created_at, g.updated_at as {Schema.genre}_updated_at, '
+            f'p.id as {Schema.person}_id, p.full_name as {Schema.person}_full_name, '
+            f'p.created_at as {Schema.person}_created_at, p.updated_at as {Schema.person}_updated_at, '
             f'mg.id as {Schema.genre_film_work}_id, mg.film_work_id as {Schema.genre_film_work}_film_work_id, '
             f'mg.genre_id as {Schema.genre_film_work}_genre_id, mg.created_at as {Schema.genre_film_work}_created_at, '
             f'mp.id as {Schema.person_film_work}_id, mp.film_work_id as {Schema.person_film_work}_film_work_id, '
-            f'mp.person_id as {Schema.person_film_work}_person_id, mp.created_at as {Schema.person_film_work}_created_at, '
-            f'mp.role as {Schema.person_film_work}_role '
+            f'mp.person_id as {Schema.person_film_work}_person_id, '
+            f'mp.created_at as {Schema.person_film_work}_created_at, mp.role as {Schema.person_film_work}_role '
             f'FROM film_work m '
             f'LEFT JOIN genre_film_work mg ON mg.film_work_id = m.id '
             f'LEFT JOIN genre g ON mg.genre_id = g.id '

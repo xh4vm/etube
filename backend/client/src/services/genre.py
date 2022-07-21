@@ -8,3 +8,4 @@ class GenreService(BaseService):
     full_model = GENRE_INDEX.full_model
     search_fields = GENRE_INDEX.search_fields
     model_sort = GENRE_INDEX.model_sort
+    model_filter = GENRE_INDEX.model_filter

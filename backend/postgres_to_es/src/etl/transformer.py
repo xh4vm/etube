@@ -14,21 +14,13 @@ import pydantic
 
 
 class Transformer:
-
     def __init__(self):
         self.data_str = ''
         self.updated_at = None
 
     def index_settings(self, index: str, id: uuid.UUID) -> str:
         # Общие настройки документа в индексе.
-        return json.dumps(
-                {
-                    'index': {
-                        '_index': index,
-                        '_id': str(id),
-                    },
-                },
-            ) + '\n'
+        return json.dumps({'index': {'_index': index, '_id': str(id), }, },) + '\n'
 
     def transform_data(self, batch: list, index: str, model: pydantic.main.ModelMetaclass) -> tuple:
         # Валидация данных и трансформация для последующей загрузки в ES.

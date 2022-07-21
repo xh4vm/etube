@@ -1,12 +1,10 @@
 import aioredis
-import uvicorn
 from elasticsearch import AsyncElasticsearch
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 
 from .core.config import APP_CONFIG, ELASTIC_CONFIG, REDIS_CONFIG
 from .db import elastic, redis
-
 
 API_PATH = f'{APP_CONFIG.api_path}/{APP_CONFIG.version}'
 app = FastAPI(
@@ -30,19 +28,14 @@ async def shutdown():
     await elastic.es.close()
 
 
-from .api.v1.films import router as film_router
+from .api.v1.films import router as film_router  # noqa E402
+
 app.include_router(router=film_router, prefix=API_PATH)
 
-from .api.v1.genres import router as genre_router
+from .api.v1.genres import router as genre_router  # noqa E402
+
 app.include_router(router=genre_router, prefix=API_PATH)
 
-from .api.v1.persons import router as person_router
+from .api.v1.persons import router as person_router  # noqa E402
+
 app.include_router(router=person_router, prefix=API_PATH)
-
-
-if __name__ == '__main__':
-    uvicorn.run(
-        'main:app',
-        host='0.0.0.0',
-        port=8000,
-    )

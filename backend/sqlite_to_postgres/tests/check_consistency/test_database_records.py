@@ -1,9 +1,11 @@
 from sqlite3 import Cursor
-from psycopg2.extras import DictCursor
 
+from handlers import (FilmWorkHandler, GenreFilmWorkHandler, GenreHandler,
+                      PersonFilmWorkHandler, PersonHandler)
+from psycopg2.extras import DictCursor
+from schema import (SCHEMA_NAME, FilmWork, Genre, GenreFilmWork, Person,
+                    PersonFilmWork, Schema)
 from sqlite_loader import dict_factory
-from schema import Schema, SCHEMA_NAME, Genre, Person, FilmWork, GenreFilmWork, PersonFilmWork
-from handlers import GenreHandler, PersonHandler, FilmWorkHandler, GenreFilmWorkHandler, PersonFilmWorkHandler
 
 
 class TestDatabaseRecords:

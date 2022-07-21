@@ -15,6 +15,7 @@ from ..state.state import BaseState
 
 class PostgreSQLExtractor(ABC):
     """Базовый класс для извлечения сырых данных из постгрес."""
+
     def __init__(
         self,
         index: str,
@@ -90,8 +91,8 @@ class GenresPostgresExtracor(PostgreSQLExtractor):
     def find_modified_docs(self) -> Iterator[tuple[Any]]:
         # Запрос на получение измененных жанров.
         query = (
-            f"SELECT g.id, g.name, g.description, g.updated_at "
-            f"FROM {SCHEMA}.genre g "
+            f'SELECT g.id, g.name, g.description, g.updated_at '
+            f'FROM {SCHEMA}.genre g '
             f"WHERE g.updated_at > '{self.bottom_limit}'"
             f'ORDER BY g.updated_at;'
         )
@@ -102,8 +103,8 @@ class PersonsPostgresExtractor(PostgreSQLExtractor):
     def find_modified_docs(self) -> Iterator[tuple[Any]]:
         # Запрос на получение измененных персон.
         query = (
-            f"SELECT p.id, p.full_name AS name, p.updated_at "
-            f"FROM {SCHEMA}.person p "
+            f'SELECT p.id, p.full_name AS name, p.updated_at '
+            f'FROM {SCHEMA}.person p '
             f"WHERE p.updated_at > '{self.bottom_limit}'"
             f'ORDER BY p.updated_at;'
         )

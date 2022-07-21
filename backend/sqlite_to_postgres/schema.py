@@ -1,10 +1,9 @@
+import uuid
+from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Optional
-import uuid
 
-from dataclasses import dataclass, field
 from enforce_typing import enforce_types
-
 
 SCHEMA_NAME = 'content'
 

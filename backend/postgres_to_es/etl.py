@@ -15,7 +15,6 @@ from http import HTTPStatus
 
 import pydantic
 from celery import Celery
-
 from src.config.config import CELERY_CONFIG, POSTGRES_DSN, REDIS_CONFIG
 from src.config.indices import FILM_INDEX, GENRE_INDEX, PERSON_INDEX
 from src.etl.loader import Loader
@@ -24,6 +23,7 @@ from src.logger.logger import manager_logger as logger
 from src.state.state import RedisState
 
 celery = Celery(CELERY_CONFIG.name, backend=CELERY_CONFIG.backend, broker=CELERY_CONFIG.broker)
+
 
 def transfer(extractor_class: type, transformer_model: pydantic.main.ModelMetaclass, index: str) -> None:
     logger.info('Запуск трансфера данных.')
@@ -44,7 +44,7 @@ def transfer(extractor_class: type, transformer_model: pydantic.main.ModelMetacl
         # Изменение значения времени последнего обновления данных в ES.
         if response and response.status_code == HTTPStatus.OK:
             etl_state.set(f'bottom_limit_{index}', updated_at)
-            
+
     logger.info('Трансфер данных завершен.')
 
 
@@ -57,8 +57,4 @@ def init_transfer():
 
 @celery.on_after_configure.connect
 def setup_etl_periodic_task(sender, **kwargs):
-    sender.add_periodic_task(
-        300.0,
-        init_transfer.s(),
-        name='Update ETL every 300 seconds.'
-    )
+    sender.add_periodic_task(30.0, init_transfer.s(), name='Update ETL every 30 seconds.')

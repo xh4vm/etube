@@ -1,12 +1,13 @@
 import enum
 
-
 SCHEMA = 'content'
+
 
 class PersonFilmWorkRoleEnum(str, enum.Enum):
     ACTOR = 'actor'
     WRITER = 'writer'
     DIRECTOR = 'director'
+
 
 class Schema:
     film_work = 'film_work'

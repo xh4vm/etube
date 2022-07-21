@@ -20,3 +20,7 @@ class GenreModelFull(GenreModelBrief):
 class GenreModelSort(StrEnum):
     NAME_ASC = 'name.raw'
     NAME_DESC = 'name.raw:desc'
+
+
+class GenreModelFilter(StrEnum):
+    pass
