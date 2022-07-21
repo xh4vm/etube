@@ -31,6 +31,6 @@ repos:
     hooks:
     -   id: bandit
         name: Check vulnerability of the python code
-        args: ["-r", "app/"]
+        args: ["-x", "backend/sqlite_to_postgres/", "-r", "backend/"]
         entry: bandit
         
