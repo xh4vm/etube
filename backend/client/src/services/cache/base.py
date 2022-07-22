@@ -1,9 +1,8 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from typing import Any, Optional
 
 
-class BaseCache:
-    __metaclass__ = ABCMeta
+class BaseCache(ABC):
 
     @abstractmethod
     def get(self, key: str, default_value: Optional[str] = None) -> Optional[str]:

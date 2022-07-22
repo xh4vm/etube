@@ -1,5 +1,5 @@
 import logging
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from typing import Optional
 
 import backoff
@@ -9,7 +9,7 @@ from ..config.config import BACKOFF_CONFIG, RedisSettings
 
 
 def redis_conn_is_alive(redis_conn: Redis) -> bool:
-    """Функция для проверки аботоспособности редис."""
+    """Функция для проверки pаботоспособности редис."""
     try:
         redis_conn.ping()
     except Exception:
@@ -17,8 +17,7 @@ def redis_conn_is_alive(redis_conn: Redis) -> bool:
     return True
 
 
-class BaseState:
-    __metaclass__ = ABCMeta
+class BaseState(ABC):
 
     @abstractmethod
     def get(self, key: str, default_value: Optional[str] = None) -> Optional[str]:

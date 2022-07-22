@@ -2,13 +2,13 @@ from typing import Any, Optional
 
 import orjson
 from aioredis import Redis
-from src.core.config import REDIS_CONFIG
+from src.core.config import CONFIG
 
 from .base import BaseCache
 
 
 class RedisCache(BaseCache):
-    def __init__(self, redis: Redis, expire: int = REDIS_CONFIG.expire):
+    def __init__(self, redis: Redis, expire: int = CONFIG.REDIS.expire):
         self.redis = redis
         self.expire = expire
 

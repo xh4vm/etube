@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException
-from src.core.config import APP_CONFIG
+from src.core.config import CONFIG
 from src.models.base import PageModel
 from src.models.film import FilmModelBrief, FilmModelSort
 from src.models.genre import GenreModelBrief, GenreModelFull
@@ -34,8 +34,8 @@ async def genre_details(
 
 @router.get(path='s', name='List Of Genres', response_model=PageModel[GenreModelBrief])
 async def genres_list(
-    page=APP_CONFIG.page,
-    page_size=APP_CONFIG.page_size,
+    page=CONFIG.APP.page,
+    page_size=CONFIG.APP.page_size,
     search='',
     sort=None,
     genre_service: GenreService = Depends(giver_service),
