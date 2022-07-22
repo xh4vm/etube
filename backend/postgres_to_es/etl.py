@@ -27,21 +27,17 @@ celery = Celery(CELERY_CONFIG.name, backend=CELERY_CONFIG.backend, broker=CELERY
 
 def transfer(extractor_class: type, transformer_model: pydantic.main.ModelMetaclass, index: str) -> None:
     logger.info('Запуск трансфера данных.')
-    # Время последнего обновления данных в ES.
     etl_state = RedisState(settings=REDIS_CONFIG)
 
-    # Обновленные данные в Postgres.
     raw_data = extractor_class(index=index, dsn=POSTGRES_DSN, state=etl_state).find_modified_docs()
 
     transformer = Transformer()
     loader = Loader(index)
 
     for batch in raw_data:
-        # Преобразование данных для загрузки в ES.
         data_to_load, updated_at = transformer.transform_data(batch, index, transformer_model)
-        # Загрузка данных в ES.
         response = loader.connector(index=index, data=data_to_load)
-        # Изменение значения времени последнего обновления данных в ES.
+
         if response and response.status_code == HTTPStatus.OK:
             etl_state.set(f'bottom_limit_{index}', updated_at)
 

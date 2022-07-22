@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException
-from src.core.config import APP_CONFIG
+from src.core.config import CONFIG
 from src.models.base import PageModel
 from src.models.film import FilmModelBrief, FilmModelFull, FilmModelSort
 from src.models.person import (PersonModelBrief, PersonModelFull,
@@ -47,8 +47,8 @@ async def person_details(
 
 @router.get(path='s', name='List Of Persons', response_model=PageModel[PersonModelBrief])
 async def persons_list(
-    page=APP_CONFIG.page,
-    page_size=APP_CONFIG.page_size,
+    page=CONFIG.APP.page,
+    page_size=CONFIG.APP.page_size,
     search='',
     sort=None,
     person_service: PersonService = Depends(giver_service),

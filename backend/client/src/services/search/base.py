@@ -1,16 +1,16 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from typing import Any, Generic, Optional, TypeVar
 
 from pydantic import BaseModel
 from pydantic.main import ModelMetaclass
-from src.core.config import APP_CONFIG
+from src.core.config import CONFIG
 
 SFTYPE = TypeVar('SFTYPE')
 
 
 class SearchParams(BaseModel, Generic[SFTYPE]):
-    page: int = APP_CONFIG.page
-    page_size: int = APP_CONFIG.page_size
+    page: int = CONFIG.APP.page
+    page_size: int = CONFIG.APP.page_size
     search_fields: Optional[list[str]] = None
     search_value: Optional[str] = None
     sort_fields: Optional[list[SFTYPE]] = None
@@ -28,8 +28,7 @@ class SearchResult(BaseModel):
     total: int = 0
 
 
-class BaseSearch:
-    metaclass = ABCMeta
+class BaseSearch(ABC):
 
     @abstractmethod
     def get_by_id(self, id: str) -> Optional[ModelMetaclass]:

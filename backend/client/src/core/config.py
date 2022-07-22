@@ -36,10 +36,13 @@ class ElasticsearchSettings(Settings):
     port: int = Field(..., env='ES_PORT')
 
 
-REDIS_CONFIG = RedisSettings()
-ELASTIC_CONFIG = ElasticsearchSettings()
-APP_CONFIG = AppSettings()
+class Config(Settings):
+    APP: AppSettings = AppSettings()
+    REDIS: RedisSettings = RedisSettings()
+    ELASTIC: ElasticsearchSettings = ElasticsearchSettings()
+
+
+CONFIG = Config()
 
 logging_config.dictConfig(LOGGING)
-
 service_logger = logging.getLogger('SERVICE')

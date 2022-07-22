@@ -1,17 +1,17 @@
-from abc import ABCMeta, abstractmethod
+import hashlib
+from abc import ABC, abstractmethod
 from typing import Optional
 
 from elastic_transport import ObjectApiResponse
 from pydantic.main import ModelMetaclass
-from src.core.config import APP_CONFIG, service_logger
+from src.core.config import CONFIG, service_logger
 
 from ..models.base import PageModel
 from .cache.base import BaseCache
 from .search.base import BaseSearch, SearchParams, SearchResult
 
 
-class BaseService:
-    __metaclass__ = ABCMeta
+class BaseService(ABC):
 
     def __init__(self, cache_svc: BaseCache, search_svc: BaseSearch):
         self.cache_svc = cache_svc
@@ -48,25 +48,21 @@ class BaseService:
         """Название pydantic модели для вариантов фильтрации"""
 
     async def get_by_id(self, id: str) -> Optional[ModelMetaclass]:
-        cache_key = f'{self.index}.get_by_id(id={id})'
+        cache_key = f'{self.index}::detail::{id}'
         data = await self.cache_svc.get(cache_key)
 
         if data is None:
             service_logger.info(f'Кеш в методе "get_by_id" пo ключу {cache_key} не найден.')
             data: ObjectApiResponse = await self.search_svc.get_by_id(index=self.index, id=id)
 
-            if data is None:
-                service_logger.info('Данные не найдены.')
-                return None
-
             await self.cache_svc.set(key=cache_key, data=data.body)
 
-        return self.full_model.parse_obj(data['_source'])
+        return self.full_model.parse_obj(data['_source']) if data is not None else None
 
     async def search(
         self,
-        page: int = APP_CONFIG.page,
-        page_size: int = APP_CONFIG.page_size,
+        page: int = CONFIG.APP.page,
+        page_size: int = CONFIG.APP.page_size,
         search_fields: Optional[list[str]] = None,
         search_value: Optional[str] = None,
         sort_fields: Optional[str] = None,
@@ -105,7 +101,9 @@ class BaseService:
             filters=filters,
         )
 
-        cache_key = f'{self.index}.search({search_params}'
+        # Получаю хеш передаваемых параметров
+        md5_hashed_search_params = hashlib.md5(search_params.__str__().encode(), usedforsecurity=False).hexdigest()
+        cache_key = f'{self.index}::list::{md5_hashed_search_params}'
 
         data = await self.cache_svc.get(key=cache_key)
 
