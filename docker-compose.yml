@@ -27,7 +27,7 @@ services:
       - etube
 
   nginx:
-   image: nginx:latest
+   image: nginx:1.23.1-alpine
    container_name: nginx
    volumes:
      - ./backend/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
