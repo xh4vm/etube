@@ -9,6 +9,7 @@ class PersonModelBrief(ModelClass):
 
 
 class PersonModelRole(StrEnum):
+    # Модель возможных ролей персон.
     DIRECTOR = 'director'
     ACTOR = 'actor'
     WRITER = 'writer'
@@ -21,9 +22,11 @@ class PersonModelFull(PersonModelBrief):
 
 
 class PersonModelSort(StrEnum):
+    # Модель возможных параметров сортировки персон.
     NAME_ASC = 'name.raw'
     NAME_DESC = 'name.raw:desc'
 
 
 class PersonModelFilter(StrEnum):
+    # Модель возможных параметров фильтрации персон.
     pass

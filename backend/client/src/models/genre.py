@@ -18,9 +18,11 @@ class GenreModelFull(GenreModelBrief):
 
 
 class GenreModelSort(StrEnum):
+    # Модель возможных параметров сортировки жанров.
     NAME_ASC = 'name.raw'
     NAME_DESC = 'name.raw:desc'
 
 
 class GenreModelFilter(StrEnum):
+    # Модель возможных параметров фильтрации жанров.
     pass

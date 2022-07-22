@@ -20,6 +20,7 @@ class FilmModelFull(FilmModelBrief):
 
 
 class FilmModelSort(StrEnum):
+    # Модель возможных параметров сортировки фильмов.
     TITLE_ASC = 'title.raw'
     TITLE_DESC = 'title.raw:desc'
     IMDB_RATING_ASC = 'imdb_rating'
@@ -27,4 +28,5 @@ class FilmModelSort(StrEnum):
 
 
 class FilmModelFilter(StrEnum):
+    # Модель возможных параметров фильтрации фильмов.
     GENRE = 'genre'
