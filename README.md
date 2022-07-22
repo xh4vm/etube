@@ -3,10 +3,12 @@
 [Ссылка на работу](https://github.com/xh4vm/etube-FastAPI)
 
 ## Запуск проекта
-1) cp .env.example .env
-2) cp ./backend/sqlite_to_postgres/.env.example ./backend/sqlite_to_postgres/.env
-3) rm -rf ./backend/static && cp -r ./backend/static_defaults/ ./backend/static
-4) make build
+```
+cp .env.example .env
+cp ./backend/sqlite_to_postgres/.env.example ./backend/sqlite_to_postgres/.env
+rm -rf ./backend/nginx/static && cp -r ./backend/nginx/static_defaults/ ./backend/nginx/static
+make build
+```
 
 ## Описание сценариев Makefile
 - `make build` - установить виртуальное окружение; установить необходимые зависимости для запуска контейнеров; добавить статические файлы; пересобрать контейнеры в интерактивном режиме
