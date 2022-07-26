@@ -1,12 +1,18 @@
 .PHONY: interactive build services
 build: collectstatic build-dockers
 
+.PHONY: interactive build services with test profile
+build-test: collectstatic build-dockers-test-profile
+
 .PHONY: interactive run services
 run:
 	docker-compose --profile dev up
 
 .PHONY: daemon build services
 buildd: collectstatic buildd-dockers
+
+.PHONY: daemon build services with test profile
+buildd-test: collectstatic buildd-dockers-test-profile
 
 .PHONY: start postman/newman test API
 postman-test: 
@@ -74,6 +80,14 @@ build-dockers:
 .PHONY: daemon build docker services
 buildd-dockers:
 	docker-compose --profile dev up -d --build
+
+.PHONY: interactive build docker services with test profile
+build-dockers-test-profile:
+	docker-compose --profile test up --build
+
+.PHONY: daemon build docker services with test profile
+buildd-dockers-test-profile:
+	docker-compose --profile test up -d --build
 
 .PHONY: run pre-commit all files
 pre-commit-files:

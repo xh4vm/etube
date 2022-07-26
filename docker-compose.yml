@@ -114,10 +114,24 @@ services:
     volumes:
       - etube-elasticsearch-data:/usr/share/elasticsearch/data:rw
     healthcheck:
-      test: curl http://elasticsearch:9200 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+      test: curl ${ES_PROTOCOL}://elasticsearch:${ES_PORT} >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
       interval: 30s
       timeout: 10s
       retries: 5
+
+  kibana:
+    container_name: kibana
+    image: docker.io/elastic/kibana:8.2.0
+    environment:
+      - ELASTICSEARCH_HOSTS=${ES_PROTOCOL}://${ES_USER}:${ES_PASSWORD}@elasticsearch:${ES_PORT}
+    profiles:
+      - test
+    networks:
+      - etube
+    depends_on:
+      - elasticsearch
+    ports:
+      - ${KIBANA_PORT}:5601
 
   etl:
     build: ./backend/postgres_to_es
