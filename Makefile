@@ -3,7 +3,7 @@ build: collectstatic build-dockers
 
 .PHONY: interactive run services
 run:
-	docker compose up
+	docker-compose --profile dev up
 
 .PHONY: daemon build services
 buildd: collectstatic buildd-dockers
@@ -17,7 +17,7 @@ s2p: create-venv pip-install-s2p load_data_from_s2p
 
 .PHONY: daemon run services
 rund:
-	docker compose up -d
+	docker-compose --profile dev up -d
 
 .PHONY: backend-admin cli
 cli-admin:
@@ -69,11 +69,11 @@ collectstatic: create-venv pip-install-build collectstatic-with-venv
 
 .PHONY: interactive build docker services
 build-dockers:
-	docker compose up --build
+	docker-compose --profile dev up --build
 
 .PHONY: daemon build docker services
 buildd-dockers:
-	docker compose up -d --build
+	docker-compose --profile dev up -d --build
 
 .PHONY: run pre-commit all files
 pre-commit-files:
