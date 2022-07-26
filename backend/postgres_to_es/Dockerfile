@@ -9,7 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl && pip ins
 FROM python:3.10-slim
 
 WORKDIR /opt/etl
-ENTRYPOINT [ "/bin/bash", "-c",  "./elasticsearch/init_indices.sh && celery -A etl worker -l info -B" ]
+ENTRYPOINT [ "/bin/bash", "-c",  "python3 ./elasticsearch/initer/main.py && celery -A etl worker -l info -B" ]
+# ENTRYPOINT [ "/bin/bash", "-c",  "./elasticsearch/init_indices.sh && celery -A etl worker -l info -B" ]
 
 COPY --from=build /usr/bin /usr/bin
 COPY --from=build /usr/lib /usr/lib
