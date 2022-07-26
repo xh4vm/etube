@@ -3,13 +3,14 @@ from typing import Any, Generic, Optional, TypeVar
 
 import orjson
 from pydantic import BaseModel, Field
+from pydantic.generics import GenericModel
 
 
 def orjson_dumps(v, *, default):
     return orjson.dumps(v, default=default).decode()
 
 
-class JSONModel(BaseModel):
+class JSONModel(GenericModel):
     class Config:
         json_loads = orjson.loads
         json_dumps = orjson_dumps
@@ -28,7 +29,7 @@ class StrEnum(str, enum.Enum):
         return None
 
 
-PTYPE = TypeVar('PTYPE')
+PTYPE = TypeVar('PTYPE', bound=BaseModel)
 
 
 class PageModel(JSONModel, Generic[PTYPE]):
