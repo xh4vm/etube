@@ -16,4 +16,3 @@ COPY --from=build /usr/bin /usr/bin
 COPY --from=build /usr/lib /usr/lib
 COPY --from=build /usr/local /usr/local
 COPY . .
-RUN chmod +x ./elasticsearch/init_indices.sh

@@ -27,8 +27,11 @@ class GenrePersonBase(UUIDModelMixin, TimeStampedModelMixin):
         return obj_dict
 
 
-class Genre(GenrePersonBase):
+class GenreForFilm(GenrePersonBase):
     name: str
+
+
+class Genre(GenreForFilm):
     description: Optional[str]
 
 
@@ -42,18 +45,18 @@ class Film(UUIDModelMixin, TimeStampedModelMixin):
     description: Optional[str]
     creation_date: Optional[date]
     type: str
-    director: list[Person]
+    directors: list[Person]
     actors: list[Person]
     writers: list[Person]
-    genre: list
+    genres: list[GenreForFilm]
 
-    def _get_short_persons(self, persons: list[Optional[dict]]) -> Union[list[str], list]:
-        # Метод разворачивания словарей с персонами в массив имен.
-        return [person['name'] for person in persons] if persons is not None else []
+    def _get_list_of_objects(self, objs: list[Optional[dict]], key: str = 'name') -> Union[list[str], list]:
+        # Метод разворачивания словарей с персонами/жанрами в массив имен.
+        return [obj[key] for obj in objs] if objs is not None else []
 
-    def _get_persons_dict(self, persons: list[Optional[Person]]) -> Union[list[dict], list]:
-        # Преобразование объекта Person в словарь по схеме индекса.
-        return [person.index_data() for person in persons] if persons is not None else []
+    def _get_dict_of_objects(self, objs: list[Union[Person, GenreForFilm]]) -> Union[list[dict], list]:
+        # Преобразование объекта Person или Genre в словарь по схеме индекса.
+        return [obj.index_data() for obj in objs] if objs is not None else []
 
     def index_data(self) -> dict:
         obj_dict = self.dict()
@@ -61,10 +64,13 @@ class Film(UUIDModelMixin, TimeStampedModelMixin):
         obj_dict.pop('updated_at')
         obj_dict.pop('creation_date')
         obj_dict.pop('type')
-        obj_dict['director'] = self._get_short_persons(obj_dict['director'])
-        obj_dict['actors_names'] = self._get_short_persons(obj_dict['actors'])
-        obj_dict['writers_names'] = self._get_short_persons(obj_dict['writers'])
-        obj_dict['actors'] = self._get_persons_dict(self.actors)
-        obj_dict['writers'] = self._get_persons_dict(self.writers)
+        obj_dict['genres_list'] = self._get_list_of_objects(obj_dict['genres'])
+        obj_dict['genres'] = self._get_dict_of_objects(self.genres)
+        obj_dict['directors_names'] = self._get_list_of_objects(obj_dict['directors'])
+        obj_dict['actors_names'] = self._get_list_of_objects(obj_dict['actors'])
+        obj_dict['writers_names'] = self._get_list_of_objects(obj_dict['writers'])
+        obj_dict['directors'] = self._get_dict_of_objects(self.directors)
+        obj_dict['actors'] = self._get_dict_of_objects(self.actors)
+        obj_dict['writers'] = self._get_dict_of_objects(self.writers)
 
         return obj_dict

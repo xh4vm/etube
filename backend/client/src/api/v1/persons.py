@@ -23,6 +23,8 @@ async def person_details(
     """Информация о персоне и топ {PAGE_SIZE} фильмов этого с участием этой персоны"""
 
     person: PersonModelFull = await person_service.get_by_id(id=person_id)
+    if not person:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Person not found')
     films: PageModel[FilmModelFull] = await film_service.search(
         search_fields=['director', 'actors_names', 'writers_names'],
         search_value=person.name,
@@ -38,9 +40,6 @@ async def person_details(
             person_films[PersonModelRole.ACTOR].append(FilmModelBrief.parse_obj(film))
         elif person.name in film.writers_names:
             person_films[PersonModelRole.WRITER].append(FilmModelBrief.parse_obj(film))
-
-    if not person:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Person not found')
 
     return PersonModelFull(id=person.id, name=person.name, films=person_films)
 
