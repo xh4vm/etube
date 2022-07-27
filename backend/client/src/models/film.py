@@ -29,4 +29,4 @@ class FilmModelSort(StrEnum):
 
 class FilmModelFilter(StrEnum):
     # Модель возможных параметров фильтрации фильмов.
-    GENRE = 'genre'
+    GENRE = 'genres_list'
