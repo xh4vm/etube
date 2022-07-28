@@ -140,3 +140,4 @@ commands.md
 *logfile.log
 .DS_Store
 *.idea
+*._cache
