@@ -9,6 +9,11 @@ from .api.v1.persons import router as person_router
 from .core.config import CONFIG
 from .db import elastic, redis
 
+from .containers.film import ServiceRedisElasticContainer as FilmServiceContainer
+from .containers.genre import ServiceRedisElasticContainer as GenreServiceContainer
+from .containers.person import ServiceRedisElasticContainer as PersonServiceContainer
+
+
 API_PATH = f'{CONFIG.APP.api_path}/{CONFIG.APP.version}'
 app = FastAPI(
     title=CONFIG.APP.project_name,
@@ -30,6 +35,10 @@ async def shutdown():
     await redis.redis.wait_closed()
     await elastic.es.close()
 
+
+film_service_container = FilmServiceContainer()
+genre_service_container = GenreServiceContainer()
+person_service_container = PersonServiceContainer()
 
 app.include_router(router=film_router, prefix=API_PATH)
 app.include_router(router=genre_router, prefix=API_PATH)

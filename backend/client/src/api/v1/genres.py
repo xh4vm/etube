@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from dependency_injector.wiring import inject, Provide
 
 from fastapi import APIRouter, Depends, HTTPException
 from src.core.config import CONFIG
@@ -7,17 +8,17 @@ from src.models.film import FilmModelBrief, FilmModelSort
 from src.models.genre import GenreModelBrief, GenreModelFull
 from src.services.film import FilmService
 from src.services.genre import GenreService
-from src.services.giver import film_service as other_giver_service
-from src.services.giver import genre_service as giver_service
+from src.containers.genre import ServiceRedisElasticContainer
 
 router = APIRouter(prefix='/genre', tags=['Genres'])
 
 
 @router.get(path='/{genre_id}', name='Genre Detail', response_model=GenreModelFull)
+@inject
 async def genre_details(
     genre_id: str,
-    film_service: FilmService = Depends(other_giver_service),
-    genre_service: GenreService = Depends(giver_service),
+    film_service: FilmService = Depends(Provide[ServiceRedisElasticContainer.film_service]),
+    genre_service: GenreService = Depends(Provide[ServiceRedisElasticContainer.genre_service])
 ) -> GenreModelFull:
     """Информация о жанре и топ {PAGE_SIZE} фильмов этого жанра"""
 
@@ -32,11 +33,12 @@ async def genre_details(
 
 
 @router.get(path='s', name='List Of Genres', response_model=PageModel[GenreModelBrief])
+@inject
 async def genres_list(
     page=CONFIG.APP.page,
     page_size=CONFIG.APP.page_size,
     search='',
     sort=None,
-    genre_service: GenreService = Depends(giver_service),
+    genre_service: GenreService = Depends(Provide[ServiceRedisElasticContainer.genre_service])
 ) -> PageModel[GenreModelBrief]:
     return await genre_service.search(page=page, page_size=page_size, search_value=search, sort_fields=sort)

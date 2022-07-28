@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from dependency_injector.wiring import inject, Provide
 
 from fastapi import APIRouter, Depends, HTTPException
 from src.core.config import CONFIG
@@ -7,18 +8,18 @@ from src.models.film import FilmModelBrief, FilmModelFull, FilmModelSort
 from src.models.person import (PersonModelBrief, PersonModelFull,
                                PersonModelRole)
 from src.services.film import FilmService
-from src.services.giver import film_service as other_giver_service
-from src.services.giver import person_service as giver_service
+from src.containers.person import ServiceRedisElasticContainer
 from src.services.person import PersonService
 
 router = APIRouter(prefix='/person', tags=['Persons'])
 
 
 @router.get(path='/{person_id}', name='Person Detail', response_model=PersonModelFull)
+@inject
 async def person_details(
     person_id: str,
-    film_service: FilmService = Depends(other_giver_service),
-    person_service: PersonService = Depends(giver_service),
+    film_service: FilmService = Depends(Provide[ServiceRedisElasticContainer.film_service]),
+    person_service: PersonService = Depends(Provide[ServiceRedisElasticContainer.person_service])
 ) -> PersonModelFull:
     """Информация о персоне и топ {PAGE_SIZE} фильмов этого с участием этой персоны"""
 
@@ -45,11 +46,12 @@ async def person_details(
 
 
 @router.get(path='s', name='List Of Persons', response_model=PageModel[PersonModelBrief])
+@inject
 async def persons_list(
     page=CONFIG.APP.page,
     page_size=CONFIG.APP.page_size,
     search='',
     sort=None,
-    person_service: PersonService = Depends(giver_service),
+    person_service: PersonService = Depends(Provide[ServiceRedisElasticContainer.person_service])
 ) -> PageModel[PersonModelBrief]:
     return await person_service.search(page=page, page_size=page_size, search_value=search, sort_fields=sort)
