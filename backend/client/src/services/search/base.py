@@ -31,7 +31,7 @@ class SearchResult(BaseModel):
 class BaseSearch(ABC):
 
     @abstractmethod
-    def get_by_id(self, id: str) -> Optional[ModelMetaclass]:
+    def get_by_id(self, index: str, id: str) -> Optional[ModelMetaclass]:
         """Получить результат по ид"""
 
     @abstractmethod
