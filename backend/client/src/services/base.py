@@ -59,7 +59,7 @@ class BaseService(ABC):
 
             await self.cache_svc.set(key=cache_key, data=body)
 
-        return self.full_model.parse_obj(body['_source']) if body is not None else None
+        return self.full_model.parse_obj(data['_source']) if data is not None else None
 
     async def search(
         self,

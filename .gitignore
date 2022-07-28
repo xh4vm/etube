@@ -136,7 +136,7 @@ dmypy.json
 .python-version
 .env
 
-*commands.txt
+commands.md
 *logfile.log
 .DS_Store
 *.idea
