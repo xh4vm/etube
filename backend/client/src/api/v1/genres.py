@@ -25,7 +25,7 @@ async def genre_details(
     if not genre:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Genre not found')
     films: PageModel[FilmModelBrief] = await film_service.search(
-        search_fields=['genre'], search_value=genre.name, sort_fields=FilmModelSort.IMDB_RATING_DESC.value,
+        search_fields=['genres_list'], search_value=genre.name, sort_fields=FilmModelSort.IMDB_RATING_DESC.value,
     )
 
     return GenreModelFull(id=genre.id, name=genre.name, films=films.items)

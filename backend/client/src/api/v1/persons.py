@@ -26,7 +26,7 @@ async def person_details(
     if not person:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Person not found')
     films: PageModel[FilmModelFull] = await film_service.search(
-        search_fields=['director', 'actors_names', 'writers_names'],
+        search_fields=['directors_names', 'actors_names', 'writers_names'],
         search_value=person.name,
         sort_fields=FilmModelSort.IMDB_RATING_DESC.value,
         model_mapping=FilmModelFull,
@@ -34,7 +34,7 @@ async def person_details(
 
     person_films = {PersonModelRole.DIRECTOR: [], PersonModelRole.ACTOR: [], PersonModelRole.WRITER: []}
     for film in films.items:
-        if person.name in film.director:
+        if person.name in film.directors_names:
             person_films[PersonModelRole.DIRECTOR].append(FilmModelBrief.parse_obj(film))
         elif person.name in film.actors_names:
             person_films[PersonModelRole.ACTOR].append(FilmModelBrief.parse_obj(film))
