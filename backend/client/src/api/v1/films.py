@@ -6,7 +6,7 @@ from src.models.base import PageModel
 from src.models.film import FilmModelBrief, FilmModelFull
 from src.services.film import FilmService
 
-from src.containers.film import ServiceRedisElasticContainer
+from src.containers.film import ServiceContainer
 from dependency_injector.wiring import inject, Provide
 
 router = APIRouter(prefix='/film', tags=['Films'])
@@ -16,7 +16,7 @@ router = APIRouter(prefix='/film', tags=['Films'])
 @inject
 async def film_details(
     film_id: str, 
-    film_service: FilmService = Depends(Provide[ServiceRedisElasticContainer.film_service])
+    film_service: FilmService = Depends(Provide[ServiceContainer.film_service])
 ) -> FilmModelFull:
     film = await film_service.get_by_id(id=film_id)
 
@@ -34,7 +34,7 @@ async def films_list(
     search: str = '',
     sort: str = None,
     filters: str = None,
-    film_service: FilmService = Depends(Provide[ServiceRedisElasticContainer.film_service])
+    film_service: FilmService = Depends(Provide[ServiceContainer.film_service])
 ) -> PageModel[FilmModelBrief]:
     return await film_service.search(
         page=page, page_size=page_size, search_value=search, sort_fields=sort, filters=filters

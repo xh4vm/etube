@@ -8,7 +8,7 @@ from src.models.film import FilmModelBrief, FilmModelSort
 from src.models.genre import GenreModelBrief, GenreModelFull
 from src.services.film import FilmService
 from src.services.genre import GenreService
-from src.containers.genre import ServiceRedisElasticContainer
+from src.containers.genre import ServiceContainer
 
 router = APIRouter(prefix='/genre', tags=['Genres'])
 
@@ -17,8 +17,8 @@ router = APIRouter(prefix='/genre', tags=['Genres'])
 @inject
 async def genre_details(
     genre_id: str,
-    film_service: FilmService = Depends(Provide[ServiceRedisElasticContainer.film_service]),
-    genre_service: GenreService = Depends(Provide[ServiceRedisElasticContainer.genre_service])
+    film_service: FilmService = Depends(Provide[ServiceContainer.film_service]),
+    genre_service: GenreService = Depends(Provide[ServiceContainer.genre_service])
 ) -> GenreModelFull:
     """Информация о жанре и топ {PAGE_SIZE} фильмов этого жанра"""
 
@@ -39,6 +39,6 @@ async def genres_list(
     page_size=CONFIG.APP.page_size,
     search='',
     sort=None,
-    genre_service: GenreService = Depends(Provide[ServiceRedisElasticContainer.genre_service])
+    genre_service: GenreService = Depends(Provide[ServiceContainer.genre_service])
 ) -> PageModel[GenreModelBrief]:
     return await genre_service.search(page=page, page_size=page_size, search_value=search, sort_fields=sort)

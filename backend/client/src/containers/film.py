@@ -1,21 +1,14 @@
 from dependency_injector import containers
-
 from ..services.film import FilmService
-
-from .base import ServiceFactory
-from .cache import CacheResource, RedisCacheResource
-from .search import SearchResource, ElasticSearchResource
+from .base import ServiceFactory, BaseContainer
 
 
-class ServiceRedisElasticContainer(containers.DeclarativeContainer):
+class ServiceContainer(BaseContainer):
 
     wiring_config = containers.WiringConfiguration(modules=["..api.v1.films"])
     
-    cache_svc = CacheResource(RedisCacheResource)
-    search_svc = SearchResource(ElasticSearchResource)
-
     film_service = ServiceFactory(
         FilmService,
-        cache_svc=cache_svc,
-        search_svc=search_svc
+        cache_svc=BaseContainer.cache_svc,
+        search_svc=BaseContainer.search_svc
     )
