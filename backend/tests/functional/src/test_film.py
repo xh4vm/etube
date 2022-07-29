@@ -1,16 +1,12 @@
-from elasticsearch.helpers import async_bulk
-from ..utils.fake_docs import generate_docs, del_docs
-
 import pytest
 
 
 @pytest.mark.asyncio
-async def test_film_details(redis_client, es_client, make_get_request):
+async def test_film_details(generate_docs, redis_client, es_client, make_get_request):
     # Проверка поиска фильма по id.
-    await async_bulk(es_client, generate_docs(index='movies'))
-    response = await make_get_request('film/123')
+    fake_film_id = generate_docs['films'][0]['_id']
+    response = await make_get_request(f'film/{fake_film_id}')
     assert response.status == 200
-    await async_bulk(es_client, del_docs(index='movies'))
 
 
 @pytest.mark.asyncio
