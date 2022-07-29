@@ -5,8 +5,8 @@
 
 import random
 import uuid
-from faker import Faker
 
+from faker import Faker
 
 fake = Faker()
 
