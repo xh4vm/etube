@@ -8,7 +8,7 @@ class Settings(BaseSettings):
 
 
 class ApiSettings(Settings):
-    url: str = 'http://127.0.0.1'
+    url: str = Field(..., env='API_URL')
     port: str = Field(..., env='CLIENT_APP_PORT')
     api_path: str = Field(..., env='API_PATH')
     api_version: str = Field(..., env='API_VERSION')

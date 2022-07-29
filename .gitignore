@@ -133,11 +133,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-.python-version
-.env
-
 commands.md
 *logfile.log
 .DS_Store
 *.idea
 *._cache
+.env_local
