@@ -1,12 +1,9 @@
 from dependency_injector import containers
 
-from ..services.film import FilmService
 from ..services.person import PersonService
 
 from .base import ServiceFactory, BaseContainer
 from .film import ServiceContainer as FilmServiceContainer
-from .cache import CacheResource, RedisCacheResource
-from .search import SearchResource, ElasticSearchResource
 
 
 @containers.copy(FilmServiceContainer)

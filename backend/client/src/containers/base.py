@@ -2,10 +2,6 @@ from typing import Optional, Type
 from dependency_injector import providers, containers
 
 from ..services.base import BaseService
-
-from .cache import CacheResource, RedisCacheResource
-from .search import SearchResource, ElasticSearchResource
-
 from ..services.cache.base import BaseCache
 from ..services.search.base import BaseSearch
 
