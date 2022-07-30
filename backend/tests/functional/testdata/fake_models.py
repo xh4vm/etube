@@ -15,7 +15,7 @@ class FakePerson:
 
     def __init__(self):
         self.id = str(uuid.uuid4())
-        self.name = fake.name()
+        self.name = fake.name() + ' test'
 
 
 class FakeGenre:
@@ -30,9 +30,9 @@ class FakeFilm:
 
     def __init__(self, persons: list, genres: list):
         director = random.choice(persons)
-        actors = [random.choice(persons) for _ in range(random.randint(2, 4))]
-        writers = [random.choice(persons) for _ in range(random.randint(1, 2))]
-        genres = [random.choice(genres) for _ in range(random.randint(1, 3))]
+        actors = list(set(random.choice(persons) for _ in range(random.randint(2, 4))))
+        writers = list(set(random.choice(persons) for _ in range(random.randint(1, 2))))
+        genres = list(set(random.choice(genres) for _ in range(random.randint(1, 3))))
 
         self.id = str(uuid.uuid4())
         self.title = fake.sentence()
