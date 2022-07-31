@@ -1,4 +1,4 @@
-FROM python:3.10-slim AS admin-build
+FROM python:3.10-slim AS admin-builder
 
 WORKDIR /opt
 COPY requirements.txt ./
@@ -14,7 +14,7 @@ WORKDIR /opt/app
 EXPOSE ${ADMIN_APP_PORT}
 ENTRYPOINT ["uwsgi", "--strict", "--ini", "uwsgi.ini"]
 
-COPY --from=admin-build /usr/local /usr/local
+COPY --from=admin-builder /usr/local /usr/local
 RUN  mkdir -p /var/www/static/
 
 COPY . .

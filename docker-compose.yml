@@ -1,68 +1,112 @@
 version: '3.8'
+
+x-base-service: &base_service
+  networks:
+    - etube
+
+x-base-backend-client: &base_backend_client
+  <<: *base_service
+  build: ./backend/client
+  container_name: backend-client
+  env_file: .env
+  volumes:
+    - ./backend/client:/opt/app
+  expose:
+    - ${CLIENT_APP_PORT}
+  healthcheck:
+    test: curl http://x-base-backend-client:${CLIENT_APP_PORT} >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+    interval: 30s
+    timeout: 10s
+    retries: 5
+
+x-redis: &base_redis
+  <<: *base_service
+  image: redis:7.0-alpine
+  container_name: redis
+  restart: unless-stopped
+  ports:
+    - ${REDIS_PORT}:6379
+  healthcheck:
+    test: ["CMD", "redis-cli","ping"]
+    interval: 30s
+    timeout: 10s
+    retries: 5
+
+x-elasticsearch: &base_elasticsearch
+  <<: *base_service
+  image: docker.io/elastic/elasticsearch:8.2.0
+  container_name: elasticsearch
+  env_file: .env
+  ports:
+    - ${ES_PORT}:9200
+  environment:
+    - discovery.type=single-node
+    - xpack.security.enabled=false
+    - ELASTIC_USERNAME=${ES_USER}
+    - ELASTIC_PASSWORD=${ES_PASSWORD}
+    - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  healthcheck:
+    test: curl ${ES_PROTOCOL}://x-elasticsearch:${ES_PORT} >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+    interval: 30s
+    timeout: 10s
+    retries: 5
+
+
 services:
 
-  backend-admin:
+  backend-admin: 
+    <<: *base_service
     build: ./backend/admin
     container_name: backend-admin
-    profiles:
+    env_file: .env
+    profiles: 
       - dev
-      - test
-    env_file: 
-      - .env
     volumes:
       - ./backend/admin:/opt/app
       - ./backend/admin/static:/var/www/static:ro
     expose:
       - ${ADMIN_APP_PORT}
-    networks:
-      - etube
 
   backend-client:
-    build: ./backend/client
-    container_name: backend-client
-    profiles:
+    <<: *base_backend_client
+    profiles: 
       - dev
+    
+  backend-client-test:
+    <<: *base_backend_client
+    profiles: 
       - test
-    env_file: 
-      - .env
-    volumes:
-      - ./backend/client:/opt/app
-    expose:
-      - ${CLIENT_APP_PORT}
-    networks:
-      - etube
+    ports:
+      - ${CLIENT_APP_PORT}:${CLIENT_APP_PORT}
 
   nginx:
-   image: nginx:1.23.1-alpine
-   container_name: nginx
-   profiles:
+    <<: *base_service
+    image: nginx:1.23.1-alpine
+    container_name: nginx
+    profiles: 
       - dev
-      - test
-   volumes:
+    volumes:
       - ./backend/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./backend/nginx/configs:/etc/nginx/conf.d:ro
       - ./backend/nginx/static/errors:/var/www/errors/:ro
       - ./backend/admin/static:/var/www/static:ro
       - ./backend/nginx/static/log/access_log:/var/log/nginx/access.log:rw
       - ./backend/nginx/static/log/error_log:/var/log/nginx/error.log:rw
-   ports:
-      - "80:80"
-      - "8000:8000"
-   networks:
-      - etube
+    ports:
+      - ${ADMIN_APP_PORT}:${ADMIN_APP_PORT}
+      - ${CLIENT_APP_PORT}:${CLIENT_APP_PORT}
 
   db:
+    <<: *base_service
     image: postgres:13-alpine
     container_name: db
     env_file: .env
-    profiles:
+    profiles: 
       - dev
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
-    networks:
-      - etube
     ports:
       - ${DB_PORT}:5432
     restart: unless-stopped
@@ -75,68 +119,52 @@ services:
       retries: 5
 
   redis:
-    image: redis:7.0-alpine
-    container_name: redis
-    restart: unless-stopped
+    <<: *base_redis
     profiles:
       - dev
-      - test
     volumes:
       - etube-redis-data:/data
-    networks:
-      - etube
-    ports:
-      - ${REDIS_PORT}:6379
-    healthcheck:
-      test: ["CMD", "redis-cli","ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+
+  redis-test:
+    <<: *base_redis
+    profiles:
+      - test
+    volumes:
+      - etube-redis-data-test:/data
 
   elasticsearch:
-    image: docker.io/elastic/elasticsearch:8.2.0
-    container_name: elasticsearch
+    <<: *base_elasticsearch
     profiles:
       - dev
-      - test
-    env_file: .env
-    ports:
-      - ${ES_PORT}:9200
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - ELASTIC_USERNAME=${ES_USER}
-      - ELASTIC_PASSWORD=${ES_PASSWORD}
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    networks:
-      - etube
     volumes:
       - etube-elasticsearch-data:/usr/share/elasticsearch/data:rw
-    healthcheck:
-      test: curl ${ES_PROTOCOL}://elasticsearch:${ES_PORT} >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
-#  kibana:
-#    container_name: kibana
-#    image: docker.io/elastic/kibana:8.2.0
-#    environment:
-#      - ELASTICSEARCH_HOSTS=${ES_PROTOCOL}://${ES_USER}:${ES_PASSWORD}@elasticsearch:${ES_PORT}
-#    profiles:
-#      - test
-#    networks:
-#      - etube
-#    depends_on:
-#      - elasticsearch
-#    ports:
-#      - ${KIBANA_PORT}:5601
+  elasticsearch-test:
+    <<: *base_elasticsearch
+    profiles:
+      - test
+    volumes:
+      - etube-elasticsearch-data-test:/usr/share/elasticsearch/data:rw
+
+  kibana:
+    <<: *base_service
+    container_name: kibana
+    image: docker.io/elastic/kibana:8.2.0
+    environment:
+      - ELASTICSEARCH_HOSTS=${ES_PROTOCOL}://${ES_USER}:${ES_PASSWORD}@elasticsearch:${ES_PORT}
+    profiles:
+      - test
+    depends_on:
+      - elasticsearch-test
+    ports:
+      - ${KIBANA_PORT}:5601
 
   etl:
+    <<: *base_service
     build: ./backend/postgres_to_es
     container_name: etl
     restart: unless-stopped
-    profiles:
+    profiles: 
       - dev
     depends_on:
       elasticsearch:
@@ -145,19 +173,21 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    networks:
-      - etube
     env_file: .env
 
   tests:
+    <<: *base_service
     build: ./backend/tests
     container_name: tests
     profiles:
       - test
     depends_on:
-      - backend-client
-    networks:
-      - etube
+      elasticsearch-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+      backend-client-test:
+        condition: service_healthy
     env_file: .env
 
 networks:
@@ -167,4 +197,6 @@ networks:
 volumes:
   etube-postgres-data:
   etube-elasticsearch-data:
+  etube-elasticsearch-data-test:
   etube-redis-data:
+  etube-redis-data-test:
