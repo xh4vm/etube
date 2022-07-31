@@ -51,6 +51,13 @@ x-elasticsearch: &base_elasticsearch
     timeout: 10s
     retries: 5
 
+x-es-initer: &base_es_initer
+  <<: *base_service
+  build: ./backend/es_initer
+  container_name: es-initer
+  env_file: .env
+  healthcheck:
+    test: "exit 0"
 
 services:
 
@@ -175,6 +182,26 @@ services:
         condition: service_healthy
     env_file: .env
 
+  es-initer:
+    <<: *base_es_initer
+    profiles: 
+      - dev
+    volumes:
+      - ./backend/es_initer/mapping:/opt/es_initer/mapping:ro
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    
+  es-initer-test:
+    <<: *base_es_initer
+    profiles: 
+      - test
+    volumes:
+      - ./backend/es_initer/mapping:/opt/es_initer/mapping:ro
+    depends_on:
+      elasticsearch-test:
+        condition: service_healthy
+    
   tests:
     <<: *base_service
     build: ./backend/tests
@@ -183,6 +210,8 @@ services:
       - test
     depends_on:
       elasticsearch-test:
+        condition: service_healthy
+      es-initer-test:
         condition: service_healthy
       redis-test:
         condition: service_healthy

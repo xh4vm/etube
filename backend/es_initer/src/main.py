@@ -12,7 +12,7 @@ if __name__ == '__main__':
     for index_name in indices:
         mapping = None
         
-        with open(f'./elasticsearch/mapping/{index_name}.json', 'r') as fd:
+        with open(f'./mapping/{index_name}.json', 'r') as fd:
             mapping = json.load(fd)
 
         es_initer.create(index_name=index_name, mapping=mapping)
