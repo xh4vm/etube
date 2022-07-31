@@ -77,11 +77,17 @@ services:
     <<: *base_backend_client
     profiles: 
       - dev
+    depends_on:
+      es-initer:
+        condition: service_completed_successfully
     
   backend-client-test:
     <<: *base_backend_client
     profiles: 
       - test
+    depends_on:
+      es-initer-test:
+        condition: service_completed_successfully
     ports:
       - ${CLIENT_APP_PORT}:${CLIENT_APP_PORT}
 
