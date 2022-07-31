@@ -56,8 +56,7 @@ x-es-initer: &base_es_initer
   build: ./backend/es_initer
   container_name: es-initer
   env_file: .env
-  healthcheck:
-    test: "exit 0"
+
 
 services:
 
@@ -209,20 +208,18 @@ services:
     profiles:
       - test
     depends_on:
-      elasticsearch-test:
-        condition: service_healthy
-      es-initer-test:
-        condition: service_healthy
-      redis-test:
-        condition: service_healthy
       backend-client-test:
         condition: service_healthy
+      es-initer-test:
+        condition: service_completed_successfully
     env_file: .env
+
 
 networks:
   etube:
     driver: bridge
   
+
 volumes:
   etube-postgres-data:
   etube-elasticsearch-data:
