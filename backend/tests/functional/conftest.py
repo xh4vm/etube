@@ -1,7 +1,7 @@
 import asyncio
 import time
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional
 
 import aiohttp
 import aioredis
@@ -17,7 +17,7 @@ SERVICE_URL = f'{CONFIG.API.url}:{CONFIG.API.port}'
 
 @dataclass
 class HTTPResponse:
-    body: dict
+    body: dict[str, Any]
     headers: CIMultiDictProxy[str]
     status: int
 
@@ -32,7 +32,12 @@ async def redis_client():
 
 @pytest.fixture(scope='session')
 async def es_client():
-    client = AsyncElasticsearch(hosts=f'{CONFIG.ELASTIC.protocol}://{CONFIG.ELASTIC.host}:{CONFIG.ELASTIC.port}')
+    client = AsyncElasticsearch([
+        (
+            f'{CONFIG.ELASTIC.protocol}://{CONFIG.ELASTIC.user}:{CONFIG.ELASTIC.password}'
+            f'@{CONFIG.ELASTIC.host}:{CONFIG.ELASTIC.port}'
+        )
+    ])
     yield client
     await client.close()
 

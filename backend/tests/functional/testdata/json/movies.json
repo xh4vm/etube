@@ -1,0 +1,30 @@
+[
+    {
+        "title": "Film 1",
+        "genres_list": ["Fantasy", "Anime"],
+        "directors_names": ["J.J. Abrams"],
+        "actors_names": ["Lawrence Kasdan"],
+        "writers_names": ["Jake Lloyd"]
+    },
+    {
+        "title": "Film 2",
+        "genres_list": ["Horror"],
+        "directors_names": ["Felicity Jones"],
+        "actors_names": ["Will Fetters", "Rian Johnson"],
+        "writers_names": ["Jake Lloyd"]
+    },
+    {
+        "title": "Film 3",
+        "genres_list": ["Drama", "History"],
+        "directors_names": ["Jake Lloyd"],
+        "actors_names": ["Rian Johnson", "Lawrence Kasdan"],
+        "writers_names": ["Felicity Jones"]
+    },
+    {
+        "title": "Film 4",
+        "genres_list": ["Sport"],
+        "directors_names": ["Alan Tudyk"],
+        "actors_names": ["Jake Lloyd"],
+        "writers_names": ["Lawrence Kasdan"]
+    }
+]

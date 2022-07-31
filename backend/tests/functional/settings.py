@@ -4,7 +4,8 @@ from pydantic import BaseSettings, Field
 class Settings(BaseSettings):
     class Config:
         # Для локального запуска
-        env_file = '../../.env_local'
+        env_file = '../../.env'
+        # env_file = '../../.env_local'
 
 
 class ApiSettings(Settings):

@@ -4,43 +4,53 @@
 """
 
 import random
+from typing import Any, Optional
 import uuid
 
 from faker import Faker
 
+from pydantic import BaseModel, Field
+
 fake = Faker()
 
 
-class FakePerson:
-
-    def __init__(self):
-        self.id = str(uuid.uuid4())
-        self.name = fake.name() + ' test'
+def get_new_id() -> str:
+    return str(uuid.uuid4())
 
 
-class FakeGenre:
-
-    def __init__(self, name):
-        self.id = str(uuid.uuid4())
-        self.description = None
-        self.name = name
+class FakePerson(BaseModel):
+    id: str = Field(default_factory=get_new_id)
+    name: str = Field(default_factory=lambda: fake.name() + '::test::')
 
 
-class FakeFilm:
+class FakeGenre(BaseModel):
+    id: str = Field(default_factory=get_new_id)
+    description: str = Field(default_factory=fake.text)
+    name: str = Field(default_factory=lambda: fake.name() + '::test::')
+    
 
-    def __init__(self, persons: list, genres: list):
-        director = random.choice(persons)
-        actors = list(set(random.choice(persons) for _ in range(random.randint(2, 4))))
-        writers = list(set(random.choice(persons) for _ in range(random.randint(1, 2))))
-        genres = list(set(random.choice(genres) for _ in range(random.randint(1, 3))))
+class FakeFilm(BaseModel):
+    id: str = Field(default_factory=get_new_id)
+    title: str = Field(default_factory=lambda: fake.sentence() + '::test::')
+    imdb_rating: float = Field(default_factory=lambda: round(random.randrange(10, 100) / 10, 1))
+    description: str = Field(default_factory=fake.text)
+    genres_list: list[str] = Field(default=[])
+    directors_names: list[str] = Field(default=[])
+    actors_names: list[str] = Field(default=[])
+    writers_names: list[str] = Field(default=[]) 
 
-        self.id = str(uuid.uuid4())
-        self.title = fake.sentence()
-        self.imdb_rating = round(random.randrange(10, 100) / 10, 1)
-        self.description = fake.sentence()
-        self.directors_names = [director.name]
-        self.actors_names = [actor.name for actor in actors]
-        self.writers_names = [writer.name for writer in writers]
-        self.genres_list = [genre.name for genre in genres]
-        self.directors = [director.__dict__]
-        self.genres = [{'id': genre.id, 'name': genre.name} for genre in genres]
+    @property
+    def genres(self) -> dict[str, Any]:
+        return [FakeGenre(name=name) for name in self.genres_list]
+
+    @property
+    def directors(self) -> dict[str, Any]:
+        return [FakePerson(name=name) for name in self.directors_names]
+
+    @property
+    def actors(self) -> dict[str, Any]:
+        return [FakePerson(name=name) for name in self.actors_names]
+
+    @property
+    def writers(self) -> dict[str, Any]:
+        return [FakePerson(name=name) for name in self.writers_names]

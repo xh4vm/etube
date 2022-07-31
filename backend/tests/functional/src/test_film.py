@@ -1,5 +1,3 @@
-import hashlib
-
 import orjson
 import pytest
 
