@@ -104,6 +104,9 @@ services:
       - ./backend/admin/static:/var/www/static:ro
       - ./backend/nginx/static/log/access_log:/var/log/nginx/access.log:rw
       - ./backend/nginx/static/log/error_log:/var/log/nginx/error.log:rw
+    depends_on:
+      backend-client:
+        condition: service_healthy
     ports:
       - ${ADMIN_APP_PORT}:${ADMIN_APP_PORT}
       - ${CLIENT_APP_PORT}:${CLIENT_APP_PORT}
