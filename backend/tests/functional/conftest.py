@@ -10,7 +10,9 @@ from elasticsearch import AsyncElasticsearch
 from multidict import CIMultiDictProxy
 
 from .settings import CONFIG
-from .utils.fake_data_generator import Generator
+from .utils.data_generators.elastic.genre import GenreDataGenerator
+from .utils.data_generators.elastic.person import PersonDataGenerator
+from .utils.data_generators.elastic.movies import FilmDataGenerator
 
 SERVICE_URL = f'{CONFIG.API.url}:{CONFIG.API.port}'
 
@@ -43,10 +45,9 @@ async def es_client():
 
 
 @pytest.fixture(scope='session')
-async def session(generate_docs):
+async def session():
     session = aiohttp.ClientSession()
     yield session
-    await generate_docs.remove_fake_data()
     await session.close()
 
 
@@ -73,9 +74,33 @@ def event_loop():
 
 
 @pytest.fixture(scope='session')
-async def generate_docs(es_client):
-    generator = Generator(es_client)
-    await generator.generate_fake_data()
-    # TODO Решить проблему преждевременного запуска тестов - данные в эластик без sleep не успевают записаться!
-    time.sleep(5)
-    yield generator
+async def generate_genre(es_client):
+    genre_dg = GenreDataGenerator(conn=es_client)
+
+    await genre_dg.load()
+    
+    yield genre_dg.data
+
+    await genre_dg.clean()
+
+
+@pytest.fixture(scope='session')
+async def generate_person(es_client):
+    person_dg = PersonDataGenerator(conn=es_client)
+
+    await person_dg.load()
+    
+    yield person_dg.data
+
+    await person_dg.clean()
+
+
+@pytest.fixture(scope='session')
+async def generate_movies(es_client):
+    film_dg = FilmDataGenerator(conn=es_client)
+
+    await film_dg.load()
+    
+    yield film_dg.data
+
+    await film_dg.clean()

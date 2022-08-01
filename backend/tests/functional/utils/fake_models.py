@@ -4,7 +4,7 @@
 """
 
 import random
-from typing import Any, Optional
+from typing import Any
 import uuid
 
 from faker import Faker
