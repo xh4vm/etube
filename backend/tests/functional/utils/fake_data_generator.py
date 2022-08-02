@@ -21,6 +21,8 @@ class Generator:
         self.films = []
         self.genres = []
         self.persons = []
+        self.films_with_genre = []
+        self.films_with_person = []
 
     async def generate_fake_data(self):
         # Генерация персон, жанров и фильмов
@@ -50,6 +52,11 @@ class Generator:
         self.films = self.get_index_data(index='movies', fake_docs=fake_films)
         self.genres = self.get_index_data(index='genres', fake_docs=fake_genres)
         self.persons = self.get_index_data(index='persons', fake_docs=fake_persons)
+        # Фильмы с первым жанром.
+        genre_name = self.films[0]['_source']['genres'][0]['name']
+        self.films_with_genre = self.genre_films(genre_name)
+        person_name = self.films[0]['_source']['directors'][0]['name']
+        self.films_with_person = self.person_films(person_name)
 
         await async_bulk(self.es_client, self.films + self.genres + self.persons)
 
@@ -57,8 +64,6 @@ class Generator:
         # Создание индексов.
         with open(f'functional/testdata/{file_name}.json', 'r') as index:
             data = json.load(index)
-            # TODO  The 'body' parameter is deprecated and will be removed in a future version.
-            # Instead use individual parameters.
             await es_client.indices.create(index=index_name, body=data)
 
     def get_index_data(self, index: str, fake_docs: list) -> list:
@@ -75,11 +80,50 @@ class Generator:
     async def remove_fake_data(self):
         if self.madman_mode:
             # Аккуратно удаляем фейковые данные, стараясь не задеть рабочие...
-            docs_to_delete = [{'_op_type': 'delete', '_index': 'movies', '_id': doc['_id']} for doc in self.films]
-            docs_to_delete.extend([{'_op_type': 'delete', '_index': 'genres', '_id': doc['_id']} for doc in self.genres])
-            docs_to_delete.extend([{'_op_type': 'delete', '_index': 'persons', '_id': doc['_id']} for doc in self.persons])
+            docs_to_delete = [
+                {'_op_type': 'delete', '_index': 'movies', '_id': doc['_id']}
+                for doc in self.films
+            ]
+            docs_to_delete.extend([
+                {'_op_type': 'delete', '_index': 'genres', '_id': doc['_id']}
+                for doc in self.genres
+            ])
+            docs_to_delete.extend([
+                {'_op_type': 'delete', '_index': 'persons', '_id': doc['_id']}
+                for doc in self.persons
+            ])
             await async_bulk(self.es_client, docs_to_delete)
         else:
             # Удаление тестовых индексов. Ведь тестовых, да?
             for index in self.test_indices.keys():
                 self.es_client.indices.delete(index=index)
+
+    def genre_films(self, genre_name: str) -> list:
+        # Список фильмов для теста поиска жанра по id.
+        return [
+            {'id': film['_id'], 'title': film['_source']['title'], 'imdb_rating': film['_source']['imdb_rating']}
+            for film in self.films
+            if genre_name in film['_source']['genres_list']
+        ]
+
+    def person_films(self, person_name: str) -> dict:
+        # Фильмы с человеком в тестовых данных.
+        def append_film(film: dict) -> dict:
+            return {
+                'id': film['_id'],
+                'title': film['_source']['title'],
+                'imdb_rating': film['_source']['imdb_rating'],
+            }
+
+        films_with_person = {'director': [], 'actor': [], 'writer': []}
+        for film in self.films:
+            persons = {
+                'director': film['_source']['directors_names'],
+                'actor': film['_source']['actors_names'],
+                'writer': film['_source']['writers_names'],
+            }
+            for k, v in persons.items():
+                if person_name in v:
+                    films_with_person[k].append(append_film(film))
+
+        return films_with_person

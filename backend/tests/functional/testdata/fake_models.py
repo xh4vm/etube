@@ -43,4 +43,6 @@ class FakeFilm:
         self.writers_names = [writer.name for writer in writers]
         self.genres_list = [genre.name for genre in genres]
         self.directors = [director.__dict__]
+        self.actors = [actor.__dict__ for actor in actors]
+        self.writers = [writer.__dict__ for writer in writers]
         self.genres = [{'id': genre.id, 'name': genre.name} for genre in genres]

@@ -21,16 +21,17 @@ async def test_genre_details(redis_client, generate_docs, make_get_request):
 async def test_genre_films_list(redis_client, generate_docs, make_get_request):
     # Выборочная проверка поля "Фильмы" при поиске жанра.
     await redis_client.flushall()
-    genre_for_test = generate_docs.genres[0]
-    genre_id = genre_for_test['_id']
-    genre_name = genre_for_test['_source']['name']
+    # Берем жанр из первого фильма, чтобы избежать ситуации,
+    # когда выбрали жанр без единого фильма.
+    genre_for_test = generate_docs.films[0]['_source']['genres'][0]
+    films_with_genre = generate_docs.films_with_genre
+    genre_id = genre_for_test['id']
     response = await make_get_request(f'genre/{genre_id}')
     genre_films = response.body['films']
-    film_for_test = genre_films[0]['id']
-    response = await make_get_request(f'film/{film_for_test}')
-    film_genres = response.body['genres_list']
+    for film in films_with_genre:
+        genre_films.remove(film)
 
-    assert genre_name in film_genres
+    assert genre_films == []
 
 
 @pytest.mark.asyncio

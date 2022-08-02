@@ -1,7 +1,6 @@
-import hashlib
-
 import orjson
 import pytest
+from ..settings import CacheSettings
 
 
 @pytest.mark.asyncio
@@ -62,10 +61,9 @@ async def test_films_cache(redis_client, generate_docs, make_get_request):
     film_for_test = generate_docs.films[0]
     film_id = film_for_test['_id']
     elastic_response = await make_get_request(f'film/{film_id}')
-    cache_key = f'movies::detail::{film_id}'
+    cache_key = CacheSettings.get_film_id_cache(film_id)
     redis_response = await redis_client.get(cache_key)
     redis_data = orjson.loads(redis_response)['_source']
 
     for k, v in elastic_response.body.items():
         assert redis_data[k] == v
-

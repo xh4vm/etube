@@ -1,5 +1,4 @@
 import asyncio
-import time
 from dataclasses import dataclass
 from typing import Optional
 
@@ -71,6 +70,4 @@ def event_loop():
 async def generate_docs(es_client):
     generator = Generator(es_client)
     await generator.generate_fake_data()
-    # TODO Решить проблему преждевременного запуска тестов - данные в эластик без sleep не успевают записаться!
-    time.sleep(5)
     yield generator
