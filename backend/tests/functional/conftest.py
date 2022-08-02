@@ -1,6 +1,6 @@
 import asyncio
-import time
 from dataclasses import dataclass
+from asyncio import sleep
 from typing import Any, Optional
 
 import aiohttp
@@ -57,6 +57,7 @@ def make_get_request(session):
         params = params or {}
         url = SERVICE_URL + f'{CONFIG.API.api_path}/{CONFIG.API.api_version}/' + method
         async with session.get(url, params=params) as response:
+
             return HTTPResponse(
                 body=await response.json(),
                 headers=response.headers,
@@ -76,10 +77,8 @@ def event_loop():
 @pytest.fixture(scope='session')
 async def generate_genre(es_client):
     genre_dg = GenreDataGenerator(conn=es_client)
-
-    await genre_dg.load()
     
-    yield genre_dg.data
+    yield await genre_dg.load()
 
     await genre_dg.clean()
 
@@ -88,9 +87,7 @@ async def generate_genre(es_client):
 async def generate_person(es_client):
     person_dg = PersonDataGenerator(conn=es_client)
 
-    await person_dg.load()
-    
-    yield person_dg.data
+    yield await person_dg.load()
 
     await person_dg.clean()
 
@@ -99,8 +96,6 @@ async def generate_person(es_client):
 async def generate_movies(es_client):
     film_dg = FilmDataGenerator(conn=es_client)
 
-    await film_dg.load()
-    
-    yield film_dg.data
+    yield await film_dg.load()
 
     await film_dg.clean()

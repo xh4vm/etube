@@ -11,23 +11,34 @@ class BaseDataGenerator(ABC):
 
     @property
     @abstractmethod
-    def conn(self):
-        '''Datastore connector'''
-
-    @property
-    @abstractmethod
     def fake_model(self) -> ModelMetaclass:
         '''Fake model'''
 
     @property
     @abstractmethod
+    def response_model(self) -> ModelMetaclass:
+        '''Response model'''
+
+    @property
+    @abstractmethod
+    def conn(self):
+        '''Datastore connector'''
+
+    @property
     def data(self) -> list[ModelMetaclass]:
         '''Сгенерированные фейковые данные'''
 
+    @property
+    def response_data(self) -> list[ModelMetaclass]:
+        '''Данные ответа'''
+
     @abstractmethod
-    async def load(self):
+    async def load(self) -> list[ModelMetaclass]:
         '''Метод загрузки тестовых данных в хранилище'''
 
     @abstractmethod
-    async def clean(self):
+    async def clean(self) -> None:
         '''Метод удаления тестовых данных из хранилища'''
+
+    def __init__(self, conn) -> None:
+        self.conn = conn

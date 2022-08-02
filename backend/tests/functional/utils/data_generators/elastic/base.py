@@ -7,8 +7,7 @@ import json
 from abc import abstractmethod
 from typing import Any
 from elasticsearch import AsyncElasticsearch
-from elasticsearch.helpers import async_bulk
-from pydantic import ValidationError
+from elasticsearch.helpers import async_bulk, bulk
 from pydantic.main import ModelMetaclass
 
 from ..base import BaseDataGenerator
@@ -16,6 +15,7 @@ from ..base import BaseDataGenerator
 
 class BaseElasticDataGenerator(BaseDataGenerator):
     conn = None
+    data = []
 
     @property
     @abstractmethod
@@ -32,17 +32,26 @@ class BaseElasticDataGenerator(BaseDataGenerator):
         with open(f'/opt/tests/functional/testdata/{self.index}.json', 'r') as fd:
             fake_data = json.load(fd)
 
-        fake_models = (self.fake_model.parse_obj(elem) for elem in fake_data)
-        self.data = self.data_wrapper(fake_docs=fake_models)
+        #TODO refactoring
+        fake_models = []
+        response_models = []
+        for elem in fake_data:
 
-        print('AAAAAA', self.data)
+            model = self.fake_model.parse_obj(elem)
+            fake_models.append(model)
+            response_models.append(self.response_model.parse_obj({**elem, **model.dict()}))
+        # response_models = (self.response_model.parse_obj(elem) for elem in fake_data)
+     
+        self.data = self.data_wrapper(fake_docs=fake_models)
         await async_bulk(self.conn, self.data)
 
+        return self.data_wrapper(fake_docs=response_models)
+        
     async def clean(self):
         docs_to_delete = [{'_op_type': 'delete', '_index': self.index, '_id': doc['_id']} for doc in self.data]
         await async_bulk(self.conn, docs_to_delete)
 
-    def data_wrapper(self, fake_docs: list[ModelMetaclass]) -> list[str, Any]:
+    def data_wrapper(self, fake_docs: list[ModelMetaclass]) -> list[dict[str, Any]]:
         return [
             {
                 '_index': self.index,

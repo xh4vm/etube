@@ -3,12 +3,12 @@
 
 """
 
-
-
 from .base import BaseElasticDataGenerator
-from ...fake_models import FakePerson
+from ...fake_models.person import FakePersonFull
+from ...fake_models.film import FakeFilmPersonRel
 
 
 class PersonDataGenerator(BaseElasticDataGenerator):
     index = 'persons'
-    fake_model = FakePerson
+    fake_model = FakePersonFull
+    response_model = FakeFilmPersonRel

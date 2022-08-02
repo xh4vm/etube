@@ -1,30 +1,134 @@
 [
     {
+        "id": "49a8c020-9830-418f-8926-0a4af2c5d656",
         "title": "Film 1",
-        "genres_list": ["Fantasy", "Anime"],
-        "directors_names": ["J.J. Abrams"],
-        "actors_names": ["Lawrence Kasdan"],
-        "writers_names": ["Jake Lloyd"]
+        "imdb_rating": 5.0,
+        "genres": [
+            {
+                "id": "f108224e-ad1d-407a-8689-c7d8b2cfaa6a",
+                "name": "Fantasy"
+            },
+            {
+                "id": "1234782e-ad1d-407a-8689-c7d8b2cfaa6a",
+                "name": "Anime"
+            }
+        ],
+        "directors": [
+            {
+                "id": "0c09752e-27ef-425a-a8e5-662b2ecf441e",
+                "name": "J.J. Abrams"
+            }
+        ],
+        "actors": [
+            {
+                "id": "2688caf7-ba12-49a0-b8a7-1ab4598e6019",
+                "name": "Lawrence Kasdan"
+            }
+        ],
+        "writers": [
+            {
+                "id": "0c09752e-27ef-425a-a8e5-662b2ecf441e",
+                "name": "Jake Lloyd"
+            }
+        ]
     },
     {
+        "id": "b1278a54-98fc-4d0c-a76c-0b0b1aee8b8b",
         "title": "Film 2",
-        "genres_list": ["Horror"],
-        "directors_names": ["Felicity Jones"],
-        "actors_names": ["Will Fetters", "Rian Johnson"],
-        "writers_names": ["Jake Lloyd"]
+        "imdb_rating": 3.7,
+        "genres": [
+            {
+                "id": "e4762e-ad1d-407a-8689-c7d8b2cfaa6a",
+                "name": "Horror"
+            }
+        ],
+        "directors": [
+            {
+                "id": "8cde1991-5a95-4fc1-83f3-9fbe845d59c8",
+                "name": "Felicity Jones"
+            }
+        ],
+        "actors": [
+            {
+                "id": "2cea50b1-0c1f-4ba2-8e57-527f08e85671",
+                "name": "Will Fetters"
+            }, 
+            {
+                "id": "458a99bd-c3bc-4568-a445-68d520b7efc9",
+                "name": "Rian Johnson"
+            }
+        ],
+        "writers": [
+            {
+                "id": "0c09752e-27ef-425a-a8e5-662b2ecf441e",
+                "name": "Jake Lloyd"
+            }
+        ]
     },
     {
+        "id": "42570c97-334a-4794-b49e-c397f0a87bcd",
         "title": "Film 3",
-        "genres_list": ["Drama", "History"],
-        "directors_names": ["Jake Lloyd"],
-        "actors_names": ["Rian Johnson", "Lawrence Kasdan"],
-        "writers_names": ["Felicity Jones"]
+        "imdb_rating": 1.4,
+        "genres": [
+            {
+                "id": "69f1568e-ad1d-407a-8689-c7d8b2cfaa6a",
+                "name": "Drama"
+            },
+            {
+                "id": "243562e-ad1d-407a-8689-c7d8b2cfaa6a",
+                "name": "History"
+            }
+        ],
+        "directors": [
+            {
+                "id": "0c09752e-27ef-425a-a8e5-662b2ecf441e",
+                "name": "Jake Lloyd"
+            }
+        ],
+        "actors": [
+            {
+                "id": "458a99bd-c3bc-4568-a445-68d520b7efc9",
+                "name": "Rian Johnson"
+            }, 
+            {
+                "id": "2688caf7-ba12-49a0-b8a7-1ab4598e6019",
+                "name": "Lawrence Kasdan"
+            }
+        ],
+        "writers": [
+            {
+                "id": "8cde1991-5a95-4fc1-83f3-9fbe845d59c8",
+                "name": "Felicity Jones"
+            }
+        ]
     },
     {
+        "id": "3ef2de3d-5bea-46ef-92f1-b7595eff20c8",
         "title": "Film 4",
-        "genres_list": ["Sport"],
-        "directors_names": ["Alan Tudyk"],
-        "actors_names": ["Jake Lloyd"],
-        "writers_names": ["Lawrence Kasdan"]
+        "imdb_rating": 4.2,
+        "genres": [
+            {
+                "id": "d472462e-ad1d-407a-8689-c7d8b2cfaa6a",
+                "name": "Sport"
+            }
+        ],
+        "directors": [
+            {
+                "id": "727dd18c-d73b-4709-b6b1-07d76ac4fb10",
+                "name": "Alan Tudyk"
+            }
+        ],
+        "actors": [
+            {
+                "id": "0c09752e-27ef-425a-a8e5-662b2ecf441e",
+                "name": "Jake Lloyd"
+            }
+        ],
+        "writers": [
+            {
+                "id": "2688caf7-ba12-49a0-b8a7-1ab4598e6019",
+                "name": "Lawrence Kasdan"
+            }
+        ]
     }
 ]

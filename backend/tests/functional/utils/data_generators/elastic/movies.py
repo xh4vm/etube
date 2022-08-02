@@ -6,10 +6,10 @@
 
 
 from .base import BaseElasticDataGenerator
-from ...fake_models import FakeFilm
+from ...fake_models.film import FakeFilmFull
 
 
 class FilmDataGenerator(BaseElasticDataGenerator):
     index = 'movies'
-    fake_model = FakeFilm
-    data = []
+    fake_model = FakeFilmFull
+    response_model = FakeFilmFull
