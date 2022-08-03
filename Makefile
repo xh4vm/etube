@@ -21,6 +21,9 @@ postman-test:
 .PHONY: transfer data from sqlite into postgresql
 s2p: create-venv pip-install-s2p load_data_from_s2p
 
+.PHONY: test api
+test: create-venv pip-install-test test-api
+
 .PHONY: daemon run services
 rund:
 	docker-compose --profile dev up -d
@@ -66,9 +69,17 @@ pip-install-s2p:
 load_data_from_s2p:
 	./venv/bin/python3 backend/sqlite_to_postgres/load_data.py
 
+.PHONY: test api
+test-api:
+	./venv/bin/pytest backend/tests/functional/src
+
 .PHONY: collect static files
 collectstatic-with-venv:
 	./venv/bin/python3 backend/admin/manage.py collectstatic --noinput
+
+.PHONY: install requirements-test
+pip-install-test:
+	./venv/bin/pip3 install -r requirements-test.txt
 
 .PHONY: collect static files
 collectstatic: create-venv pip-install-build collectstatic-with-venv

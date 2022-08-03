@@ -1,10 +1,3 @@
-"""
-Генерации фейковых данных, которые используются для тестов.
-
-"""
-
-
-
 from .base import BaseElasticDataGenerator
 from ...fake_models.film import FakeFilmFull
 

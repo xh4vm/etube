@@ -1,27 +1,28 @@
 import orjson
 import pytest
+from ..utils.fake_models.film import FakeFilmBrief
 
 
 @pytest.mark.asyncio
-async def test_film_details(redis_client, generate_docs, make_get_request):
+async def test_film_details(generate_movies, make_get_request):
     # Проверка поиска фильма по id (ответ 200 и полнота данных).
-    film_for_test = generate_docs.films[0]
-    film_id = film_for_test['_id']
-    response = await make_get_request(f'film/{film_id}')
-    fields = [
-        'id', 'title', 'imdb_rating', 'directors_names', 'actors_names', 'writers_names', 'genres_list', 'description',
-    ]
+    expected = generate_movies[0]
+    response = await make_get_request(f'film/{expected["_id"]}')
 
     assert response.status == 200
-
-    for field in fields:
-        assert response.body[field] == film_for_test['_source'][field]
+    assert response.body['id'] == expected['_source']['id']
+    assert response.body['title'] == expected['_source']['title']
+    assert response.body['description'] == expected['_source']['description']
+    assert response.body['imdb_rating'] == expected['_source']['imdb_rating']
+    assert response.body['directors_names'] == expected['_source']['directors_names']
+    assert response.body['actors_names'] == expected['_source']['actors_names']
+    assert response.body['writers_names'] == expected['_source']['writers_names']
+    assert response.body['genres_list'] == expected['_source']['genres_list']
 
 
 @pytest.mark.asyncio
-async def test_film_error(redis_client, make_get_request):
+async def test_film_error(make_get_request):
     # Поиск несуществующего фильма.
-    await redis_client.flushall()
     film_id = '0123456789'
     response = await make_get_request(f'film/{film_id}')
 
@@ -29,41 +30,55 @@ async def test_film_error(redis_client, make_get_request):
 
 
 @pytest.mark.asyncio
-async def test_films_filter(redis_client, generate_docs, make_get_request):
+async def test_films_filter(generate_movies, generate_genres, make_get_request):
     # Проверка фильтра по жанру (полнота списка фильмов).
-    await redis_client.flushall()
-    docs = generate_docs
-    films = docs.films
-    genre_for_test = docs.genres[0]['_source']['name']
-    films_with_genre = {film['_id'] for film in films if genre_for_test in film['_source']['genres_list']}
+    genre_filter = generate_genres[0]['_source']['name']
+    
+    films = generate_movies
+    expected = [FakeFilmBrief.parse_obj(film['_source']) for film in films if genre_filter in film['_source']['genres_list']]
 
-    response = await make_get_request(f'films?filters=genres_list:{genre_for_test}')
-    films_in_response = {film['id'] for film in response.body['items']}
+    response = await make_get_request('films', params={'filters': f'genres_list:{genre_filter}'})
 
-    assert films_with_genre.symmetric_difference(films_in_response) == set()
+    assert response.body['items'] == expected
 
 
 @pytest.mark.asyncio
-async def test_films_sort(redis_client, make_get_request):
+async def test_films_sort_imdb_rating_desc(generate_movies, make_get_request):
     # Проверка правильности сортировки.
-    await redis_client.flushall()
-    response = await make_get_request(f'films?sort=imdb_rating:desc')
-    films_in_response = [film['imdb_rating'] for film in response.body['items']]
+    expected_full_map = sorted(generate_movies, key=lambda elem: elem['_source']['imdb_rating'], reverse=True)
+    expected = [FakeFilmBrief.parse_obj(film['_source']) for film in expected_full_map]
+    
+    response = await make_get_request(f'films', params={'sort': 'imdb_rating:desc'})
 
-    assert films_in_response == sorted(films_in_response, reverse=True)
+    assert expected == response.body['items']
 
 
 @pytest.mark.asyncio
-async def test_films_cache(redis_client, generate_docs, make_get_request):
+async def test_films_sort_imdb_rating_asc(generate_movies, make_get_request):
+    # Проверка правильности сортировки.
+    expected_full_map = sorted(generate_movies, key=lambda elem: elem['_source']['imdb_rating'])
+    expected = [FakeFilmBrief.parse_obj(film['_source']) for film in expected_full_map]
+    
+    response = await make_get_request(f'films', params={'sort': 'imdb_rating'})
+
+    assert expected == response.body['items']
+
+
+@pytest.mark.asyncio
+async def test_films_cache(redis_client, generate_movies, make_get_request):
     # Проверка работы системы кэширования.
-    await redis_client.flushall()
-    film_for_test = generate_docs.films[0]
-    film_id = film_for_test['_id']
-    elastic_response = await make_get_request(f'film/{film_id}')
-    cache_key = f'movies::detail::{film_id}'
+    film = generate_movies[0]
+    elastic_response = await make_get_request(f'film/{film["_id"]}')
+    
+    cache_key = f'movies::detail::{film["_id"]}'
     redis_response = await redis_client.get(cache_key)
-    redis_data = orjson.loads(redis_response)['_source']
+    redis_data = orjson.loads(redis_response)
 
-    for k, v in elastic_response.body.items():
-        assert redis_data[k] == v
-
+    elastic_response.body['id'] == redis_data['_source']['id']
+    elastic_response.body['title'] == redis_data['_source']['title']
+    elastic_response.body['description'] == redis_data['_source']['description']
+    elastic_response.body['imdb_rating'] == redis_data['_source']['imdb_rating']
+    elastic_response.body['genres_list'] == redis_data['_source']['genres_list']
+    elastic_response.body['directors_names'] == redis_data['_source']['directors_names']
+    elastic_response.body['actors_names'] == redis_data['_source']['actors_names']
+    elastic_response.body['writers_names'] == redis_data['_source']['writers_names']

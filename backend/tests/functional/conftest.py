@@ -1,6 +1,5 @@
 import asyncio
 from dataclasses import dataclass
-from asyncio import sleep
 from typing import Any, Optional
 
 import aiohttp
@@ -75,7 +74,7 @@ def event_loop():
 
 
 @pytest.fixture(scope='session')
-async def generate_genre(es_client):
+async def generate_genres(es_client):
     genre_dg = GenreDataGenerator(conn=es_client)
     
     yield await genre_dg.load()
@@ -84,7 +83,7 @@ async def generate_genre(es_client):
 
 
 @pytest.fixture(scope='session')
-async def generate_person(es_client):
+async def generate_persons(es_client):
     person_dg = PersonDataGenerator(conn=es_client)
 
     yield await person_dg.load()
@@ -99,3 +98,8 @@ async def generate_movies(es_client):
     yield await film_dg.load()
 
     await film_dg.clean()
+
+
+@pytest.fixture(autouse=True)
+async def redis_flushall_storage(redis_client):
+    await redis_client.flushall()

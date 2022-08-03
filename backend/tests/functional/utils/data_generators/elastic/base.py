@@ -1,19 +1,17 @@
-"""
-Генерации фейковых данных, которые используются для тестов.
-
-"""
-
 import json
 from abc import abstractmethod
 from typing import Any
 from elasticsearch import AsyncElasticsearch
-from elasticsearch.helpers import async_bulk, bulk
+from elasticsearch.helpers import async_bulk
 from pydantic.main import ModelMetaclass
 
 from ..base import BaseDataGenerator
+from functional.settings import CONFIG
 
 
 class BaseElasticDataGenerator(BaseDataGenerator):
+    '''Генерации фейковых данных, которые используются для тестов.'''
+    
     conn = None
     data = []
 
@@ -27,31 +25,28 @@ class BaseElasticDataGenerator(BaseDataGenerator):
 
     async def load(self):
         fake_data: list[ModelMetaclass] = []
+        elastic_data: list[ModelMetaclass] = []
+        response_data: list[ModelMetaclass] = []
 
-        #TODO: bad locally
-        with open(f'/opt/tests/functional/testdata/{self.index}.json', 'r') as fd:
+        with open(f'{CONFIG.BASE_DIR}/testdata/{self.index}.json', 'r') as fd:
             fake_data = json.load(fd)
 
-        #TODO refactoring
-        fake_models = []
-        response_models = []
         for elem in fake_data:
-
             model = self.fake_model.parse_obj(elem)
-            fake_models.append(model)
-            response_models.append(self.response_model.parse_obj({**elem, **model.dict()}))
-        # response_models = (self.response_model.parse_obj(elem) for elem in fake_data)
+            elastic_data.append(model)
+            response_data.append(self.response_model.parse_obj({**elem, **model.dict()}))
      
-        self.data = self.data_wrapper(fake_docs=fake_models)
+        self.data = self._data_wrapper(fake_docs=elastic_data)
         await async_bulk(self.conn, self.data)
+        await self.conn.indices.refresh(index=self.index)
 
-        return self.data_wrapper(fake_docs=response_models)
-        
+        return self._data_wrapper(response_data)
+
     async def clean(self):
         docs_to_delete = [{'_op_type': 'delete', '_index': self.index, '_id': doc['_id']} for doc in self.data]
         await async_bulk(self.conn, docs_to_delete)
 
-    def data_wrapper(self, fake_docs: list[ModelMetaclass]) -> list[dict[str, Any]]:
+    def _data_wrapper(self, fake_docs: list[ModelMetaclass]) -> list[dict[str, Any]]:
         return [
             {
                 '_index': self.index,

@@ -1,8 +1,3 @@
-"""
-Модели фейковых документов.
-
-"""
-
 import uuid
 from faker import Faker
 
