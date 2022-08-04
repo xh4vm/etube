@@ -3,7 +3,6 @@ from typing import Any, Optional
 
 
 class BaseCache(ABC):
-
     @abstractmethod
     def get(self, key: str, default_value: Optional[str] = None) -> Optional[str]:
         """Получение данных из кеша"""

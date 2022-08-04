@@ -1,5 +1,6 @@
 from typing import Optional, Type
-from dependency_injector import providers, containers
+
+from dependency_injector import containers, providers
 
 from ..services.base import BaseService
 from ..services.cache.base import BaseCache

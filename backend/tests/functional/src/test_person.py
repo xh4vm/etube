@@ -1,5 +1,6 @@
 import orjson
 import pytest
+
 from ..settings import CacheSettings
 from ..utils.fake_models.person import FakePersonBrief
 
@@ -30,8 +31,8 @@ async def test_person_sort_name_desc(generate_persons, make_get_request):
     # Проверка правильности сортировки.
     expected_full_map = sorted(generate_persons, key=lambda elem: elem['_source']['name'], reverse=True)
     expected = [FakePersonBrief.parse_obj(person['_source']) for person in expected_full_map]
-    
-    response = await make_get_request(f'persons', params={'sort': 'name.raw:desc'})
+
+    response = await make_get_request('persons', params={'sort': 'name.raw:desc'})
 
     assert expected == response.body['items']
 
@@ -41,8 +42,8 @@ async def test_person_sort_name_asc(generate_persons, make_get_request):
     # Проверка правильности сортировки.
     expected_full_map = sorted(generate_persons, key=lambda elem: elem['_source']['name'])
     expected = [FakePersonBrief.parse_obj(person['_source']) for person in expected_full_map]
-    
-    response = await make_get_request(f'persons', params={'sort': 'name.raw'})
+
+    response = await make_get_request('persons', params={'sort': 'name.raw'})
 
     assert expected == response.body['items']
 
@@ -55,7 +56,7 @@ async def test_person_cache(redis_client, generate_persons, make_get_request):
     elastic_response = await make_get_request(f'person/{person["_id"]}')
     elastic_data = elastic_response.body
 
-    cache_key = CacheSettings.get_doc_id_cache('persons', person["_id"])
+    cache_key = CacheSettings.get_doc_id_cache('persons', person['_id'])
     redis_response = await redis_client.get(cache_key)
     redis_data = orjson.loads(redis_response)
 

@@ -4,41 +4,41 @@
 """
 
 from abc import ABC, abstractmethod
+
 from pydantic.main import ModelMetaclass
 
 
 class BaseDataGenerator(ABC):
-
     @property
     @abstractmethod
     def fake_model(self) -> ModelMetaclass:
-        '''Fake model'''
+        """Fake model"""
 
     @property
     @abstractmethod
     def response_model(self) -> ModelMetaclass:
-        '''Response model'''
+        """Response model"""
 
     @property
     @abstractmethod
     def conn(self):
-        '''Datastore connector'''
+        """Datastore connector"""
 
     @property
     def data(self) -> list[ModelMetaclass]:
-        '''Сгенерированные фейковые данные'''
+        """Сгенерированные фейковые данные"""
 
     @property
     def response_data(self) -> list[ModelMetaclass]:
-        '''Данные ответа'''
+        """Данные ответа"""
 
     @abstractmethod
     async def load(self) -> list[ModelMetaclass]:
-        '''Метод загрузки тестовых данных в хранилище'''
+        """Метод загрузки тестовых данных в хранилище"""
 
     @abstractmethod
     async def clean(self) -> None:
-        '''Метод удаления тестовых данных из хранилища'''
+        """Метод удаления тестовых данных из хранилища"""
 
     def __init__(self, conn) -> None:
         self.conn = conn

@@ -6,25 +6,22 @@ from fastapi.responses import ORJSONResponse
 from .api.v1.films import router as film_router
 from .api.v1.genres import router as genre_router
 from .api.v1.persons import router as person_router
-from .core.config import CONFIG
-from .db import elastic, redis
-
-from .containers.base import BaseContainer
+from .containers.cache import CacheResource, RedisCacheResource
 from .containers.film import ServiceContainer as FilmServiceContainer
 from .containers.genre import ServiceContainer as GenreServiceContainer
 from .containers.person import ServiceContainer as PersonServiceContainer
-
-from .containers.cache import CacheResource, RedisCacheResource
-from .containers.search import SearchResource, ElasticSearchResource
+from .containers.search import ElasticSearchResource, SearchResource
+from .core.config import CONFIG
+from .db import elastic, redis
 
 
 def register_di_containers():
-    redis_resource = cache_svc=CacheResource(RedisCacheResource)
+    redis_resource = CacheResource(RedisCacheResource)
     elasticsearch_resource = SearchResource(ElasticSearchResource)
 
-    film_service_container = FilmServiceContainer(cache_svc=redis_resource, search_svc=elasticsearch_resource)
-    genre_service_container = GenreServiceContainer(cache_svc=redis_resource, search_svc=elasticsearch_resource)
-    person_service_container = PersonServiceContainer(cache_svc=redis_resource, search_svc=elasticsearch_resource)
+    FilmServiceContainer(cache_svc=redis_resource, search_svc=elasticsearch_resource)
+    GenreServiceContainer(cache_svc=redis_resource, search_svc=elasticsearch_resource)
+    PersonServiceContainer(cache_svc=redis_resource, search_svc=elasticsearch_resource)
 
 
 def register_routers(app: FastAPI):
@@ -50,6 +47,7 @@ def create_app():
 
 
 app = create_app()
+
 
 @app.on_event('startup')
 async def startup():

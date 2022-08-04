@@ -1,5 +1,5 @@
-from .base import BaseElasticDataGenerator
 from ...fake_models.film import FakeFilmFull
+from .base import BaseElasticDataGenerator
 
 
 class FilmDataGenerator(BaseElasticDataGenerator):

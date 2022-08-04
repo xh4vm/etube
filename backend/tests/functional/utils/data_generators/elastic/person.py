@@ -1,6 +1,6 @@
-from .base import BaseElasticDataGenerator
-from ...fake_models.person import FakePersonFull
 from ...fake_models.film import FakeFilmPersonRel
+from ...fake_models.person import FakePersonFull
+from .base import BaseElasticDataGenerator
 
 
 class PersonDataGenerator(BaseElasticDataGenerator):
