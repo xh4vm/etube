@@ -1,6 +1,7 @@
 import orjson
 import pytest
 from ..settings import CacheSettings
+from ..utils.fake_models.genre import FakeGenreBrief
 
 
 @pytest.mark.asyncio
@@ -17,7 +18,7 @@ async def test_genre_details(generate_movies, generate_genres, make_get_request)
 
 
 @pytest.mark.asyncio
-async def test_genre_error(make_get_request):
+async def test_genre_error(generate_genres, make_get_request):
     # Поиск несуществующего жанра.
     genre_id = '0123456789'
     response = await make_get_request(f'genre/{genre_id}')
@@ -26,12 +27,25 @@ async def test_genre_error(make_get_request):
 
 
 @pytest.mark.asyncio
-async def test_genre_sort(make_get_request):
+async def test_genre_sort_name_desc(generate_genres, make_get_request):
     # Проверка правильности сортировки.
-    response = await make_get_request(f'genres', params={'sort': 'name.raw'})
-    genres_in_response = [genre['name'] for genre in response.body['items']]
+    expected_full_map = sorted(generate_genres, key=lambda elem: elem['_source']['name'], reverse=True)
+    expected = [FakeGenreBrief.parse_obj(genre['_source']) for genre in expected_full_map]
+    
+    response = await make_get_request(f'genres', params={'sort': 'name.raw:desc'})
 
-    assert genres_in_response == sorted(genres_in_response)
+    assert expected == response.body['items']
+
+
+@pytest.mark.asyncio
+async def test_genre_sort_name_asc(generate_genres, make_get_request):
+    # Проверка правильности сортировки.
+    expected_full_map = sorted(generate_genres, key=lambda elem: elem['_source']['name'])
+    expected = [FakeGenreBrief.parse_obj(genre['_source']) for genre in expected_full_map]
+    
+    response = await make_get_request(f'genres', params={'sort': 'name.raw'})
+
+    assert expected == response.body['items']
 
 
 @pytest.mark.asyncio

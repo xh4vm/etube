@@ -22,7 +22,7 @@ async def test_film_details(generate_movies, make_get_request):
 
 
 @pytest.mark.asyncio
-async def test_film_error(make_get_request):
+async def test_film_error(generate_movies, make_get_request):
     # Поиск несуществующего фильма.
     film_id = '0123456789'
     response = await make_get_request(f'film/{film_id}')
@@ -61,6 +61,28 @@ async def test_films_sort_imdb_rating_asc(generate_movies, make_get_request):
     expected = [FakeFilmBrief.parse_obj(film['_source']) for film in expected_full_map]
     
     response = await make_get_request(f'films', params={'sort': 'imdb_rating'})
+
+    assert expected == response.body['items']
+
+
+@pytest.mark.asyncio
+async def test_films_sort_title_desc(generate_movies, make_get_request):
+    # Проверка правильности сортировки.
+    expected_full_map = sorted(generate_movies, key=lambda elem: elem['_source']['title'], reverse=True)
+    expected = [FakeFilmBrief.parse_obj(film['_source']) for film in expected_full_map]
+    
+    response = await make_get_request(f'films', params={'sort': 'title.raw:desc'})
+
+    assert expected == response.body['items']
+
+
+@pytest.mark.asyncio
+async def test_films_sort_title_asc(generate_movies, make_get_request):
+    # Проверка правильности сортировки.
+    expected_full_map = sorted(generate_movies, key=lambda elem: elem['_source']['title'])
+    expected = [FakeFilmBrief.parse_obj(film['_source']) for film in expected_full_map]
+    
+    response = await make_get_request(f'films', params={'sort': 'title'})
 
     assert expected == response.body['items']
 

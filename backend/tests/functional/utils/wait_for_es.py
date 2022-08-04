@@ -1,5 +1,4 @@
-import time
-
+import backoff
 from elasticsearch import Elasticsearch
 
 from ..settings import CONFIG
@@ -7,12 +6,9 @@ from ..settings import CONFIG
 es = Elasticsearch(hosts=f'{CONFIG.ELASTIC.protocol}://{CONFIG.ELASTIC.host}:{CONFIG.ELASTIC.port}')
 
 
+@backoff.on_predicate(backoff.expo)
 def wait_for_elastic():
-    while not es.ping():
-        print('Waiting for elastic...')
-        time.sleep(1)
-
-    print('Connected to elastic.')
+    return es.ping()
 
 
 if __name__ == '__main__':

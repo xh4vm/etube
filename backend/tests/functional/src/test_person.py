@@ -1,6 +1,7 @@
 import orjson
 import pytest
 from ..settings import CacheSettings
+from ..utils.fake_models.person import FakePersonBrief
 
 
 @pytest.mark.asyncio
@@ -25,12 +26,25 @@ async def test_person_error(make_get_request):
 
 
 @pytest.mark.asyncio
-async def test_person_sort(make_get_request):
+async def test_person_sort_name_desc(generate_persons, make_get_request):
     # Проверка правильности сортировки.
-    response = await make_get_request(f'persons?sort=name.raw')
-    persons_in_response = [person['name'] for person in response.body['items']]
+    expected_full_map = sorted(generate_persons, key=lambda elem: elem['_source']['name'], reverse=True)
+    expected = [FakePersonBrief.parse_obj(person['_source']) for person in expected_full_map]
+    
+    response = await make_get_request(f'persons', params={'sort': 'name.raw:desc'})
 
-    assert persons_in_response == sorted(persons_in_response)
+    assert expected == response.body['items']
+
+
+@pytest.mark.asyncio
+async def test_person_sort_name_asc(generate_persons, make_get_request):
+    # Проверка правильности сортировки.
+    expected_full_map = sorted(generate_persons, key=lambda elem: elem['_source']['name'])
+    expected = [FakePersonBrief.parse_obj(person['_source']) for person in expected_full_map]
+    
+    response = await make_get_request(f'persons', params={'sort': 'name.raw'})
+
+    assert expected == response.body['items']
 
 
 @pytest.mark.asyncio

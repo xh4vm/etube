@@ -1,5 +1,5 @@
 import random
-from typing import Any
+from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 from .base import fake, get_new_id
@@ -37,4 +37,4 @@ class FakeFilmGenreRel(FakeGenreFull):
 
 
 class FakeFilmPersonRel(FakePersonFull):
-    films: list[FakeFilmBrief] = Field(default=[])
+    films: dict[Literal['actor', 'writer', 'director'], list[FakeFilmBrief]] = Field(default={'actor': [], 'writer': [], 'director': []})
