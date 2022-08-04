@@ -1,5 +1,6 @@
 import orjson
 import pytest
+from ..settings import CacheSettings
 
 
 @pytest.mark.asyncio
@@ -9,7 +10,6 @@ async def test_genre_details(generate_movies, generate_genres, make_get_request)
     response = await make_get_request(f'genre/{expected["_id"]}')
 
     assert response.status == 200
-
     assert response.body['id'] == expected['_source']['id']
     assert response.body['name'] == expected['_source']['name']
     assert response.body['description'] == expected['_source']['description']
@@ -42,7 +42,7 @@ async def test_genre_cache(redis_client, generate_genres, make_get_request):
     elastic_response = await make_get_request(f'genre/{genre["_id"]}')
     elastic_data = elastic_response.body
 
-    cache_key = f'genres::detail::{genre["_id"]}'
+    cache_key = CacheSettings.get_doc_id_cache('genres', genre["_id"])
     redis_response = await redis_client.get(cache_key)
     redis_data = orjson.loads(redis_response)
     

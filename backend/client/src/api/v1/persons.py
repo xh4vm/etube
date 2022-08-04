@@ -37,9 +37,9 @@ async def person_details(
     for film in films.items:
         if person.name in film.directors_names:
             person_films[PersonModelRole.DIRECTOR].append(FilmModelBrief.parse_obj(film))
-        elif person.name in film.actors_names:
+        if person.name in film.actors_names:
             person_films[PersonModelRole.ACTOR].append(FilmModelBrief.parse_obj(film))
-        elif person.name in film.writers_names:
+        if person.name in film.writers_names:
             person_films[PersonModelRole.WRITER].append(FilmModelBrief.parse_obj(film))
 
     return PersonModelFull(id=person.id, name=person.name, films=person_films)

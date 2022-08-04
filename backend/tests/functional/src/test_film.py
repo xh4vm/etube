@@ -1,5 +1,6 @@
 import orjson
 import pytest
+from ..settings import CacheSettings
 from ..utils.fake_models.film import FakeFilmBrief
 
 
@@ -70,15 +71,15 @@ async def test_films_cache(redis_client, generate_movies, make_get_request):
     film = generate_movies[0]
     elastic_response = await make_get_request(f'film/{film["_id"]}')
     
-    cache_key = f'movies::detail::{film["_id"]}'
+    cache_key = CacheSettings.get_doc_id_cache('movies', film["_id"])
     redis_response = await redis_client.get(cache_key)
     redis_data = orjson.loads(redis_response)
 
-    elastic_response.body['id'] == redis_data['_source']['id']
-    elastic_response.body['title'] == redis_data['_source']['title']
-    elastic_response.body['description'] == redis_data['_source']['description']
-    elastic_response.body['imdb_rating'] == redis_data['_source']['imdb_rating']
-    elastic_response.body['genres_list'] == redis_data['_source']['genres_list']
-    elastic_response.body['directors_names'] == redis_data['_source']['directors_names']
-    elastic_response.body['actors_names'] == redis_data['_source']['actors_names']
-    elastic_response.body['writers_names'] == redis_data['_source']['writers_names']
+    assert elastic_response.body['id'] == redis_data['_source']['id']
+    assert elastic_response.body['title'] == redis_data['_source']['title']
+    assert elastic_response.body['description'] == redis_data['_source']['description']
+    assert elastic_response.body['imdb_rating'] == redis_data['_source']['imdb_rating']
+    assert elastic_response.body['genres_list'] == redis_data['_source']['genres_list']
+    assert elastic_response.body['directors_names'] == redis_data['_source']['directors_names']
+    assert elastic_response.body['actors_names'] == redis_data['_source']['actors_names']
+    assert elastic_response.body['writers_names'] == redis_data['_source']['writers_names']
