@@ -1,6 +1,6 @@
 import hashlib
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Any, Optional
 
 from elastic_transport import ObjectApiResponse
 from pydantic.main import ModelMetaclass
@@ -53,9 +53,11 @@ class BaseService(ABC):
 
         if data is None:
             service_logger.info(f'Кеш в методе "get_by_id" пo ключу {cache_key} не найден.')
-            data: ObjectApiResponse = await self.search_svc.get_by_id(index=self.index, id=id)
+            data: Optional[ObjectApiResponse] = await self.search_svc.get_by_id(index=self.index, id=id)
+            
+            body: dict[str, Any] = data.body if data is not None else None
 
-            await self.cache_svc.set(key=cache_key, data=data.body)
+            await self.cache_svc.set(key=cache_key, data=body)
 
         return self.full_model.parse_obj(data['_source']) if data is not None else None
 

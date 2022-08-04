@@ -14,7 +14,7 @@ class FilmIndex(Settings):
     index: str = Field(..., env='INDEX_MOVIES')
     brief_model: ModelMetaclass = FilmModelBrief
     full_model: ModelMetaclass = FilmModelFull
-    search_fields: list[str] = ['title', 'description']
+    search_fields: list[str] = ['title^2', 'description']
     model_sort: ModelMetaclass = FilmModelSort
     model_filter: ModelMetaclass = FilmModelFilter
 
@@ -23,7 +23,7 @@ class GenreIndex(Settings):
     index: str = Field(..., env='INDEX_GENRES')
     brief_model: ModelMetaclass = GenreModelBrief
     full_model: ModelMetaclass = GenreModelFull
-    search_fields: list[str] = ['name', 'description']
+    search_fields: list[str] = ['name^2', 'description']
     model_sort: ModelMetaclass = GenreModelSort
     model_filter: ModelMetaclass = GenreModelFilter
 

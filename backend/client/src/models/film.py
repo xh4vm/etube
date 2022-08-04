@@ -12,10 +12,10 @@ class FilmModelBrief(ModelClass):
 class FilmModelFull(FilmModelBrief):
     # Полная версия модели для отображения при поиске одного фильма.
     # Является валидирующей для входящих из эластика данных.
-    director: list[str]
+    directors_names: list[str]
     actors_names: list[str]
     writers_names: list[str]
-    genre: list[str]
+    genres_list: list[str]
     description: str = None
 
 
@@ -29,4 +29,4 @@ class FilmModelSort(StrEnum):
 
 class FilmModelFilter(StrEnum):
     # Модель возможных параметров фильтрации фильмов.
-    GENRE = 'genre'
+    GENRE = 'genres_list'

@@ -1,12 +1,18 @@
 .PHONY: interactive build services
 build: collectstatic build-dockers
 
+.PHONY: interactive build services with test profile
+build-test: collectstatic build-dockers-test-profile
+
 .PHONY: interactive run services
 run:
-	docker compose up
+	docker-compose --profile dev up
 
 .PHONY: daemon build services
 buildd: collectstatic buildd-dockers
+
+.PHONY: daemon build services with test profile
+buildd-test: collectstatic buildd-dockers-test-profile
 
 .PHONY: start postman/newman test API
 postman-test: 
@@ -15,9 +21,12 @@ postman-test:
 .PHONY: transfer data from sqlite into postgresql
 s2p: create-venv pip-install-s2p load_data_from_s2p
 
+.PHONY: test api
+test: create-venv pip-install-test test-api
+
 .PHONY: daemon run services
 rund:
-	docker compose up -d
+	docker-compose --profile dev up -d
 
 .PHONY: backend-admin cli
 cli-admin:
@@ -60,20 +69,36 @@ pip-install-s2p:
 load_data_from_s2p:
 	./venv/bin/python3 backend/sqlite_to_postgres/load_data.py
 
+.PHONY: test api
+test-api:
+	./venv/bin/pytest backend/tests/functional/src
+
 .PHONY: collect static files
 collectstatic-with-venv:
 	./venv/bin/python3 backend/admin/manage.py collectstatic --noinput
+
+.PHONY: install requirements-test
+pip-install-test:
+	./venv/bin/pip3 install -r requirements-test.txt
 
 .PHONY: collect static files
 collectstatic: create-venv pip-install-build collectstatic-with-venv
 
 .PHONY: interactive build docker services
 build-dockers:
-	docker compose up --build
+	docker-compose --profile dev up --build
 
 .PHONY: daemon build docker services
 buildd-dockers:
-	docker compose up -d --build
+	docker-compose --profile dev up -d --build
+
+.PHONY: interactive build docker services with test profile
+build-dockers-test-profile:
+	docker-compose --profile test up --build
+
+.PHONY: daemon build docker services with test profile
+buildd-dockers-test-profile:
+	docker-compose --profile test up -d --build
 
 .PHONY: run pre-commit all files
 pre-commit-files:

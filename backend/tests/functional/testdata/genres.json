@@ -1,0 +1,73 @@
+[
+    {
+        "id": "f108224e-ad1d-407a-8689-c7d8b2cfaa6a",
+        "name": "Fantasy",
+        "films": [
+            {
+                "id": "49a8c020-9830-418f-8926-0a4af2c5d656",
+                "title": "Film 1",
+                "imdb_rating": 5.0
+            }
+        ]
+    },
+    {
+        "id": "47f1082e-ad1d-407a-8689-c7d8b2cfaa6a",
+        "name": "Biography",
+        "films": []
+    },
+    {
+        "id": "69f1568e-ad1d-407a-8689-c7d8b2cfaa6a",
+        "name": "Drama",
+        "films": [
+            {
+                "id": "42570c97-334a-4794-b49e-c397f0a87bcd",
+                "title": "Film 3",
+                "imdb_rating": 1.4
+            }
+        ]
+    },
+    {
+        "id": "1234782e-ad1d-407a-8689-c7d8b2cfaa6a",
+        "name": "Anime",
+        "films": [
+            {
+                "id": "49a8c020-9830-418f-8926-0a4af2c5d656",
+                "title": "Film 1",
+                "imdb_rating": 5.0
+            }
+        ]
+    },
+    {
+        "id": "243562e-ad1d-407a-8689-c7d8b2cfaa6a",
+        "name": "History",
+        "films": [
+            {
+                "id": "42570c97-334a-4794-b49e-c397f0a87bcd",
+                "title": "Film 3",
+                "imdb_rating": 1.4
+            }
+        ]
+    },
+    {
+        "id": "e4762e-ad1d-407a-8689-c7d8b2cfaa6a",
+        "name": "Horror",
+        "films": [
+            {
+                "id": "b1278a54-98fc-4d0c-a76c-0b0b1aee8b8b",
+                "title": "Film 2",
+                "imdb_rating": 3.7
+            }
+        ]
+    },
+    {
+        "id": "d472462e-ad1d-407a-8689-c7d8b2cfaa6a",
+        "name": "Sport",
+        "films": [
+            {
+                "id": "3ef2de3d-5bea-46ef-92f1-b7595eff20c8",
+                "title": "Film 4",
+                "imdb_rating": 4.2
+            }
+        ]
+    }
+]

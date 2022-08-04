@@ -18,7 +18,7 @@ class SearchParams(BaseModel, Generic[SFTYPE]):
 
     def __str__(self) -> str:
         return (
-            f'page={self.page},page_size={self.page_size}search_fields={self.search_fields},'
+            f'page={self.page},page_size={self.page_size},search_fields={self.search_fields},'
             f'search_value={self.search_value},sort_field={self.sort_fields},filters={self.filters}'
         )
 
@@ -31,7 +31,7 @@ class SearchResult(BaseModel):
 class BaseSearch(ABC):
 
     @abstractmethod
-    def get_by_id(self, id: str) -> Optional[ModelMetaclass]:
+    def get_by_id(self, index: str, id: str) -> Optional[ModelMetaclass]:
         """Получить результат по ид"""
 
     @abstractmethod

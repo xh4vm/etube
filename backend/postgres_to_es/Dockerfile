@@ -1,4 +1,4 @@
-FROM python:3.10-slim AS build 
+FROM python:3.10-slim AS etl-builder
 
 WORKDIR /opt
 COPY requirements.txt .
@@ -9,10 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl && pip ins
 FROM python:3.10-slim
 
 WORKDIR /opt/etl
-ENTRYPOINT [ "/bin/bash", "-c",  "./elasticsearch/init_indices.sh && celery -A etl worker -l info -B" ]
+ENTRYPOINT [ "celery", "-A", "etl", "worker", "-l", "info", "-B" ]
 
-COPY --from=build /usr/bin /usr/bin
-COPY --from=build /usr/lib /usr/lib
-COPY --from=build /usr/local /usr/local
+COPY --from=etl-builder /usr/bin /usr/bin
+COPY --from=etl-builder /usr/lib /usr/lib
+COPY --from=etl-builder /usr/local /usr/local
 COPY . .
-RUN chmod +x ./elasticsearch/init_indices.sh
