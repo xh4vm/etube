@@ -1,5 +1,6 @@
 import orjson
 import pytest
+from ..settings import CacheSettings
 
 
 @pytest.mark.asyncio
@@ -63,13 +64,10 @@ async def test_person_sort(redis_client, make_get_request):
 async def test_person_cache(redis_client, generate_docs, make_get_request):
     # Проверка работы системы кэширования.
     await redis_client.flushall()
-    person_for_test = generate_docs.persons[0]
-    person_id = person_for_test['_id']
+    person_id = generate_docs.persons[0]['_id']
     elastic_response = await make_get_request(f'person/{person_id}')
-    cache_key = f'persons::detail::{person_id}'
+    cache_key = CacheSettings.get_doc_id_cache('persons', person_id)
     redis_response = await redis_client.get(cache_key)
-    elastic_data = elastic_response.body
     redis_data = orjson.loads(redis_response)['_source']
-    main_fields = ['id', 'name']
-    for field in main_fields:
-        assert redis_data[field] == elastic_data[field]
+    for field in ['id', 'name']:
+        assert redis_data[field] == elastic_response.body[field]

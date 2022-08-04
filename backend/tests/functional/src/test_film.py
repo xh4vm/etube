@@ -61,7 +61,7 @@ async def test_films_cache(redis_client, generate_docs, make_get_request):
     film_for_test = generate_docs.films[0]
     film_id = film_for_test['_id']
     elastic_response = await make_get_request(f'film/{film_id}')
-    cache_key = CacheSettings.get_film_id_cache(film_id)
+    cache_key = CacheSettings.get_doc_id_cache('movies', film_id)
     redis_response = await redis_client.get(cache_key)
     redis_data = orjson.loads(redis_response)['_source']
 

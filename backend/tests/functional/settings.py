@@ -39,8 +39,8 @@ class CacheSettings:
     # Параметры кэширования для использования в тестах.
 
     @classmethod
-    def get_film_id_cache(cls, film_id: str) -> str:
-        return f'movies::detail::{film_id}'
+    def get_doc_id_cache(cls, index: str, doc_id: str) -> str:
+        return f'{index}::detail::{doc_id}'
 
     @classmethod
     def get_film_search_cache(cls, film_title: str) -> str:
