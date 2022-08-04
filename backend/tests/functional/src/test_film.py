@@ -1,5 +1,6 @@
 import orjson
 import pytest
+
 from ..settings import CacheSettings
 from ..utils.fake_models.film import FakeFilmBrief
 
@@ -34,9 +35,11 @@ async def test_film_error(generate_movies, make_get_request):
 async def test_films_filter(generate_movies, generate_genres, make_get_request):
     # Проверка фильтра по жанру (полнота списка фильмов).
     genre_filter = generate_genres[0]['_source']['name']
-    
+
     films = generate_movies
-    expected = [FakeFilmBrief.parse_obj(film['_source']) for film in films if genre_filter in film['_source']['genres_list']]
+    expected = [
+        FakeFilmBrief.parse_obj(film['_source']) for film in films if genre_filter in film['_source']['genres_list']
+    ]
 
     response = await make_get_request('films', params={'filters': f'genres_list:{genre_filter}'})
 
@@ -48,8 +51,8 @@ async def test_films_sort_imdb_rating_desc(generate_movies, make_get_request):
     # Проверка правильности сортировки.
     expected_full_map = sorted(generate_movies, key=lambda elem: elem['_source']['imdb_rating'], reverse=True)
     expected = [FakeFilmBrief.parse_obj(film['_source']) for film in expected_full_map]
-    
-    response = await make_get_request(f'films', params={'sort': 'imdb_rating:desc'})
+
+    response = await make_get_request('films', params={'sort': 'imdb_rating:desc'})
 
     assert expected == response.body['items']
 
@@ -59,8 +62,8 @@ async def test_films_sort_imdb_rating_asc(generate_movies, make_get_request):
     # Проверка правильности сортировки.
     expected_full_map = sorted(generate_movies, key=lambda elem: elem['_source']['imdb_rating'])
     expected = [FakeFilmBrief.parse_obj(film['_source']) for film in expected_full_map]
-    
-    response = await make_get_request(f'films', params={'sort': 'imdb_rating'})
+
+    response = await make_get_request('films', params={'sort': 'imdb_rating'})
 
     assert expected == response.body['items']
 
@@ -70,8 +73,8 @@ async def test_films_sort_title_desc(generate_movies, make_get_request):
     # Проверка правильности сортировки.
     expected_full_map = sorted(generate_movies, key=lambda elem: elem['_source']['title'], reverse=True)
     expected = [FakeFilmBrief.parse_obj(film['_source']) for film in expected_full_map]
-    
-    response = await make_get_request(f'films', params={'sort': 'title.raw:desc'})
+
+    response = await make_get_request('films', params={'sort': 'title.raw:desc'})
 
     assert expected == response.body['items']
 
@@ -81,8 +84,8 @@ async def test_films_sort_title_asc(generate_movies, make_get_request):
     # Проверка правильности сортировки.
     expected_full_map = sorted(generate_movies, key=lambda elem: elem['_source']['title'])
     expected = [FakeFilmBrief.parse_obj(film['_source']) for film in expected_full_map]
-    
-    response = await make_get_request(f'films', params={'sort': 'title'})
+
+    response = await make_get_request('films', params={'sort': 'title'})
 
     assert expected == response.body['items']
 
@@ -92,8 +95,8 @@ async def test_films_cache(redis_client, generate_movies, make_get_request):
     # Проверка работы системы кэширования.
     film = generate_movies[0]
     elastic_response = await make_get_request(f'film/{film["_id"]}')
-    
-    cache_key = CacheSettings.get_doc_id_cache('movies', film["_id"])
+
+    cache_key = CacheSettings.get_doc_id_cache('movies', film['_id'])
     redis_response = await redis_client.get(cache_key)
     redis_data = orjson.loads(redis_response)
 

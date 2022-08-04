@@ -1,5 +1,6 @@
 import orjson
 import pytest
+
 from ..settings import CacheSettings
 from ..utils.fake_models.genre import FakeGenreBrief
 
@@ -31,8 +32,8 @@ async def test_genre_sort_name_desc(generate_genres, make_get_request):
     # Проверка правильности сортировки.
     expected_full_map = sorted(generate_genres, key=lambda elem: elem['_source']['name'], reverse=True)
     expected = [FakeGenreBrief.parse_obj(genre['_source']) for genre in expected_full_map]
-    
-    response = await make_get_request(f'genres', params={'sort': 'name.raw:desc'})
+
+    response = await make_get_request('genres', params={'sort': 'name.raw:desc'})
 
     assert expected == response.body['items']
 
@@ -42,8 +43,8 @@ async def test_genre_sort_name_asc(generate_genres, make_get_request):
     # Проверка правильности сортировки.
     expected_full_map = sorted(generate_genres, key=lambda elem: elem['_source']['name'])
     expected = [FakeGenreBrief.parse_obj(genre['_source']) for genre in expected_full_map]
-    
-    response = await make_get_request(f'genres', params={'sort': 'name.raw'})
+
+    response = await make_get_request('genres', params={'sort': 'name.raw'})
 
     assert expected == response.body['items']
 
@@ -56,10 +57,10 @@ async def test_genre_cache(redis_client, generate_genres, make_get_request):
     elastic_response = await make_get_request(f'genre/{genre["_id"]}')
     elastic_data = elastic_response.body
 
-    cache_key = CacheSettings.get_doc_id_cache('genres', genre["_id"])
+    cache_key = CacheSettings.get_doc_id_cache('genres', genre['_id'])
     redis_response = await redis_client.get(cache_key)
     redis_data = orjson.loads(redis_response)
-    
+
     assert elastic_data['id'] == redis_data['_source']['id']
     assert elastic_data['name'] == redis_data['_source']['name']
     assert elastic_data['description'] == redis_data['_source']['description']

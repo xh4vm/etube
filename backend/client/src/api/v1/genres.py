@@ -1,14 +1,14 @@
 from http import HTTPStatus
-from dependency_injector.wiring import inject, Provide
 
+from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, HTTPException
+from src.containers.genre import ServiceContainer
 from src.core.config import CONFIG
 from src.models.base import PageModel
 from src.models.film import FilmModelBrief, FilmModelSort
 from src.models.genre import GenreModelBrief, GenreModelFull
 from src.services.film import FilmService
 from src.services.genre import GenreService
-from src.containers.genre import ServiceContainer
 
 router = APIRouter(prefix='/genre', tags=['Genres'])
 
@@ -18,7 +18,7 @@ router = APIRouter(prefix='/genre', tags=['Genres'])
 async def genre_details(
     genre_id: str,
     film_service: FilmService = Depends(Provide[ServiceContainer.film_service]),
-    genre_service: GenreService = Depends(Provide[ServiceContainer.genre_service])
+    genre_service: GenreService = Depends(Provide[ServiceContainer.genre_service]),
 ) -> GenreModelFull:
     """Информация о жанре и топ {PAGE_SIZE} фильмов этого жанра"""
 
@@ -43,6 +43,6 @@ async def genres_list(
     page_size=CONFIG.APP.page_size,
     search='',
     sort=None,
-    genre_service: GenreService = Depends(Provide[ServiceContainer.genre_service])
+    genre_service: GenreService = Depends(Provide[ServiceContainer.genre_service]),
 ) -> PageModel[GenreModelBrief]:
     return await genre_service.search(page=page, page_size=page_size, search_value=search, sort_fields=sort)

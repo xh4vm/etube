@@ -12,7 +12,6 @@ from .search.base import BaseSearch, SearchParams, SearchResult
 
 
 class BaseService(ABC):
-
     def __init__(self, cache_svc: BaseCache, search_svc: BaseSearch):
         self.cache_svc = cache_svc
         self.search_svc = search_svc
@@ -54,7 +53,7 @@ class BaseService(ABC):
         if data is None:
             service_logger.info(f'Кеш в методе "get_by_id" пo ключу {cache_key} не найден.')
             data: Optional[ObjectApiResponse] = await self.search_svc.get_by_id(index=self.index, id=id)
-            
+
             body: dict[str, Any] = data.body if data is not None else None
 
             await self.cache_svc.set(key=cache_key, data=body)

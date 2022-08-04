@@ -1,8 +1,7 @@
 import json
 
-from elastic_initer import ElasticIniter
 from config.base import ELASTIC_CONFIG, ELASTIC_INDICES
-
+from elastic_initer import ElasticIniter
 
 if __name__ == '__main__':
     es_initer = ElasticIniter(settings=ELASTIC_CONFIG)
@@ -11,7 +10,7 @@ if __name__ == '__main__':
 
     for index_name in indices:
         mapping = None
-        
+
         with open(f'./mapping/{index_name}.json', 'r') as fd:
             mapping = json.load(fd)
 

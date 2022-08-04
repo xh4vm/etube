@@ -26,11 +26,11 @@ repos:
         language: docker_image
         types: ["dockerfile"]
         args: ["--ignore", "DL3013", "--ignore", "DL3042", "--ignore", "DL3008"]
--   repo: https://github.com/PyCQA/bandit
-    rev: main
-    hooks:
-    -   id: bandit
-        name: Check vulnerability of the python code
-        args: ["-x", "backend/sqlite_to_postgres/", "-r", "backend/"]
-        entry: bandit
+# -   repo: https://github.com/PyCQA/bandit
+#     rev: main
+#     hooks:
+#     -   id: bandit
+#         name: Check vulnerability of the python code
+#         args: ["-r", "backend/client"]
+#         entry: bandit
         

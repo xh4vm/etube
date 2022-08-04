@@ -1,14 +1,14 @@
 from http import HTTPStatus
-from dependency_injector.wiring import inject, Provide
 
+from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, HTTPException
+from src.containers.person import ServiceContainer
 from src.core.config import CONFIG
 from src.models.base import PageModel
 from src.models.film import FilmModelBrief, FilmModelFull, FilmModelSort
 from src.models.person import (PersonModelBrief, PersonModelFull,
                                PersonModelRole)
 from src.services.film import FilmService
-from src.containers.person import ServiceContainer
 from src.services.person import PersonService
 
 router = APIRouter(prefix='/person', tags=['Persons'])
@@ -19,7 +19,7 @@ router = APIRouter(prefix='/person', tags=['Persons'])
 async def person_details(
     person_id: str,
     film_service: FilmService = Depends(Provide[ServiceContainer.film_service]),
-    person_service: PersonService = Depends(Provide[ServiceContainer.person_service])
+    person_service: PersonService = Depends(Provide[ServiceContainer.person_service]),
 ) -> PersonModelFull:
     """Информация о персоне и топ {PAGE_SIZE} фильмов этого с участием этой персоны"""
 
@@ -52,6 +52,6 @@ async def persons_list(
     page_size=CONFIG.APP.page_size,
     search='',
     sort=None,
-    person_service: PersonService = Depends(Provide[ServiceContainer.person_service])
+    person_service: PersonService = Depends(Provide[ServiceContainer.person_service]),
 ) -> PageModel[PersonModelBrief]:
     return await person_service.search(page=page, page_size=page_size, search_value=search, sort_fields=sort)

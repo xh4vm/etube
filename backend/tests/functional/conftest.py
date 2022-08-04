@@ -10,8 +10,8 @@ from multidict import CIMultiDictProxy
 
 from .settings import CONFIG
 from .utils.data_generators.elastic.genre import GenreDataGenerator
-from .utils.data_generators.elastic.person import PersonDataGenerator
 from .utils.data_generators.elastic.movies import FilmDataGenerator
+from .utils.data_generators.elastic.person import PersonDataGenerator
 
 SERVICE_URL = f'{CONFIG.API.url}:{CONFIG.API.port}'
 
@@ -33,12 +33,14 @@ async def redis_client():
 
 @pytest.fixture(scope='session')
 async def es_client():
-    client = AsyncElasticsearch([
-        (
-            f'{CONFIG.ELASTIC.protocol}://{CONFIG.ELASTIC.user}:{CONFIG.ELASTIC.password}'
-            f'@{CONFIG.ELASTIC.host}:{CONFIG.ELASTIC.port}'
-        )
-    ])
+    client = AsyncElasticsearch(
+        [
+            (
+                f'{CONFIG.ELASTIC.protocol}://{CONFIG.ELASTIC.user}:{CONFIG.ELASTIC.password}'
+                f'@{CONFIG.ELASTIC.host}:{CONFIG.ELASTIC.port}'
+            )
+        ]
+    )
     yield client
     await client.close()
 
@@ -57,11 +59,7 @@ def make_get_request(session):
         url = SERVICE_URL + f'{CONFIG.API.api_path}/{CONFIG.API.api_version}/' + method
         async with session.get(url, params=params) as response:
 
-            return HTTPResponse(
-                body=await response.json(),
-                headers=response.headers,
-                status=response.status,
-            )
+            return HTTPResponse(body=await response.json(), headers=response.headers, status=response.status,)
 
     return inner
 
@@ -76,7 +74,7 @@ def event_loop():
 @pytest.fixture(scope='session')
 async def generate_genres(es_client):
     genre_dg = GenreDataGenerator(conn=es_client)
-    
+
     yield await genre_dg.load()
 
     await genre_dg.clean()
