@@ -3,11 +3,10 @@ from http import HTTPStatus
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, HTTPException
 from src.containers.person import ServiceContainer
-from src.core.config import CONFIG
-from src.models.base import PageModel
+from src.errors.person import PersonError
+from src.models.base import PageModel, Paginator
 from src.models.film import FilmModelBrief, FilmModelFull, FilmModelSort
-from src.models.person import (PersonModelBrief, PersonModelFull,
-                               PersonModelRole)
+from src.models.person import PersonModelBrief, PersonModelFull, PersonModelRole
 from src.services.film import FilmService
 from src.services.person import PersonService
 
@@ -25,7 +24,7 @@ async def person_details(
 
     person: PersonModelFull = await person_service.get_by_id(id=person_id)
     if not person:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Person not found')
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=PersonError.NOT_FOUND)
     films: PageModel[FilmModelFull] = await film_service.search(
         search_fields=['directors_names', 'actors_names', 'writers_names'],
         search_value=person.name,
@@ -48,10 +47,11 @@ async def person_details(
 @router.get(path='s', name='List Of Persons', response_model=PageModel[PersonModelBrief])
 @inject
 async def persons_list(
-    page=CONFIG.APP.page,
-    page_size=CONFIG.APP.page_size,
+    paginator: Paginator = Depends(),
     search='',
     sort=None,
     person_service: PersonService = Depends(Provide[ServiceContainer.person_service]),
 ) -> PageModel[PersonModelBrief]:
-    return await person_service.search(page=page, page_size=page_size, search_value=search, sort_fields=sort)
+    return await person_service.search(
+        page=paginator.page, page_size=paginator.page_size, search_value=search, sort_fields=sort
+    )

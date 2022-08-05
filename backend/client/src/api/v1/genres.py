@@ -3,8 +3,8 @@ from http import HTTPStatus
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, HTTPException
 from src.containers.genre import ServiceContainer
-from src.core.config import CONFIG
-from src.models.base import PageModel
+from src.errors.genre import GenreError
+from src.models.base import PageModel, Paginator
 from src.models.film import FilmModelBrief, FilmModelSort
 from src.models.genre import GenreModelBrief, GenreModelFull
 from src.services.film import FilmService
@@ -25,7 +25,7 @@ async def genre_details(
     genre = await genre_service.get_by_id(id=genre_id)
 
     if not genre:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Genre not found')
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=GenreError.NOT_FOUND)
 
     films: PageModel[FilmModelBrief] = await film_service.search(
         search_fields=['genres_list'], search_value=genre.name, sort_fields=FilmModelSort.IMDB_RATING_DESC.value,
@@ -39,10 +39,11 @@ async def genre_details(
 @router.get(path='s', name='List Of Genres', response_model=PageModel[GenreModelBrief])
 @inject
 async def genres_list(
-    page=CONFIG.APP.page,
-    page_size=CONFIG.APP.page_size,
+    paginator: Paginator = Depends(),
     search='',
     sort=None,
     genre_service: GenreService = Depends(Provide[ServiceContainer.genre_service]),
 ) -> PageModel[GenreModelBrief]:
-    return await genre_service.search(page=page, page_size=page_size, search_value=search, sort_fields=sort)
+    return await genre_service.search(
+        page=paginator.page, page_size=paginator.page_size, search_value=search, sort_fields=sort
+    )
