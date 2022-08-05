@@ -1,33 +1,34 @@
+from http import HTTPStatus
+
 import orjson
 import pytest
 
 from ..settings import CacheSettings
 from ..utils.fake_models.genre import FakeGenreBrief
 
+pytestmark = pytest.mark.asyncio
 
-@pytest.mark.asyncio
+
 async def test_genre_details(generate_movies, generate_genres, make_get_request):
     # Проверка поиска жанра по id (ответ 200 и полнота основных данных).
     expected = generate_genres[0]
     response = await make_get_request(f'genre/{expected["_id"]}')
 
-    assert response.status == 200
+    assert response.status == HTTPStatus.OK
     assert response.body['id'] == expected['_source']['id']
     assert response.body['name'] == expected['_source']['name']
     assert response.body['description'] == expected['_source']['description']
     assert response.body['films'] == expected['_source']['films']
 
 
-@pytest.mark.asyncio
 async def test_genre_error(generate_genres, make_get_request):
     # Поиск несуществующего жанра.
     genre_id = '0123456789'
     response = await make_get_request(f'genre/{genre_id}')
 
-    assert response.status == 404
+    assert response.status == HTTPStatus.NOT_FOUND
 
 
-@pytest.mark.asyncio
 async def test_genre_sort_name_desc(generate_genres, make_get_request):
     # Проверка правильности сортировки.
     expected_full_map = sorted(generate_genres, key=lambda elem: elem['_source']['name'], reverse=True)
@@ -38,7 +39,6 @@ async def test_genre_sort_name_desc(generate_genres, make_get_request):
     assert expected == response.body['items']
 
 
-@pytest.mark.asyncio
 async def test_genre_sort_name_asc(generate_genres, make_get_request):
     # Проверка правильности сортировки.
     expected_full_map = sorted(generate_genres, key=lambda elem: elem['_source']['name'])
@@ -49,7 +49,6 @@ async def test_genre_sort_name_asc(generate_genres, make_get_request):
     assert expected == response.body['items']
 
 
-@pytest.mark.asyncio
 async def test_genre_cache(redis_client, generate_genres, make_get_request):
     # Проверка работы системы кэширования.
     genre = generate_genres[1]
