@@ -1,17 +1,20 @@
+from http import HTTPStatus
+
 import orjson
 import pytest
 
 from ..settings import CacheSettings
 from ..utils.fake_models.film import FakeFilmBrief
 
+pytestmark = pytest.mark.asyncio
 
-@pytest.mark.asyncio
+
 async def test_film_details(generate_movies, make_get_request):
     # Проверка поиска фильма по id (ответ 200 и полнота данных).
     expected = generate_movies[0]
     response = await make_get_request(f'film/{expected["_id"]}')
 
-    assert response.status == 200
+    assert response.status == HTTPStatus.OK
     assert response.body['id'] == expected['_source']['id']
     assert response.body['title'] == expected['_source']['title']
     assert response.body['description'] == expected['_source']['description']
@@ -22,16 +25,14 @@ async def test_film_details(generate_movies, make_get_request):
     assert response.body['genres_list'] == expected['_source']['genres_list']
 
 
-@pytest.mark.asyncio
 async def test_film_error(generate_movies, make_get_request):
     # Поиск несуществующего фильма.
     film_id = '0123456789'
     response = await make_get_request(f'film/{film_id}')
 
-    assert response.status == 404
+    assert response.status == HTTPStatus.NOT_FOUND
 
 
-@pytest.mark.asyncio
 async def test_films_filter(generate_movies, generate_genres, make_get_request):
     # Проверка фильтра по жанру (полнота списка фильмов).
     genre_filter = generate_genres[0]['_source']['name']
@@ -46,7 +47,6 @@ async def test_films_filter(generate_movies, generate_genres, make_get_request):
     assert response.body['items'] == expected
 
 
-@pytest.mark.asyncio
 async def test_films_sort_imdb_rating_desc(generate_movies, make_get_request):
     # Проверка правильности сортировки.
     expected_full_map = sorted(generate_movies, key=lambda elem: elem['_source']['imdb_rating'], reverse=True)
@@ -57,7 +57,6 @@ async def test_films_sort_imdb_rating_desc(generate_movies, make_get_request):
     assert expected == response.body['items']
 
 
-@pytest.mark.asyncio
 async def test_films_sort_imdb_rating_asc(generate_movies, make_get_request):
     # Проверка правильности сортировки.
     expected_full_map = sorted(generate_movies, key=lambda elem: elem['_source']['imdb_rating'])
@@ -68,7 +67,6 @@ async def test_films_sort_imdb_rating_asc(generate_movies, make_get_request):
     assert expected == response.body['items']
 
 
-@pytest.mark.asyncio
 async def test_films_sort_title_desc(generate_movies, make_get_request):
     # Проверка правильности сортировки.
     expected_full_map = sorted(generate_movies, key=lambda elem: elem['_source']['title'], reverse=True)
@@ -79,7 +77,6 @@ async def test_films_sort_title_desc(generate_movies, make_get_request):
     assert expected == response.body['items']
 
 
-@pytest.mark.asyncio
 async def test_films_sort_title_asc(generate_movies, make_get_request):
     # Проверка правильности сортировки.
     expected_full_map = sorted(generate_movies, key=lambda elem: elem['_source']['title'])
@@ -90,7 +87,6 @@ async def test_films_sort_title_asc(generate_movies, make_get_request):
     assert expected == response.body['items']
 
 
-@pytest.mark.asyncio
 async def test_films_cache(redis_client, generate_movies, make_get_request):
     # Проверка работы системы кэширования.
     film = generate_movies[0]
