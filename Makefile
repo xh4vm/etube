@@ -1,6 +1,9 @@
 .PHONY: interactive build services
 build: collectstatic build-dockers
 
+.PHONY: interactive build auth services
+build-auth: build-dockers-auth
+
 .PHONY: interactive build services with test profile
 build-test: collectstatic build-dockers-test-profile
 
@@ -87,6 +90,10 @@ collectstatic: create-venv pip-install-build collectstatic-with-venv
 .PHONY: interactive build docker services
 build-dockers:
 	docker-compose --profile dev up --build
+
+.PHONY: interactive build docker auth services 
+build-dockers-auth:
+	docker-compose --profile dev_auth up --build
 
 .PHONY: daemon build docker services
 buildd-dockers:

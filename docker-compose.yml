@@ -223,6 +223,20 @@ services:
         condition: service_completed_successfully
     env_file: .env
 
+  auth:
+    <<: *base_service
+    build: ./backend/auth
+    container_name: auth
+    volumes:
+    - ./backend/auth:/opt/app
+    profiles: 
+      - dev_auth
+    env_file: .env
+    ports:
+      - ${AUTH_APP_PORT}:${AUTH_APP_PORT}
+    # expose:
+    #   - ${AUTH_APP_PORT}
+
 
 networks:
   etube:
