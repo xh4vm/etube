@@ -1,12 +1,16 @@
-from flask import Flask, Blueprint
-from core.config import CONFIG
-from flask_migrate import Migrate
-from flask_redis import FlaskRedis
+from flask import Blueprint, Flask
 from flask_jwt_extended import JWTManager
+from flask_migrate import Migrate
 from flask_pydantic_spec import FlaskPydanticSpec
+from flask_redis import FlaskRedis
+
+from core.config import CONFIG
 
 from .model.base import db
+from .model.models import (Permission, Role, SignInHistory, User,
+                           UserPermission, UserRole)
 
+models = (User, SignInHistory, UserPermission, UserRole, Role, Permission)
 
 migrate = Migrate()
 redis_client = FlaskRedis()
@@ -35,7 +39,6 @@ def register_blueprints(app):
 def create_app(config_class=CONFIG):
     app = Flask(__name__)
     app.config.from_object(config_class)
-
     db.init_app(app)
     migrate.init_app(app, db)
     redis_client.init_app(app)
