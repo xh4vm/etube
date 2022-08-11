@@ -236,6 +236,31 @@ services:
       - ${AUTH_APP_PORT}:${AUTH_APP_PORT}
     # expose:
     #   - ${AUTH_APP_PORT}
+    depends_on:
+      db-auth:
+        condition: service_healthy
+
+  db-auth:
+    <<: *base_service
+    image: postgres:13-alpine
+    container_name: db-auth
+    env_file: .env
+    profiles:
+      - dev_auth
+    environment:
+      - POSTGRES_USER=${AUTH_DB_USER}
+      - POSTGRES_PASSWORD=${AUTH_DB_PASSWORD}
+      - POSTGRES_DB=${AUTH_DB_NAME}
+    ports:
+      - ${AUTH_DB_PORT}:5432
+    restart: unless-stopped
+    volumes:
+      - etube-postgres-auth:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U ${DB_USER} -D ${DB_NAME} > /dev/null; if [[ $$? == 0 ]]; then echo 0; else echo 1; fi
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 
 networks:
@@ -245,6 +270,7 @@ networks:
 
 volumes:
   etube-postgres-data:
+  etube-postgres-auth:
   etube-elasticsearch-data:
   etube-elasticsearch-data-test:
   etube-redis-data:
