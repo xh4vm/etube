@@ -1,3 +1,4 @@
+import uuid
 from flask import Blueprint
 from flask_pydantic_spec import Response, Request
 
@@ -25,6 +26,10 @@ TAG = 'Manager'
 @unpack_models
 @json_response
 def get_roles():
+    """ Получение списка ролей пользователя
+    ---
+        По uuid пользователя получаем список ролей
+    """
     return GetRoleResponse(Roles=[])
 
 
@@ -37,7 +42,11 @@ def get_roles():
 )
 @unpack_models
 @json_response
-def create_Role() -> CreateRoleResponse:
+def create_role() -> CreateRoleResponse:
+    """ Создание роли 
+    ---
+        Создаем новую роль
+    """
     return CreateRoleResponse(id=uuid.uuid4())
 
 
@@ -51,6 +60,10 @@ def create_Role() -> CreateRoleResponse:
 @unpack_models
 @json_response
 def update_role() -> UpdateRoleResponse:
+    """ Обновление роли
+    ---
+        Обновляем роль
+    """
     UpdateRoleResponse(id=uuid.uuid4(), title='')
 
 
@@ -64,10 +77,14 @@ def update_role() -> UpdateRoleResponse:
 @unpack_models
 @json_response
 def delete_role() -> DeleteRoleResponse:
+    """ Удаление роли
+    ---
+        Удаляем роль
+    """
     return DeleteRoleResponse()
 
 
-@bp.route('', methods=['POST'])
+@bp.route('/user', methods=['POST'])
 @spec.validate(
     body=Request(SetRoleBodyParams), 
     headers=SetRoleHeader, 
@@ -77,10 +94,14 @@ def delete_role() -> DeleteRoleResponse:
 @unpack_models
 @json_response
 def set_role() -> SetRoleResponse:
+    """ Добавление роли пользователю
+    ---
+        Накидываем роль пользователю
+    """
     return SetRoleResponse()
 
 
-@bp.route('', methods=['DELETE'])
+@bp.route('/user', methods=['DELETE'])
 @spec.validate(
     body=Request(RetriveRoleBodyParams), 
     headers=RetriveRoleHeader, 
@@ -90,4 +111,8 @@ def set_role() -> SetRoleResponse:
 @unpack_models
 @json_response
 def retrive_role() -> RetriveRoleResponse:
+    """Отбираем роль у пользователя
+    ---
+        Отбираем роль у пользователя
+    """
     return RetriveRoleResponse()

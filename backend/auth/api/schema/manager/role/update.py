@@ -1,7 +1,6 @@
-import uuid
 from pydantic import BaseModel, Field
 
-from ...base import AuthorizationHeader, JWT, BaseError
+from ...base import AuthorizationHeader
 from .base import Role
 
 

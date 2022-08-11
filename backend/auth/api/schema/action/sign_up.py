@@ -1,13 +1,14 @@
-from pydantic import BaseModel, Field
-from ..base import UserAgentHeader, JWT, BaseError
+from pydantic import BaseModel, EmailStr, Field
+from ..base import UserAgentHeader, JWT
 
 
 class SignUpBodyParams(BaseModel):
     """Схема body-параметров регистрации пользователя
     ---
     """
-    login: str = Field(title='Login')
-    password: str = Field(title='Password')
+    login: str = Field(title='Логин пользователя')
+    email: EmailStr = Field(title='Почта пользователя')
+    password: str = Field(title='Пароль пользователя')
 
 
 class SignUpResponse(JWT):

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from ...base import AuthorizationHeader, JWT, BaseError
+from ...base import AuthorizationHeader
 
 
 class DeletePermissionBodyParams(BaseModel):

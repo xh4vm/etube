@@ -25,6 +25,10 @@ TAG = 'Manager'
 @unpack_models
 @json_response
 def get_permissions():
+    """ Получение списка ограничений конкретной роли
+    ---
+        По uuid роли получаем список ограничений
+    """
     return GetPermissionResponse(permissions=[])
 
 
@@ -38,6 +42,10 @@ def get_permissions():
 @unpack_models
 @json_response
 def create_permission() -> CreatePermissionResponse:
+    """ Создание ограничения 
+    ---
+        Создаем новое ограничение ID::HTTP_METHOD::URL::<ACCESS or DENY>::TITLE::DESCRIPTION
+    """
     return CreatePermissionResponse(id=uuid.uuid4())
 
 
@@ -51,6 +59,10 @@ def create_permission() -> CreatePermissionResponse:
 @unpack_models
 @json_response
 def update_permission() -> UpdatePermissionResponse:
+    """ Обновление ограничения 
+    ---
+        Обновляем ограничение ID::HTTP_METHOD::URL::<ACCESS or DENY>::TITLE::DESCRIPTION
+    """
     UpdatePermissionResponse(id=uuid.uuid4(), title='')
 
 
@@ -64,10 +76,14 @@ def update_permission() -> UpdatePermissionResponse:
 @unpack_models
 @json_response
 def delete_permission() -> DeletePermissionResponse:
+    """ Удаление ограничения
+    ---
+        Удаляем ограничение ID::HTTP_METHOD::URL::<ACCESS or DENY>::TITLE::DESCRIPTION
+    """
     return DeletePermissionResponse()
 
 
-@bp.route('', methods=['POST'])
+@bp.route('/role', methods=['POST'])
 @spec.validate(
     body=Request(SetPermissionBodyParams), 
     headers=SetPermissionHeader, 
@@ -77,10 +93,14 @@ def delete_permission() -> DeletePermissionResponse:
 @unpack_models
 @json_response
 def set_permission() -> SetPermissionResponse:
+    """ Докинуть ограничение в роль
+    ---
+        Докидываем ограничение ID::HTTP_METHOD::URL::<ACCESS or DENY>::TITLE::DESCRIPTION в роль
+    """
     return SetPermissionResponse()
 
 
-@bp.route('', methods=['DELETE'])
+@bp.route('/role', methods=['DELETE'])
 @spec.validate(
     body=Request(RetrivePermissionBodyParams), 
     headers=RetrivePermissionHeader, 
@@ -90,4 +110,8 @@ def set_permission() -> SetPermissionResponse:
 @unpack_models
 @json_response
 def retrive_permission() -> RetrivePermissionResponse:
+    """ Отобрать ограничение из роли
+    ---
+        Отобрать ограничение ID::HTTP_METHOD::URL::<ACCESS or DENY>::TITLE::DESCRIPTION из роли
+    """
     return RetrivePermissionResponse()
