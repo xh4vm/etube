@@ -26,9 +26,6 @@ def register_blueprints(app):
     from .endpoint.manager import bp as manager_bp
     root_bp.register_blueprint(manager_bp)
     
-    from .endpoint.grant import bp as grant_bp
-    root_bp.register_blueprint(grant_bp)
-
     app.register_blueprint(root_bp)
 
 
