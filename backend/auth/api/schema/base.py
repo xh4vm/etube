@@ -3,6 +3,10 @@ from user_agents import parse
 
 
 class AuthorizationHeader(BaseModel):
+    """Схема заголовков JWT авторизации 
+    ---
+    """
+
     token: str = Field(
         title='Authorization JWT токен', 
         alias='X-Authorization-Token',
@@ -16,6 +20,10 @@ class AuthorizationHeader(BaseModel):
 
 
 class UserAgentHeader(BaseModel):
+    """Схема заголовков получения / обработки юзерагента пользователя  
+    ---
+    """
+
     user_agent: str = Field(
         title='Заголовок User-Agent', 
         alias='User-Agent', 
@@ -28,10 +36,18 @@ class UserAgentHeader(BaseModel):
 
 
 class JWT(BaseModel):
+    """Схема JWT токенаов  
+    ---
+    """
+    
     access: str = Field(title='Кратковременный JWT токен', alias='access_token')
     refresh: str = Field(title='Долговременный JWT токен', alias='refresh_token')
 
 
 class BaseError(BaseModel):
+    """Базования схема ошибки  
+    ---
+    """
+    
     message: str = Field(title='Сообщение об ошибке', default='Error')
     code: int = Field(title='Код ошибки')

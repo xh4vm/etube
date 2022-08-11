@@ -23,8 +23,8 @@ def register_blueprints(app):
     from .endpoint.token import bp as token_bp
     root_bp.register_blueprint(token_bp)
 
-    from .endpoint.role_manager import bp as role_manager_bp
-    root_bp.register_blueprint(role_manager_bp)
+    from .endpoint.manager import bp as manager_bp
+    root_bp.register_blueprint(manager_bp)
     
     from .endpoint.grant import bp as grant_bp
     root_bp.register_blueprint(grant_bp)

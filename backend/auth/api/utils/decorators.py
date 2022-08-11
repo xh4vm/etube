@@ -4,6 +4,7 @@ from functools import wraps
 
 
 def json_response(f):
+    """Декоратор который после выполнения функции из Response-модели делает json и возвращает ее."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         result_dict = f(*args, **kwargs)
@@ -12,6 +13,8 @@ def json_response(f):
 
 
 def unpack_models(f):
+    """Декоратор который входные модели укладывает в kwargs функции."""
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
 

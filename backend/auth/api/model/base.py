@@ -10,6 +10,8 @@ db = SQLAlchemy()
 
 
 class BaseModel(db.Model):
+    """Базовая модель объекта БД"""
+
     __abstract__ = True
 
     session: scoped_session = db.session
@@ -20,6 +22,8 @@ class BaseModel(db.Model):
 
     @declared_attr
     def __tablename__(cls):
+        """Имя таблицы в базе данных"""
+        
         return re.sub('(?!^)([A-Z][a-z]+)', r'_\1', cls.__name__).lower() + 's'
 
     def __repr__(self):

@@ -1,7 +1,7 @@
 from flask import Blueprint
 
 
-bp = Blueprint('manager_role', __name__, url_prefix='/manager/role')
+bp = Blueprint('role', __name__, url_prefix='/role')
 
 
 @bp.route('', methods=['GET'])
