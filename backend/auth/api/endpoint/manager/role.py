@@ -24,7 +24,7 @@ TAG = 'Manager'
 )
 @unpack_models
 @json_response
-def get_Roles():
+def get_roles():
     return GetRoleResponse(Roles=[])
 
 
@@ -50,7 +50,7 @@ def create_Role() -> CreateRoleResponse:
 )
 @unpack_models
 @json_response
-def update_Role() -> UpdateRoleResponse:
+def update_role() -> UpdateRoleResponse:
     UpdateRoleResponse(id=uuid.uuid4(), title='')
 
 
@@ -63,7 +63,7 @@ def update_Role() -> UpdateRoleResponse:
 )
 @unpack_models
 @json_response
-def delete_Role() -> DeleteRoleResponse:
+def delete_role() -> DeleteRoleResponse:
     return DeleteRoleResponse()
 
 
@@ -76,7 +76,7 @@ def delete_Role() -> DeleteRoleResponse:
 )
 @unpack_models
 @json_response
-def set_Role() -> SetRoleResponse:
+def set_role() -> SetRoleResponse:
     return SetRoleResponse()
 
 
@@ -89,5 +89,5 @@ def set_Role() -> SetRoleResponse:
 )
 @unpack_models
 @json_response
-def retrive_Role() -> RetriveRoleResponse:
+def retrive_role() -> RetriveRoleResponse:
     return RetriveRoleResponse()
