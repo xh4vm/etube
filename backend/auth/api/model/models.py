@@ -1,47 +1,58 @@
-from .base import BaseModel, db
+from .base import BaseModel
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy import Column, BigInteger, Integer, String, Date
+from werkzeug.security import generate_password_hash, check_password_hash
+
+
+class UserRole(BaseModel):
+    user_id = Column(ForeignKey('users.id'), primary_key=True)
+    role_id = Column(ForeignKey('roles.id'), primary_key=True)
+
+
+class RolePermission(BaseModel):
+    role_id = Column(ForeignKey('users.id'), primary_key=True)
+    permission_id = Column(ForeignKey('permissions.id'), primary_key=True)
 
 
 class User(BaseModel):
-    login = db.Column(db.String(255), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)
-    email = db.Column(db.String(255), unique=True, nullable=False)
-    roles = relationship('UserRole')
-    permissions = relationship('UserPermission')
+    login = Column(String(255), unique=True, nullable=False)
+    password = Column(String(255), nullable=False)
+    email = Column(String(255), unique=True, nullable=False)
+    roles = relationship('Role', secondary=UserRole)
 
     def __repr__(self):
         return f'<User {self.login}>'
 
+    @staticmethod
+    def encrypt_password(password: str) -> str:
+        return generate_password_hash(password, method='pbkdf2:sha256', salt_length=16)
+
+    @staticmethod
+    def check_password(pwhash: str, password: str) -> bool:
+        return check_password_hash(pwhash, password)
+
 
 class Role(BaseModel):
-    title = db.Column(db.String(255), unique=True, nullable=False)
-    description = db.Column(db.Text)
+    title = Column(String(255), unique=True, nullable=False)
+    description = Column(String(4096))
+    permissions = relationship('Permission', secondary=RolePermission)
 
     def __repr__(self):
         return f'<Role {self.title}>'
 
 
-class UserRole(BaseModel):
-    user_id = db.Column(ForeignKey('users.id'), primary_key=True)
-    role_id = db.Column(ForeignKey('roles.id'), primary_key=True)
-
-
 class Permission(BaseModel):
-    title = db.Column(db.String(255), unique=True, nullable=False)
-    description = db.Column(db.Text)
-    expiration_date = db.Column(db.Date, nullable=False)
+    title = Column(String(255), unique=True, nullable=False)
+    description = Column(String(4096))
+    expiration_date = Column(Date, nullable=False)
 
     def __repr__(self):
         return f'<Permission {self.title}>'
 
 
-class UserPermission(BaseModel):
-    user_id = db.Column(ForeignKey('users.id'), primary_key=True)
-    permission_id = db.Column(ForeignKey('permissions.id'), primary_key=True)
-
-
 class SignInHistory(BaseModel):
-    user_id = db.Column(db.BigInteger().with_variant(db.Integer, 'sqlite'), ForeignKey('users.id'))
+    user_id = Column(BigInteger().with_variant(Integer, 'sqlite'), ForeignKey('users.id'))
     user = relationship('User')
-    user_agent = db.Column(db.String)
+    device = Column(String(255))
+    browser = Column(String(255))
