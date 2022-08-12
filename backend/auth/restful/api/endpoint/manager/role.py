@@ -3,13 +3,12 @@ from flask import Blueprint
 from flask_pydantic_spec import Response, Request
 
 from ...app import spec
-from ...schema.manager.role.get import GetRoleBodyParams, GetRoleHeader, GetRoleResponse
+from ...schema.manager.role.get import GetRoleQueryParams, GetRoleHeader, GetRoleResponse
 from ...schema.manager.role.create import CreateRoleBodyParams, CreateRoleHeader, CreateRoleResponse
 from ...schema.manager.role.update import UpdateRoleBodyParams, UpdateRoleHeader, UpdateRoleResponse
 from ...schema.manager.role.delete import DeleteRoleBodyParams, DeleteRoleHeader, DeleteRoleResponse
-from ...schema.manager.role.set import SetRoleBodyParams, SetRoleHeader, SetRoleResponse
-from ...schema.manager.role.retrive import RetriveRoleBodyParams, RetriveRoleHeader, RetriveRoleResponse
-from ...schema.manager.role.base import Role
+from ...schema.manager.role.set import RoleSetPermissionBodyParams, RoleSetPermissionHeader, RoleSetPermissionResponse
+from ...schema.manager.role.retrive import RoleRetrivePermissionBodyParams, RoleRetrivePermissionHeader, RoleRetrivePermissionResponse
 from ...utils.decorators import json_response, unpack_models
 
 
@@ -18,19 +17,19 @@ TAG = 'Manager'
 
 @bp.route('', methods=['GET'])
 @spec.validate(
-    body=Request(GetRoleBodyParams), 
+    query=GetRoleQueryParams, 
     headers=GetRoleHeader,
     resp=Response(HTTP_200=GetRoleResponse, HTTP_403=None), 
     tags=[TAG]
 )
 @unpack_models
 @json_response
-def get_roles():
+def get_roles(query: GetRoleQueryParams, headers: GetRoleHeader):
     """ Получение списка ролей пользователя
     ---
         По uuid пользователя получаем список ролей
     """
-    return GetRoleResponse(Roles=[])
+    return GetRoleResponse(__root__=[])
 
 
 @bp.route('', methods=['POST'])
@@ -42,7 +41,7 @@ def get_roles():
 )
 @unpack_models
 @json_response
-def create_role() -> CreateRoleResponse:
+def create_role(body: CreateRoleBodyParams, headers: CreateRoleHeader) -> CreateRoleResponse:
     """ Создание роли 
     ---
         Создаем новую роль
@@ -59,7 +58,7 @@ def create_role() -> CreateRoleResponse:
 )
 @unpack_models
 @json_response
-def update_role() -> UpdateRoleResponse:
+def update_role(body: UpdateRoleBodyParams, headers: UpdateRoleHeader) -> UpdateRoleResponse:
     """ Обновление роли
     ---
         Обновляем роль
@@ -76,7 +75,7 @@ def update_role() -> UpdateRoleResponse:
 )
 @unpack_models
 @json_response
-def delete_role() -> DeleteRoleResponse:
+def delete_role(body: DeleteRoleBodyParams, headers: DeleteRoleHeader) -> DeleteRoleResponse:
     """ Удаление роли
     ---
         Удаляем роль
@@ -84,35 +83,35 @@ def delete_role() -> DeleteRoleResponse:
     return DeleteRoleResponse()
 
 
-@bp.route('/user', methods=['POST'])
+@bp.route('/permission', methods=['POST'])
 @spec.validate(
-    body=Request(SetRoleBodyParams), 
-    headers=SetRoleHeader, 
-    resp=Response(HTTP_200=SetRoleResponse, HTTP_403=None), 
+    body=Request(RoleSetPermissionBodyParams), 
+    headers=RoleSetPermissionHeader, 
+    resp=Response(HTTP_200=RoleSetPermissionResponse, HTTP_403=None), 
     tags=[TAG]
 )
 @unpack_models
 @json_response
-def set_role() -> SetRoleResponse:
-    """ Добавление роли пользователю
+def set_permission(body: RoleSetPermissionBodyParams, headers: RoleSetPermissionHeader) -> RoleSetPermissionResponse:
+    """ Докинуть ограничение в роль
     ---
-        Накидываем роль пользователю
+        Докидываем ограничение ID::HTTP_METHOD::URL::<ACCESS or DENY>::TITLE::DESCRIPTION в роль
     """
-    return SetRoleResponse()
+    return RoleSetPermissionResponse()
 
 
-@bp.route('/user', methods=['DELETE'])
+@bp.route('/permission', methods=['DELETE'])
 @spec.validate(
-    body=Request(RetriveRoleBodyParams), 
-    headers=RetriveRoleHeader, 
-    resp=Response(HTTP_200=RetriveRoleResponse, HTTP_403=None), 
+    body=Request(RoleRetrivePermissionBodyParams), 
+    headers=RoleRetrivePermissionHeader, 
+    resp=Response(HTTP_200=RoleRetrivePermissionResponse, HTTP_403=None), 
     tags=[TAG]
 )
 @unpack_models
 @json_response
-def retrive_role() -> RetriveRoleResponse:
-    """Отбираем роль у пользователя
+def retrive_permission(body: RoleRetrivePermissionBodyParams, headers: RoleRetrivePermissionHeader) -> RoleRetrivePermissionResponse:
+    """ Отобрать ограничение из роли
     ---
-        Отбираем роль у пользователя
+        Отобрать ограничение ID::HTTP_METHOD::URL::<ACCESS or DENY>::TITLE::DESCRIPTION из роли
     """
-    return RetriveRoleResponse()
+    return RoleRetrivePermissionResponse()

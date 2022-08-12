@@ -1,24 +1,25 @@
+import uuid
 from pydantic import BaseModel, Field
 from ...base import AuthorizationHeader
 
 
-class RetriveRoleBodyParams(BaseModel):
-    """Схема body-параметров удаления роли у пользователя
+class RoleRetrivePermissionBodyParams(BaseModel):
+    """Схема body-параметров удаления ограничения у роли
     ---
     """
-    user_id: int = Field(title='Идентификатор пользователя, которому назначается роль')
-    role_id: int = Field(title='Идентификатор роли')
+    role_id: uuid.UUID = Field(title='Идентификатор пользователя, которому назначается разрешение')
+    permission_ids: list[uuid.UUID] = Field(title='Идентификаторы ограничений')
 
 
-class RetriveRoleResponse(BaseModel):
-    """Схема ответа удаления роли у пользователя
+class RoleRetrivePermissionResponse(BaseModel):
+    """Схема ответа удаления ограничения у роли
     ---
     """
     pass
 
 
-class RetriveRoleHeader(AuthorizationHeader):
-    """Схема заголовков удаления роли у пользователя
+class RoleRetrivePermissionHeader(AuthorizationHeader):
+    """Схема заголовков удаления ограничения у роли
     ---
     """
     pass

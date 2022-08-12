@@ -1,24 +1,25 @@
+import uuid
 from pydantic import BaseModel, Field
 from ...base import AuthorizationHeader
 
 
-class SetRoleBodyParams(BaseModel):
-    """Схема body-параметров назначения ограничения пользователю
+class RoleSetPermissionBodyParams(BaseModel):
+    """Схема body-параметров назначения ограничения роли
     ---
     """
-    user_id: int = Field(title='Идентификатор пользователя, которому назначается роль')
-    role_id: int = Field(title='Идентификатор роли')
+    role_id: uuid.UUID = Field(title='Идентификатор роли, которой назначается разрешение')
+    permission_ids: list[uuid.UUID] = Field(title='Идентификаторы ограничений')
 
 
-class SetRoleResponse(BaseModel):
-    """Схема ответа назначения роли пользователю
+class RoleSetPermissionResponse(BaseModel):
+    """Схема ответа назначения ограничения роли
     ---
     """
     pass
 
 
-class SetRoleHeader(AuthorizationHeader):
-    """Схема заголовков назначения роли пользователю
+class RoleSetPermissionHeader(AuthorizationHeader):
+    """Схема заголовков назначения ограничения роли
     ---
     """
     pass
