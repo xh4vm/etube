@@ -225,15 +225,29 @@ services:
 
   auth:
     <<: *base_service
-    build: ./backend/auth
+    build: ./backend/auth/restful
     container_name: auth
     volumes:
-    - ./backend/auth:/opt/app
+    - ./backend/auth/restful:/opt/app
     profiles: 
       - dev_auth
     env_file: .env
     ports:
       - ${AUTH_APP_PORT}:${AUTH_APP_PORT}
+    # expose:
+    #   - ${AUTH_APP_PORT}
+
+  grpc-auth:
+    <<: *base_service
+    build: ./backend/auth/grpc
+    container_name: grpc_auth
+    volumes:
+    - ./backend/auth/grpc:/opt/grpc
+    profiles: 
+      - dev_auth
+    env_file: .env
+    ports:
+      - ${AUTH_GRPC_PORT}:${AUTH_GRPC_PORT}
     # expose:
     #   - ${AUTH_APP_PORT}
 
