@@ -7,10 +7,6 @@ from flask_redis import FlaskRedis
 from core.config import CONFIG
 
 from .model.base import db
-from .model.models import (Permission, Role, SignInHistory, User,
-                           UserPermission, UserRole)
-
-models = (User, SignInHistory, UserPermission, UserRole, Role, Permission)
 
 migrate = Migrate()
 redis_client = FlaskRedis()
@@ -30,9 +26,6 @@ def register_blueprints(app):
     from .endpoint.manager import bp as manager_bp
     root_bp.register_blueprint(manager_bp)
     
-    from .endpoint.grant import bp as grant_bp
-    root_bp.register_blueprint(grant_bp)
-
     app.register_blueprint(root_bp)
 
 

@@ -50,3 +50,6 @@ inflection==0.5.1
 nested-lookup==0.2.25
 ua-parser==0.15.0 
 user-agents==2.2.0
+dnspython==2.2.1
+email-validator==1.2.1 
+idna==3.3
