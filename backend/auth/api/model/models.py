@@ -45,7 +45,8 @@ class Role(BaseModel):
 class Permission(BaseModel):
     title = Column(String(255), unique=True, nullable=False)
     description = Column(String(4096))
-    expiration_date = Column(Date, nullable=False)
+    http_method = Column(String(10))
+    url = Column(String(255))
 
     def __repr__(self):
         return f'<Permission {self.title}>'
