@@ -19,7 +19,7 @@ class User(BaseModel):
     login = Column(String(255), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, nullable=False)
-    roles = relationship('Role', secondary=UserRole)
+    roles = relationship('Role', secondary=UserRole, viewonly=True)
 
     def __repr__(self):
         return f'<User {self.login}>'
@@ -36,7 +36,7 @@ class User(BaseModel):
 class Role(BaseModel):
     title = Column(String(255), unique=True, nullable=False)
     description = Column(String(4096))
-    permissions = relationship('Permission', secondary=RolePermission)
+    permissions = relationship('Permission', secondary=RolePermission, viewonly=True)
 
     def __repr__(self):
         return f'<Role {self.title}>'
