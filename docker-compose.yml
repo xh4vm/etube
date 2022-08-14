@@ -236,9 +236,6 @@ services:
       - ${AUTH_APP_PORT}:${AUTH_APP_PORT}
     # expose:
     #   - ${AUTH_APP_PORT}
-    depends_on:
-      db-auth:
-        condition: service_healthy
 
   db-auth:
     <<: *base_service
