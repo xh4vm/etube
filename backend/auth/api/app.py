@@ -1,10 +1,9 @@
-from flask import Blueprint, Flask
-from flask_jwt_extended import JWTManager
-from flask_migrate import Migrate
-from flask_pydantic_spec import FlaskPydanticSpec
-from flask_redis import FlaskRedis
-
+from flask import Flask, Blueprint
 from core.config import CONFIG
+from flask_migrate import Migrate
+from flask_redis import FlaskRedis
+from flask_jwt_extended import JWTManager
+from flask_pydantic_spec import FlaskPydanticSpec
 
 from .model.base import db
 
@@ -25,13 +24,14 @@ def register_blueprints(app):
 
     from .endpoint.manager import bp as manager_bp
     root_bp.register_blueprint(manager_bp)
-    
+
     app.register_blueprint(root_bp)
 
 
 def create_app(config_class=CONFIG):
     app = Flask(__name__)
     app.config.from_object(config_class)
+
     db.init_app(app)
     migrate.init_app(app, db)
     redis_client.init_app(app)
@@ -42,4 +42,4 @@ def create_app(config_class=CONFIG):
 
     app.app_context().push()
 
-    return app
+    return
