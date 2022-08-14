@@ -42,4 +42,4 @@ def create_app(config_class=CONFIG):
 
     app.app_context().push()
 
-    return
+    return app
