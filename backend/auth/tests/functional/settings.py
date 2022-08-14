@@ -10,7 +10,7 @@ class Settings(BaseSettings):
 
 class ApiSettings(Settings):
     url: str = Field('http://localhost', env='AUTH_API_URL')
-    port: str = Field('8000', env='AUTH_APP_PORT')
+    port: str = Field('9090', env='AUTH_APP_PORT')
     api_path: str = Field('/api', env='AUTH_API_PATH')
     api_version: str = Field('v1', env='AUTH_API_VERSION')
 

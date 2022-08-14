@@ -27,10 +27,10 @@ async def session():
 
 @pytest.fixture
 def make_post_request(session):
-    async def inner(method: str, params: Optional[dict] = None) -> HTTPResponse:
-        params = params or {}
+    async def inner(method: str, data: Optional[dict] = None) -> HTTPResponse:
+        data = data or {}
         url = SERVICE_URL + f'{CONFIG.API.api_path}/{CONFIG.API.api_version}/' + method
-        async with session.post(url, params=params) as response:
+        async with session.post(url, json=data) as response:
             return HTTPResponse(body=await response.json(), headers=response.headers, status=response.status,)
 
     return inner
