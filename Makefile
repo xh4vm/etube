@@ -1,3 +1,9 @@
+include .env
+db = db
+db_auth = db-auth
+app = etl
+auth = auth
+
 .PHONY: interactive build services
 build: collectstatic build-dockers
 
@@ -123,20 +129,14 @@ clean-all-dockers:
 clean-dockers:
 	T="backend-admin backend-client db swagger"; docker stop $$T; docker rm $$T; docker container prune -f
 
-
-include .env
-db = db
-app = etl
-
-create_schema:
-	docker exec -it ${db} psql --username=${DB_USER} --dbname=${DB_NAME} -c \
-	'CREATE SCHEMA IF NOT EXISTS content;'
-migrate:
-	docker-compose exec backend-admin ./manage.py migrate
-fill_db:
-	docker-compose exec backend-admin python ./sqlite_to_postgres/load_data.py
 db_connect:
 	docker exec -it ${db} psql --username=${DB_USER} --dbname=${DB_NAME}
 
 app_connect:
 	docker exec -it ${app} sh
+
+auth_connect:
+	docker exec -it ${auth} sh
+
+db_auth_connect:
+	docker exec -it ${db_auth} psql --username=${AUTH_DB_USER} --dbname=${AUTH_DB_NAME}

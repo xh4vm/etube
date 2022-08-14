@@ -7,7 +7,6 @@ from flask_pydantic_spec import FlaskPydanticSpec
 
 from .model.base import db
 
-
 migrate = Migrate()
 redis_client = FlaskRedis()
 jwt = JWTManager()
@@ -25,7 +24,7 @@ def register_blueprints(app):
 
     from .endpoint.manager import bp as manager_bp
     root_bp.register_blueprint(manager_bp)
-    
+
     app.register_blueprint(root_bp)
 
 
@@ -43,4 +42,4 @@ def create_app(config_class=CONFIG):
 
     app.app_context().push()
 
-    return app
+    return
