@@ -1,28 +1,56 @@
-from .base import BaseModel
+import hashlib
+import uuid
+from typing import Any
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, BigInteger, Integer, String, Date
+from sqlalchemy import Column, String
+from sqlalchemy.dialects.postgresql import UUID
 from werkzeug.security import generate_password_hash, check_password_hash
+
+from api.app import jwt
+from .base import BaseModel
 
 
 class UserRole(BaseModel):
-    user_id = Column(ForeignKey('users.id'), primary_key=True)
-    role_id = Column(ForeignKey('roles.id'), primary_key=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    role_id = Column(UUID(as_uuid=True), ForeignKey('roles.id'), nullable=False)
 
 
 class RolePermission(BaseModel):
-    role_id = Column(ForeignKey('users.id'), primary_key=True)
-    permission_id = Column(ForeignKey('permissions.id'), primary_key=True)
+    role_id = Column(UUID(as_uuid=True), ForeignKey('roles.id'), nullable=False)
+    permission_id = Column(UUID(as_uuid=True), ForeignKey('permissions.id'), nullable=False)
 
 
 class User(BaseModel):
     login = Column(String(255), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, nullable=False)
-    roles = relationship('Role', secondary=UserRole, viewonly=True)
+
+    roles = relationship('Role', secondary='join(Role, UserRole, Role.id == UserRole.role_id)', viewonly=True)
 
     def __repr__(self):
         return f'<User {self.login}>'
+
+    def __init__(self, login: str, password: str, email: str) -> None:
+        self.login = login
+        self.password = self.encrypt_password(password)
+        #TODO: mixin mail validator
+        self.email = email
+
+    @property
+    def permissions(self) -> dict[str, list[str]]:
+        user_permissions = {}
+        roles = self.roles
+
+        #TODO: refactoring?
+        for role in roles:
+            for permission in role.permissions:
+                md5_hashed_url = hashlib.md5(permission.url, usedforsecurity=False).hexdigest()
+                
+                if md5_hashed_url in user_permissions.keys():
+                    user_permissions[md5_hashed_url].append(permission.http_method)
+                else:
+                    user_permissions[md5_hashed_url] = [permission.http_method]
 
     @staticmethod
     def encrypt_password(password: str) -> str:
@@ -32,28 +60,51 @@ class User(BaseModel):
     def check_password(pwhash: str, password: str) -> bool:
         return check_password_hash(pwhash, password)
 
+    @staticmethod
+    @jwt.additional_claims_loader
+    def add_claims(user) -> dict[str, Any]:
+        return {
+            'login': user.login,
+            'email': user.email,
+            'roles': user.roles,
+            'permissions': user.permissions
+        }
+
+    @staticmethod
+    @jwt.user_identity_loader
+    def add_identity(user) -> uuid.UUID:
+        return user.id
+
 
 class Role(BaseModel):
     title = Column(String(255), unique=True, nullable=False)
     description = Column(String(4096))
-    permissions = relationship('Permission', secondary=RolePermission, viewonly=True)
+
+    permissions = relationship('Permission', 
+        secondary='join(Permission, RolePermission, Permission.id == RolePermission.permission_id)',
+        secondaryjoin='Role.id == RolePermission.role_id', 
+        viewonly=True)
 
     def __repr__(self):
         return f'<Role {self.title}>'
 
 
 class Permission(BaseModel):
+
     title = Column(String(255), unique=True, nullable=False)
     description = Column(String(4096))
     http_method = Column(String(10))
-    url = Column(String(255))
+    url = Column(String(4096))
 
     def __repr__(self):
-        return f'<Permission {self.title}>'
+        return f'<ACE {self.title}>'
 
 
 class SignInHistory(BaseModel):
-    user_id = Column(BigInteger().with_variant(Integer, 'sqlite'), ForeignKey('users.id'))
-    user = relationship('User')
+    __tablename__ = 'sign_in_history'
+
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
     device = Column(String(255))
     browser = Column(String(255))
+
+    user = relationship('User')
