@@ -3,7 +3,7 @@ from ...base import AuthorizationHeader
 from .base import Permission
 
 
-class GetPermissionBodyParams(BaseModel):
+class GetPermissionQueryParams(BaseModel):
     """Схема body-параметров получения ограничений
     ---
     """

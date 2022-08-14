@@ -3,7 +3,7 @@ from ...base import AuthorizationHeader
 from .base import Role
 
 
-class GetRoleBodyParams(BaseModel):
+class GetRoleQueryParams(BaseModel):
     """Схема body-параметров получения ролей
     ---
     """
