@@ -14,7 +14,7 @@ spec = FlaskPydanticSpec("flask", title="Auth API", version=CONFIG.APP.API_VERSI
 
 
 def register_blueprints(app):
-    root_bp = Blueprint('root', __name__, url_prefix='/auth')
+    root_bp = Blueprint('root', __name__, url_prefix=f'/api/{CONFIG.APP.API_VERSION}/auth')
 
     from .endpoint.action import bp as action_bp
     root_bp.register_blueprint(action_bp)

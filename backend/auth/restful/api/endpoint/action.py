@@ -1,10 +1,16 @@
 from flask import Blueprint
 from flask_pydantic_spec import Response, Request
+from flask_jwt_extended.view_decorators import jwt_required
+from flask_jwt_extended import create_access_token, create_refresh_token
 
 from ..app import spec
 from ..schema.action.sign_in import SignInBodyParams, SignInHeader, SignInResponse
 from ..schema.action.sign_up import SignUpBodyParams, SignUpHeader, SignUpResponse
 from ..schema.action.logout import LogoutBodyParams, LogoutHeader, LogoutResponse
+
+from ..model.models import User
+
+from ..decorators.action import user_required, already_auth
 from ..utils.decorators import json_response, unpack_models
 
 
@@ -20,13 +26,21 @@ TAG = 'Action'
     tags=[TAG]
 )
 @unpack_models
+@already_auth
+@user_required
+@jwt_required(optional=True)
 @json_response
-def sign_in(body: SignInBodyParams, headers: SignInHeader) -> SignInResponse:
+def sign_in(user: User, body: SignInBodyParams, headers: SignInHeader) -> SignInResponse:
     """ Авторизация пользователя
     ---
-        На вход поступает логин и пароль, если пользователь существует и авторизация успешна, то создается и возвразается пара jwt токенов.
+        На вход поступает логин и пароль, если пользователь существует и авторизация успешна, то 
+        создается и возвразается пара jwt токенов.
     """
-    return SignInResponse(access_token='', refresh_token='')
+
+    access_token = create_access_token(identity=user)
+    refresh_token = create_refresh_token(identity=user)
+
+    return SignInResponse(access_token=access_token, refresh_token=refresh_token)
 
 
 @bp.route('/sign_up', methods=['POST'])

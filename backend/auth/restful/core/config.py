@@ -25,9 +25,21 @@ class RedisSettings(BaseSettings):
     EXPIRE: int = Field(..., env='CACHE_EXPIRE')
 
 
+class DatabaseSettings(BaseSettings):
+    DRIVER: str = Field(..., env='AUTH_DB_DRIVER')
+    USER: str = Field(..., env='AUTH_DB_USER')
+    PASSWORD: str = Field(..., env='AUTH_DB_PASSWORD')
+    HOST: str = Field(..., env='AUTH_DB_HOST')
+    PORT: int = Field(..., env='AUTH_DB_PORT')
+    NAME: str = Field(..., env='AUTH_DB_NAME')
+
+
 class Config(BaseSettings):
     APP: AppSettings = AppSettings()
     REDIS: RedisSettings = RedisSettings()
+    DB: DatabaseSettings = DatabaseSettings()
+    
+    SQLALCHEMY_DATABASE_URI = f'{DB.DRIVER}://{DB.USER}:{DB.PASSWORD}@{DB.HOST}:{DB.PORT}/{DB.NAME}'
 
 
 CONFIG = Config()
