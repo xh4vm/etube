@@ -56,9 +56,8 @@ class User(BaseModel):
     def encrypt_password(password: str) -> str:
         return generate_password_hash(password, method='pbkdf2:sha256', salt_length=16)
 
-    @staticmethod
-    def check_password(pwhash: str, password: str) -> bool:
-        return check_password_hash(pwhash, password)
+    def check_password(self, password: str) -> bool:
+        return check_password_hash(self.password, password)
 
     @staticmethod
     @jwt.additional_claims_loader
@@ -66,8 +65,8 @@ class User(BaseModel):
         return {
             'login': user.login,
             'email': user.email,
-            'roles': user.roles,
-            'permissions': user.permissions
+            # 'roles': user.roles,
+            # 'permissions': user.permissions
         }
 
     @staticmethod
