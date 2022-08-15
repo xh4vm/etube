@@ -1,6 +1,7 @@
 from flask import abort, make_response, jsonify
 from functools import wraps
 from flask_jwt_extended import verify_jwt_in_request
+from http import HTTPStatus
 
 from ..model.models import User
 from ..schema.action.sign_in import SignInBodyParams
@@ -19,7 +20,7 @@ def user_required(f):
         
         if user is None or \
             not user.check_password(body.password):
-            json_abort(422, SignInActionError.NOT_VALID_AUTH_DATA)
+            json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_AUTH_DATA)
 
         kwargs['body'] = body
         kwargs['user'] = user
@@ -31,12 +32,15 @@ def user_required(f):
 def already_auth(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        
+        is_verified = False
         try:
-           verify_jwt_in_request()
-           json_abort(200, SignInActionError.ALREADY_AUTH)
-        except:
+            verify_jwt_in_request()
+            is_verified = True
+        except Exception:
             pass
+
+        if is_verified:
+            json_abort(HTTPStatus.OK, SignInActionError.ALREADY_AUTH)
 
         return f(*args, **kwargs)
     return decorated_function

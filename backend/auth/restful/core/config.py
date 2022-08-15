@@ -17,6 +17,7 @@ class AppSettings(BaseSettings):
     JWT_ALGORITHM: str = Field(..., env='AUTH_JWT_ALGORITHM')
     ACCESS_EXPIRES: int = Field(..., env='AUTH_ACCESS_EXPIRES')
     JWT_DECODE_ALGORITHMS: list[str] = Field(..., env='AUTH_JWT_DECODE_ALGORITHMS')
+    JWT_TOKEN_LOCATION: str = Field('headers', env='AUTH_JWT_TOKEN_LOCATION')
     DEBUG: bool = Field(..., env='AUTH_DEBUG')
 
 
