@@ -28,8 +28,8 @@ TAG = 'Action'
 @unpack_models
 @already_auth
 @user_required
-@jwt_required(optional=True)
 @json_response
+@jwt_required(optional=True)
 def sign_in(user: User, body: SignInBodyParams, headers: SignInHeader) -> SignInResponse:
     """ Авторизация пользователя
     ---

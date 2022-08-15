@@ -6,6 +6,7 @@ class GRPCSettings(BaseSettings):
     AUTH_GRPC_PORT: int = Field(..., env='AUTH_GRPC_PORT')
     JWT_SECRET_KEY: str = Field(..., env='AUTH_JWT_SECRET_KEY')
     JWT_DECODE_ALGORITHMS: list[str] = Field(..., env='AUTH_JWT_DECODE_ALGORITHMS')
+    JWT_ALGORITHM: str = Field(..., env='AUTH_JWT_ALGORITHM')
 
 
 CONFIG = GRPCSettings()

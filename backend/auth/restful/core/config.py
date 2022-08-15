@@ -14,6 +14,7 @@ class AppSettings(BaseSettings):
     JWT_BLACKLIST_ENABLED: bool = Field(..., env='AUTH_JWT_BLACKLIST_ENABLED')
     JWT_BLACKLIST_TOKEN_CHECKS: list[str] = Field(..., env='AUTH_JWT_BLACKLIST_TOKEN_CHECKS')
     JWT_HEADER_NAME: str = Field(..., env='AUTH_JWT_HEADER_NAME')
+    JWT_ALGORITHM: str = Field(..., env='AUTH_JWT_ALGORITHM')
     ACCESS_EXPIRES: int = Field(..., env='AUTH_ACCESS_EXPIRES')
     JWT_DECODE_ALGORITHMS: list[str] = Field(..., env='AUTH_JWT_DECODE_ALGORITHMS')
     DEBUG: bool = Field(..., env='AUTH_DEBUG')
@@ -38,8 +39,7 @@ class Config(BaseSettings):
     APP: AppSettings = AppSettings()
     REDIS: RedisSettings = RedisSettings()
     DB: DatabaseSettings = DatabaseSettings()
-    
-    SQLALCHEMY_DATABASE_URI = f'{DB.DRIVER}://{DB.USER}:{DB.PASSWORD}@{DB.HOST}:{DB.PORT}/{DB.NAME}'
 
 
 CONFIG = Config()
+SQLALCHEMY_DATABASE_URI = f'{CONFIG.DB.DRIVER}://{CONFIG.DB.USER}:{CONFIG.DB.PASSWORD}@{CONFIG.DB.HOST}:{CONFIG.DB.PORT}/{CONFIG.DB.NAME}'

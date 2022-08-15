@@ -1,5 +1,5 @@
 from flask import Flask, Blueprint
-from core.config import CONFIG
+from core.config import CONFIG, SQLALCHEMY_DATABASE_URI
 from flask_migrate import Migrate
 from flask_redis import FlaskRedis
 from flask_jwt_extended import JWTManager
@@ -28,9 +28,10 @@ def register_blueprints(app):
     app.register_blueprint(root_bp)
 
 
-def create_app(config_class=CONFIG):
+def create_app(config_class=CONFIG.APP):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
 
     db.init_app(app)
     migrate.init_app(app, db)

@@ -11,6 +11,7 @@ from ..utils.system import json_abort
 def user_required(f):
     @wraps(f)
     def decorated_function(body: SignInBodyParams, *args, **kwargs):
+
         user = (User
             .query
             .filter_by(login=body.login)
@@ -20,6 +21,7 @@ def user_required(f):
             not user.check_password(body.password):
             json_abort(422, SignInActionError.NOT_VALID_AUTH_DATA)
 
+        kwargs['body'] = body
         kwargs['user'] = user
 
         return f(*args, **kwargs)
