@@ -1,4 +1,3 @@
-import hashlib
 import uuid
 from typing import Any
 from sqlalchemy import ForeignKey
@@ -38,19 +37,9 @@ class User(BaseModel):
         self.email = email
 
     @property
-    def permissions(self) -> dict[str, list[str]]:
-        user_permissions = {}
+    def permissions(self) -> set:
         roles = self.roles
-
-        #TODO: refactoring?
-        for role in roles:
-            for permission in role.permissions:
-                md5_hashed_url = hashlib.md5(permission.url, usedforsecurity=False).hexdigest()
-                
-                if md5_hashed_url in user_permissions.keys():
-                    user_permissions[md5_hashed_url].append(permission.http_method)
-                else:
-                    user_permissions[md5_hashed_url] = [permission.http_method]
+        return set([permission for role in roles for permission in role.permissions])
 
     @staticmethod
     def encrypt_password(password: str) -> str:

@@ -1,19 +1,21 @@
+from uuid import UUID
+
 from pydantic import BaseModel, Field
 from ...base import AuthorizationHeader
 
 
-class DeletePermissionBodyParams(BaseModel):
+class DeletePermissionParams(BaseModel):
     """Схема body-параметров удаления ограничения
     ---
     """
-    permission_id: int = Field(title='Идентификатор ограничения')
+    permission_id: UUID = Field(title='Идентификатор ограничения')
 
 
 class DeletePermissionResponse(BaseModel):
     """Схема ответа удаления ограничения
     ---
     """
-    pass
+    message: str = Field(title='Сообщение ответа')
 
 
 class DeletePermissionHeader(AuthorizationHeader):

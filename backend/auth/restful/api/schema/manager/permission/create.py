@@ -1,12 +1,10 @@
 import uuid
 from pydantic import BaseModel, Field
-from typing import Literal
 
 from ...base import AuthorizationHeader
-from .base import PermissionAction
 
 
-class CreatePermissionBodyParams(BaseModel):
+class CreatePermissionParams(BaseModel):
     """Схема body-параметров создания ограничения
     ---
     """
@@ -14,16 +12,13 @@ class CreatePermissionBodyParams(BaseModel):
     description: str = Field(title='Подробное описание ограничения')
     http_method: str = Field(title='HTTP метод ограничения')
     url: str = Field(title='URL ограничения')
-    action: Literal[PermissionAction.ACCESS, PermissionAction.DENY] = Field(
-        title='Action ограничения', 
-        example=PermissionAction.ACCESS
-    )
 
 class CreatePermissionResponse(BaseModel):
     """Схема ответа создания ограничения
     ---
     """
     id: uuid.UUID = Field(title='Идентификатор ограничения')
+    message: str = Field(title='Сообщение ответа')
 
 
 class CreatePermissionHeader(AuthorizationHeader):
