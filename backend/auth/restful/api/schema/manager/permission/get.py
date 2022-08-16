@@ -17,7 +17,13 @@ class GetPermissionResponse(BaseModel):
     ---
     """
     permissions: list[Permission] = Field(title='Список ограничений')
-    message: str = Field(title='Сообщение ответа')
+
+
+class GetPermissionError(BaseModel):
+    """Схема ответа обновления ограничения
+    ---
+    """
+    message: str = Field(title='Сообщение об ошибке')
 
 
 class GetPermissionHeader(AuthorizationHeader):

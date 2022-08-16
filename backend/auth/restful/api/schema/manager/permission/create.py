@@ -1,4 +1,6 @@
 import uuid
+from typing import Union
+
 from pydantic import BaseModel, Field
 
 from ...base import AuthorizationHeader
@@ -17,7 +19,7 @@ class CreatePermissionResponse(BaseModel):
     """Схема ответа создания ограничения
     ---
     """
-    id: uuid.UUID = Field(title='Идентификатор ограничения')
+    id: Union[uuid.UUID, str] = Field(title='Идентификатор ограничения')
     message: str = Field(title='Сообщение ответа')
 
 

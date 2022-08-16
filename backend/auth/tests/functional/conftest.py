@@ -1,6 +1,7 @@
 import asyncio
 from dataclasses import dataclass
 from typing import Any, Optional
+from urllib.parse import urlencode
 
 import aiohttp
 import pytest
@@ -11,6 +12,10 @@ from psycopg2.extras import DictCursor, register_uuid
 
 from .settings import CONFIG
 from .utils.data_generators.postgres.user import UserDataGenerator
+from .utils.data_generators.postgres.role import RoleDataGenerator
+from .utils.data_generators.postgres.permission import PermissionDataGenerator
+from .utils.data_generators.postgres.user_role import UserRoleDataGenerator
+from .utils.data_generators.postgres.role_permission import RolePermissionDataGenerator
 
 
 SERVICE_URL = f'{CONFIG.API.URL}:{CONFIG.API.PORT}'
@@ -61,6 +66,25 @@ def make_post_request(session):
     return inner
 
 
+@pytest.fixture
+def make_request(session):
+    async def inner(
+            method: str,
+            target: str,
+            params: Optional[dict] = None,
+            headers: Optional[dict] = None,
+            data: Optional[dict] = None,
+    ) -> HTTPResponse:
+        params = params or {}
+        headers = headers or {}
+        data = data or {}
+        url = SERVICE_URL + f'{CONFIG.API.API_PATH}/{CONFIG.API.API_VERSION}/' + target + '?' + urlencode(params)
+        async with getattr(session, method)(url, json=data, headers=headers) as response:
+            return HTTPResponse(body=await response.json(), headers=response.headers, status=response.status,)
+
+    return inner
+
+
 @pytest.fixture(scope='session')
 def event_loop():
     loop = asyncio.get_event_loop()
@@ -76,3 +100,31 @@ async def generate_users(pg_cursor):
     yield await user_dg.load()
 
     await user_dg.clean()
+
+
+@pytest.fixture(scope='session')
+async def generate_roles(pg_cursor):
+    role_dg = RoleDataGenerator(conn=pg_cursor)
+    yield await role_dg.load()
+    await role_dg.clean()
+
+
+@pytest.fixture(scope='session')
+async def generate_permissions(pg_cursor):
+    permission_dg = PermissionDataGenerator(conn=pg_cursor)
+    yield await permission_dg.load()
+    await permission_dg.clean()
+
+
+@pytest.fixture(scope='session')
+async def generate_user_roles(pg_cursor):
+    user_role_dg = UserRoleDataGenerator(conn=pg_cursor)
+    yield await user_role_dg.load()
+    await user_role_dg.clean()
+
+
+@pytest.fixture(scope='session')
+async def generate_role_permissions(pg_cursor):
+    role_permission_dg = RolePermissionDataGenerator(conn=pg_cursor)
+    yield await role_permission_dg.load()
+    await role_permission_dg.clean()

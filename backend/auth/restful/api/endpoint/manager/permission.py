@@ -1,11 +1,15 @@
 import uuid
-from flask import Blueprint
+from typing import Union
+
+from flask import Blueprint, abort
 from flask_pydantic_spec import Response
 
 from ...app import spec
-from ...schema.manager.permission.get import GetPermissionParams, GetPermissionHeader, GetPermissionResponse
+from ...schema.manager.permission.get import (GetPermissionParams, GetPermissionHeader,
+                                              GetPermissionResponse, GetPermissionError)
 from ...schema.manager.permission.create import CreatePermissionParams, CreatePermissionHeader, CreatePermissionResponse
-from ...schema.manager.permission.update import UpdatePermissionParams, UpdatePermissionHeader, UpdatePermissionResponse
+from ...schema.manager.permission.update import (UpdatePermissionParams, UpdatePermissionHeader,
+                                                 UpdatePermissionResponse, UpdatePermissionError)
 from ...schema.manager.permission.delete import DeletePermissionParams, DeletePermissionHeader, DeletePermissionResponse
 from ...schema.manager.permission.base import Permission as validator
 from ...utils.decorators import json_response, unpack_models
@@ -21,21 +25,18 @@ TAG = 'Manager'
 @spec.validate(
     query=GetPermissionParams,
     headers=GetPermissionHeader,
-    resp=Response(HTTP_200=GetPermissionResponse, HTTP_403=None), 
+    resp=Response(HTTP_200=GetPermissionResponse, HTTP_404=GetPermissionError, HTTP_403=None),
     tags=[TAG]
 )
 @unpack_models
 @json_response
-def get_permissions(query: GetPermissionParams, headers: GetPermissionHeader) -> GetPermissionResponse:
+def get_permissions(
+        query: GetPermissionParams,
+        headers: GetPermissionHeader,
+) -> Union[GetPermissionResponse, GetPermissionError]:
     """ Получение списка ограничений конкретной роли.
     """
-    user = User.query.filter_by(id=query.user_id).first()
-    if not user:
-        return GetPermissionResponse(
-            permissions=[],
-            message=f'Пользователь {query.user_id} не существует.',
-        )
-
+    user = User.query.get_or_404(query.user_id)
     response = [
         validator(
             id=p.id,
@@ -49,36 +50,35 @@ def get_permissions(query: GetPermissionParams, headers: GetPermissionHeader) ->
 
     return GetPermissionResponse(
         permissions=response,
-        message=f'Разрешения пользователя {query.user_id}.',
     )
 
 
 @bp.route('', methods=['POST'])
 @spec.validate(
-    query=CreatePermissionParams,
+    body=CreatePermissionParams,
     headers=CreatePermissionHeader,
     resp=Response(HTTP_200=CreatePermissionResponse, HTTP_403=None), 
     tags=[TAG]
 )
 @unpack_models
 @json_response
-def create_permission(query: CreatePermissionParams, headers: CreatePermissionHeader) -> CreatePermissionResponse:
+def create_permission(body: CreatePermissionParams, headers: CreatePermissionHeader) -> CreatePermissionResponse:
     """ Создание ограничения.
     """
     id = uuid.uuid4()
-    permission = Permission.query.filter_by(title=query.title).first()
+    permission = Permission.query.filter_by(title=body.title).first()
     if permission:
         return CreatePermissionResponse(
-            id=permission.id,
-            message=f'Разрешение {query.title} уже существует.',
+            id='',
+            message=f'Разрешение {body.title} уже существует.',
         )
     permission = Permission(
         **validator(
             id=id,
-            title=query.title,
-            description=query.description,
-            http_method=query.http_method,
-            url=query.url,
+            title=body.title,
+            description=body.description,
+            http_method=body.http_method,
+            url=body.url,
         ).dict()
     )
     db.session.add(permission)
@@ -86,57 +86,57 @@ def create_permission(query: CreatePermissionParams, headers: CreatePermissionHe
 
     return CreatePermissionResponse(
         id=id,
-        message=f'Разрешение {query.title} создано.',
+        message=f'Разрешение {body.title} создано.',
     )
 
 
 @bp.route('', methods=['PUT'])
 @spec.validate(
-    query=UpdatePermissionParams,
+    body=UpdatePermissionParams,
     headers=UpdatePermissionHeader,
-    resp=Response(HTTP_200=UpdatePermissionResponse, HTTP_403=None), 
+    resp=Response(HTTP_200=UpdatePermissionResponse, HTTP_404=UpdatePermissionError, HTTP_403=None),
     tags=[TAG]
 )
 @unpack_models
 @json_response
-def update_permission(query: UpdatePermissionParams, headers: UpdatePermissionHeader) -> UpdatePermissionResponse:
+def update_permission(
+        body: UpdatePermissionParams,
+        headers: UpdatePermissionHeader,
+) -> Union[UpdatePermissionResponse, UpdatePermissionError]:
     """ Обновление ограничения.
     """
-    permission = Permission.query.filter_by(id=query.permission_id).first()
-    if not permission:
-        return UpdatePermissionResponse(message=f'Разрешение {query.permission_id} не существует.')
-
+    permission = Permission.query.get_or_404(body.id)
     validated_permission = validator(
-        id=query.permission_id,
-        title=query.title,
-        description=query.description,
-        http_method=query.http_method,
-        url=query.url,
+        id=body.id,
+        title=body.title,
+        description=body.description,
+        http_method=body.http_method,
+        url=body.url,
     )
 
-    permission.title=validated_permission.title
-    permission.description=validated_permission.description
-    permission.http_method=validated_permission.http_method
-    permission.url=validated_permission.url
+    permission.title = validated_permission.title
+    permission.description = validated_permission.description
+    permission.http_method = validated_permission.http_method
+    permission.url = validated_permission.url
 
     db.session.commit()
 
-    return UpdatePermissionResponse(message=f'Разрешение {query.permission_id} обновлено.')
+    return UpdatePermissionResponse(__root__=validated_permission)
 
 
 @bp.route('', methods=['DELETE'])
 @spec.validate(
-    query=DeletePermissionParams,
+    body=DeletePermissionParams,
     headers=DeletePermissionHeader,
     resp=Response(HTTP_200=DeletePermissionResponse, HTTP_403=None), 
     tags=[TAG]
 )
 @unpack_models
 @json_response
-def delete_permission(query: DeletePermissionParams, headers: DeletePermissionHeader) -> DeletePermissionResponse:
+def delete_permission(body: DeletePermissionParams, headers: DeletePermissionHeader) -> DeletePermissionResponse:
     """ Удаление ограничения.
     """
-    Permission.query.filter_by(id=query.permission_id).delete()
+    Permission.query.filter_by(id=body.id).delete()
     db.session.commit()
 
-    return DeletePermissionResponse(message=f'Разрешение {query.permission_id} удалено.')
+    return DeletePermissionResponse(message=f'Разрешение {body.id} удалено.')
