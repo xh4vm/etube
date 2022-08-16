@@ -6,7 +6,6 @@ from sqlalchemy import Column, String
 from sqlalchemy.dialects.postgresql import UUID
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from api.app import jwt
 from .base import BaseModel
 
 
@@ -47,21 +46,6 @@ class User(BaseModel):
 
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password, password)
-
-    @staticmethod
-    @jwt.additional_claims_loader
-    def add_claims(user) -> dict[str, Any]:
-        return {
-            'login': user.login,
-            'email': user.email,
-            # 'roles': user.roles,
-            # 'permissions': user.permissions
-        }
-
-    @staticmethod
-    @jwt.user_identity_loader
-    def add_identity(user) -> uuid.UUID:
-        return user.id
 
 
 class Role(BaseModel):

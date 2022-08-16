@@ -1,3 +1,5 @@
+from typing import Any
+import uuid
 from flask import Flask, Blueprint
 from core.config import CONFIG, SQLALCHEMY_DATABASE_URI
 from flask_migrate import Migrate
@@ -7,10 +9,20 @@ from flask_pydantic_spec import FlaskPydanticSpec
 
 from .model.base import db
 
+from .containers.storage import StorageResource, RedisStorageResource
+from .containers.action import SignInServiceContainer
+
+
 migrate = Migrate()
 redis_client = FlaskRedis()
 jwt = JWTManager()
 spec = FlaskPydanticSpec("flask", title="Auth API", version=CONFIG.APP.API_VERSION, path=CONFIG.APP.SWAGGER_PATH)
+
+
+def register_di_containers():
+    redis_resource = StorageResource(RedisStorageResource)
+
+    SignInServiceContainer(storage_svc=redis_resource)
 
 
 def register_blueprints(app):
@@ -28,6 +40,20 @@ def register_blueprints(app):
     app.register_blueprint(root_bp)
 
 
+@jwt.additional_claims_loader
+def add_claims(user) -> dict[str, Any]:
+    return {
+        'login': user.login,
+        'email': user.email,
+        # 'roles': user.roles,
+        # 'permissions': user.permissions
+    }
+
+@jwt.user_identity_loader
+def add_identity(user) -> uuid.UUID:
+    return user.id
+
+
 def create_app(config_class=CONFIG.APP):
     app = Flask(__name__)
     app.config.from_object(config_class)
@@ -39,6 +65,7 @@ def create_app(config_class=CONFIG.APP):
     jwt.init_app(app)
 
     register_blueprints(app)
+    register_di_containers()
     spec.register(app)
 
     app.app_context().push()

@@ -1,7 +1,13 @@
 from flask import Blueprint
 from flask_pydantic_spec import Response, Request
 from flask_jwt_extended.view_decorators import jwt_required
-from flask_jwt_extended import create_access_token, create_refresh_token
+from dependency_injector.wiring import inject, Provide
+
+from ..services.token.access import AccessTokenService
+from ..services.token.refresh import RefreshTokenService
+from ..services.sign_in_history import SignInHistoryService
+
+from ..containers.action import SignInServiceContainer
 
 from ..app import spec
 from ..schema.action.sign_in import SignInBodyParams, SignInHeader, SignInResponse
@@ -30,15 +36,25 @@ TAG = 'Action'
 @already_auth
 @user_required
 @json_response
-def sign_in(user: User, body: SignInBodyParams, headers: SignInHeader) -> SignInResponse:
+@inject
+def sign_in(
+    user: User, 
+    body: SignInBodyParams, 
+    headers: SignInHeader,
+    access_token_service: AccessTokenService = Provide[SignInServiceContainer.access_token_service],
+    refresh_token_service: RefreshTokenService = Provide[SignInServiceContainer.refresh_token_service],
+    sign_in_history_service: SignInHistoryService = Provide[SignInServiceContainer.sign_in_history_service]
+) -> SignInResponse:
     """ Авторизация пользователя
     ---
         На вход поступает логин и пароль, если пользователь существует и авторизация успешна, то 
         создается и возвразается пара jwt токенов.
     """
 
-    access_token = create_access_token(identity=user)
-    refresh_token = create_refresh_token(identity=user)
+    access_token = access_token_service.create(claims=user)
+    refresh_token = refresh_token_service.create(claims=user)
+
+    sign_in_history_service.create_record(user_id=user.id, user_agent=headers.user_agent)
 
     return SignInResponse(access_token=access_token, refresh_token=refresh_token)
 

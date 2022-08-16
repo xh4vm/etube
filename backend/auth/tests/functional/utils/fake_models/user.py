@@ -7,7 +7,6 @@ from pydantic import BaseModel, Field
 from .base import fake, get_new_id
 
 
-
 class FakeUser(BaseModel):
     id: str = Field(default_factory=get_new_id)
     login: str = Field(default_factory=fake.user_name)

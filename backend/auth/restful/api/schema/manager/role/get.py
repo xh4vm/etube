@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
-from ...base import AuthorizationHeader
-from .base import Role
+from ...base import AuthorizationHeader, Role
 
 
 class GetRoleQueryParams(BaseModel):

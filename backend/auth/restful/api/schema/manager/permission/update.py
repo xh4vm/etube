@@ -2,8 +2,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from .base import Permission
-from ...base import AuthorizationHeader
+from ...base import AuthorizationHeader, Permission
 
 
 class UpdatePermissionParams(BaseModel):

@@ -1,5 +1,10 @@
-from pydantic import BaseModel, Field, validator
+import uuid
+from pydantic import BaseModel, EmailStr, Field, validator
 from user_agents import parse
+
+
+def get_new_id() -> str:
+    return str(uuid.uuid4())
 
 
 class AuthorizationHeader(BaseModel):
@@ -51,3 +56,32 @@ class BaseError(BaseModel):
     
     message: str = Field(title='Сообщение об ошибке', default='Error')
     code: int = Field(title='Код ошибки')
+
+
+class Permission(BaseModel):
+    id: uuid.UUID = Field(title='Идентификатор ограничения', default_factory=get_new_id)
+    title: str = Field(title='Название ограничения')
+    description: str = Field(title='Подробное описание ограничения')
+    http_method: str = Field(title='HTTP метод ограничения')
+    url: str = Field(title='URL ограничения')
+
+
+class Role(BaseModel):
+    id: uuid.UUID = Field(title='Идентификатор роли', default_factory=get_new_id)
+    title: str = Field(title='Название роли')
+    permissions: list[Permission] = Field(title='Список ограничений роли')
+
+
+class User(BaseModel):
+    id: uuid.UUID = Field(title='Идентификатор роли', default_factory=get_new_id)
+    login: str = Field(title='Логин пользователя')
+    email: EmailStr = Field(title='Email пользователя')
+    roles: list[Role] = Field(title='Список ролей')
+
+
+class SignInRecord(BaseModel):
+    id: uuid.UUID = Field(title='Идентификатор записи', default_factory=get_new_id)
+    user_id: uuid.UUID = Field(title='Идентификатор пользователя')
+    os: str = Field(title='Операционная система пользователя')
+    device: str = Field(title='Устройство пользователя')
+    browser: str = Field(title='Браузер пользователя')

@@ -32,7 +32,6 @@ class BasePostgresDataGenerator(BaseDataGenerator):
     async def load(self):
         fake_data: list[ModelMetaclass] = []
         postgres_data: list[ModelMetaclass] = []
-        response_data: list[ModelMetaclass] = []
 
         with open(f'{CONFIG.BASE_DIR}/testdata/{self.table}.json', 'r') as fd:
             fake_data = json.load(fd)

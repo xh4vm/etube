@@ -54,19 +54,6 @@ async def session():
 
 
 @pytest.fixture
-def make_post_request(session):
-    async def inner(method: str, json: Optional[dict] = None, headers: Optional[dict] = None) -> HTTPResponse:
-        json = json or {}
-        headers = headers or {}
-        
-        url = SERVICE_URL + f'{CONFIG.API.API_PATH}/{CONFIG.API.API_VERSION}/' + method
-        async with session.post(url, json=json, headers=headers) as response:
-            return HTTPResponse(body=await response.json(), headers=response.headers, status=response.status,)
-
-    return inner
-
-
-@pytest.fixture
 def make_request(session):
     async def inner(
             method: str,
@@ -94,7 +81,6 @@ def event_loop():
 
 @pytest.fixture(scope='session')
 async def generate_users(pg_cursor):
-
     user_dg = UserDataGenerator(conn=pg_cursor)
 
     yield await user_dg.load()
