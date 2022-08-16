@@ -53,7 +53,7 @@ async def test_sign_in_login_success(make_post_request, generate_users):
 
 
 async def test_sign_in_alredy_auth(make_post_request, generate_users):
-    access_token = create_token(claims={'sub': '6f2819c9-957b-45b6-8348-853f71bb6adf', 'login': 'cheburashka', 'password': '123qwe'})
+    access_token = create_token(claims={'sub': '6f2819c9-957b-45b6-8348-853f71bb6adf', 'login': 'cheburashka'})
     response = await make_post_request(
         f'auth/action/sign_in', 
         json={'login': 'cheburashka', 'password': '123qwe'}, 
