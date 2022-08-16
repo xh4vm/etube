@@ -1,6 +1,7 @@
 import asyncio
 from dataclasses import dataclass
 from typing import Any, Optional
+from urllib.parse import urlencode
 
 import aiohttp
 import pytest
@@ -64,11 +65,16 @@ def make_post_request(session):
 @pytest.fixture
 def make_request(session):
     async def inner(
-            method: str, target: str, headers: Optional[dict] = None, data: Optional[dict] = None,
+            method: str,
+            target: str,
+            params: Optional[dict] = None,
+            headers: Optional[dict] = None,
+            data: Optional[dict] = None,
     ) -> HTTPResponse:
+        params = params or {}
         headers = headers or {}
         data = data or {}
-        url = SERVICE_URL + f'{CONFIG.API.API_PATH}/{CONFIG.API.API_VERSION}/' + target
+        url = SERVICE_URL + f'{CONFIG.API.API_PATH}/{CONFIG.API.API_VERSION}/' + target + '?' + urlencode(params)
         async with getattr(session, method)(url, json=data, headers=headers) as response:
             return HTTPResponse(body=await response.json(), headers=response.headers, status=response.status,)
 
