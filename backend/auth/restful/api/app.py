@@ -10,7 +10,9 @@ from flask_pydantic_spec import FlaskPydanticSpec
 from .model.base import db
 
 from .containers.storage import StorageResource, RedisStorageResource
-from .containers.action import SignInServiceContainer
+from .containers.sign_in import ServiceContainer as SignInServiceContainer
+from .containers.token import ServiceContainer as TokenServiceContainer
+
 
 
 migrate = Migrate()
@@ -23,6 +25,7 @@ def register_di_containers():
     redis_resource = StorageResource(RedisStorageResource)
 
     SignInServiceContainer(storage_svc=redis_resource)
+    TokenServiceContainer(storage_svc=redis_resource)
 
 
 def register_blueprints(app):

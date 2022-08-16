@@ -3,20 +3,18 @@ from flask_pydantic_spec import Response, Request
 from flask_jwt_extended.view_decorators import jwt_required
 from dependency_injector.wiring import inject, Provide
 
-from ..services.token.access import AccessTokenService
-from ..services.token.refresh import RefreshTokenService
+from ..services.token.base import BaseTokenService
 from ..services.sign_in_history import SignInHistoryService
+from ..services.action.sign_in.base import BaseSignInService
 
-from ..containers.action import SignInServiceContainer
+from ..containers.sign_in import ServiceContainer
 
 from ..app import spec
 from ..schema.action.sign_in import SignInBodyParams, SignInHeader, SignInResponse
 from ..schema.action.sign_up import SignUpBodyParams, SignUpHeader, SignUpResponse
 from ..schema.action.logout import LogoutBodyParams, LogoutHeader, LogoutResponse
 
-from ..model.models import User
-
-from ..decorators.action import user_required, already_auth
+from ..decorators.action import already_auth
 from ..utils.decorators import json_response, unpack_models
 
 
@@ -34,22 +32,23 @@ TAG = 'Action'
 @unpack_models
 @jwt_required(optional=True)
 @already_auth
-@user_required
 @json_response
 @inject
 def sign_in(
-    user: User, 
     body: SignInBodyParams, 
     headers: SignInHeader,
-    access_token_service: AccessTokenService = Provide[SignInServiceContainer.access_token_service],
-    refresh_token_service: RefreshTokenService = Provide[SignInServiceContainer.refresh_token_service],
-    sign_in_history_service: SignInHistoryService = Provide[SignInServiceContainer.sign_in_history_service]
+    access_token_service: BaseTokenService = Provide[ServiceContainer.access_token_service],
+    refresh_token_service: BaseTokenService = Provide[ServiceContainer.refresh_token_service],
+    sign_in_service: BaseSignInService = Provide[ServiceContainer.sign_in_service],
+    sign_in_history_service: SignInHistoryService = Provide[ServiceContainer.sign_in_history_service]
 ) -> SignInResponse:
     """ Авторизация пользователя
     ---
         На вход поступает логин и пароль, если пользователь существует и авторизация успешна, то 
         создается и возвразается пара jwt токенов.
     """
+
+    user = sign_in_service.authorization(login=body.login, password=body.password)
 
     access_token = access_token_service.create(claims=user)
     refresh_token = refresh_token_service.create(claims=user)
