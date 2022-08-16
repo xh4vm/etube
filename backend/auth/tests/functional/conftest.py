@@ -71,15 +71,15 @@ def make_request(session):
     async def inner(
             method: str,
             target: str,
-            params: Optional[dict] = None,
-            headers: Optional[dict] = None,
-            data: Optional[dict] = None,
+            params: Optional[dict[str, Any]] = None,
+            headers: Optional[dict[str, Any]] = None,
+            json: Optional[dict[str, Any]] = None,
     ) -> HTTPResponse:
         params = params or {}
         headers = headers or {}
-        data = data or {}
-        url = SERVICE_URL + f'{CONFIG.API.API_PATH}/{CONFIG.API.API_VERSION}/' + target + '?' + urlencode(params)
-        async with getattr(session, method)(url, json=data, headers=headers) as response:
+        json = json or {}
+        url = SERVICE_URL + f'{CONFIG.API.API_PATH}/{CONFIG.API.API_VERSION}/' + target
+        async with getattr(session, method)(url, json=json, headers=headers, params=params) as response:
             return HTTPResponse(body=await response.json(), headers=response.headers, status=response.status,)
 
     return inner

@@ -12,6 +12,3 @@ class FakeRolePermission(BaseModel):
     permission_id: str = Field(default_factory=get_new_id)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-
-    def __init__(self, **data: dict[str, Any]):
-        super().__init__(**data)

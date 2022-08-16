@@ -11,13 +11,13 @@ from .base import BaseModel
 
 
 class UserRole(BaseModel):
-    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='cascade'), nullable=False)
-    role_id = Column(UUID(as_uuid=True), ForeignKey('roles.id', ondelete='cascade'), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    role_id = Column(UUID(as_uuid=True), ForeignKey('roles.id', ondelete='CASCADE'), nullable=False)
 
 
 class RolePermission(BaseModel):
-    role_id = Column(UUID(as_uuid=True), ForeignKey('roles.id', ondelete='cascade'), nullable=False)
-    permission_id = Column(UUID(as_uuid=True), ForeignKey('permissions.id', ondelete='cascade'), nullable=False)
+    role_id = Column(UUID(as_uuid=True), ForeignKey('roles.id', ondelete='CASCADE'), nullable=False)
+    permission_id = Column(UUID(as_uuid=True), ForeignKey('permissions.id', ondelete='CASCADE'), nullable=False)
 
 
 class User(BaseModel):
@@ -93,7 +93,8 @@ class Permission(BaseModel):
 class SignInHistory(BaseModel):
     __tablename__ = 'sign_in_history'
 
-    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    os = Column(String(255))
     device = Column(String(255))
     browser = Column(String(255))
 

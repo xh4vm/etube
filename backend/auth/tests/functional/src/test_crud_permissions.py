@@ -34,7 +34,7 @@ async def test_create_permission(make_request):
     response = await make_request(
         method='post',
         target=f'auth/manager/permission',
-        data={
+        json={
             'title': 'get user',
             "description": 'permission description',
             "http_method": 'GET',
@@ -51,7 +51,7 @@ async def test_create_existing_permission(make_request):
     response = await make_request(
         method='post',
         target=f'auth/manager/permission',
-        data={
+        json={
             'title': 'get user',
             "description": 'permission description',
             "http_method": 'GET',
@@ -65,7 +65,7 @@ async def test_create_existing_permission(make_request):
 
 async def test_update_permission(make_request, generate_permissions):
     # Обновление разрешения.
-    data = {
+    json = {
        'id': 'b8ac6615-012f-4469-ad03-cc87a42db5e0',
        'title': 'create user',
        "description": '',
@@ -75,11 +75,11 @@ async def test_update_permission(make_request, generate_permissions):
     response = await make_request(
         method='put',
         target=f'auth/manager/permission',
-        data=data,
+        json=json,
         headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}'},
     )
 
-    assert response.body.get('__root__') == data
+    assert response.body.get('__root__') == json
 
 
 async def test_remove_permission(make_request, generate_permissions):
@@ -87,7 +87,7 @@ async def test_remove_permission(make_request, generate_permissions):
     response = await make_request(
         method='delete',
         target=f'auth/manager/permission',
-        data={
+        json={
             'id': '24637592-11a9-403a-8fc0-43363b5c55aa',
         },
         headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}'},

@@ -37,7 +37,7 @@ async def test_sign_in_login_success(make_post_request, generate_users):
     access_token = response.body.get('access_token')
     identity = get_jwt_identity(access_token)
     
-    assert '0c09752e-27ef-425a-a8e5-662b2ecf441e' == identity
+    assert '6f2819c9-957b-45b6-8348-853f71bb6adf' == identity
 
     claims = get_jwt_claims(access_token)
     
@@ -48,12 +48,12 @@ async def test_sign_in_login_success(make_post_request, generate_users):
     refresh_token = response.body.get('refresh_token')
     identity = get_jwt_identity(refresh_token)
     
-    assert '0c09752e-27ef-425a-a8e5-662b2ecf441e' == identity
+    assert '6f2819c9-957b-45b6-8348-853f71bb6adf' == identity
     assert verify_exp_jwt(refresh_token) is True
 
 
 async def test_sign_in_alredy_auth(make_post_request, generate_users):
-    access_token = create_token(claims={'sub': '0c09752e-27ef-425a-a8e5-662b2ecf441e', 'login': 'cheburashka', 'password': '123qwe'})
+    access_token = create_token(claims={'sub': '6f2819c9-957b-45b6-8348-853f71bb6adf', 'login': 'cheburashka', 'password': '123qwe'})
     response = await make_post_request(
         f'auth/action/sign_in', 
         json={'login': 'cheburashka', 'password': '123qwe'}, 
