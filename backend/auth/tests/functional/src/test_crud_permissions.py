@@ -71,15 +71,15 @@ async def test_update_permission(make_request):
     assert response.body.get('__root__') == data
 
 
-# async def test_remove_permission(make_request):
-#     # Удаление разрешения.
-#     response = await make_request(
-#         method='delete',
-#         target=f'auth/manager/permission',
-#         data={
-#             'id': '24637592-11a9-403a-8fc0-43363b5c55aa',
-#         },
-#         headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}'},
-#     )
-#
-#     assert response.body.get('message') == 'Разрешение 24637592-11a9-403a-8fc0-43363b5c55aa удалено.'
+async def test_remove_permission(make_request):
+    # Удаление разрешения.
+    response = await make_request(
+        method='delete',
+        target=f'auth/manager/permission',
+        data={
+            'id': '24637592-11a9-403a-8fc0-43363b5c55aa',
+        },
+        headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}'},
+    )
+
+    assert response.body.get('message') == 'Разрешение 24637592-11a9-403a-8fc0-43363b5c55aa удалено.'
