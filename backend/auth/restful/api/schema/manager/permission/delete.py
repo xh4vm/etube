@@ -8,7 +8,7 @@ class DeletePermissionParams(BaseModel):
     """Схема body-параметров удаления ограничения
     ---
     """
-    permission_id: UUID = Field(title='Идентификатор ограничения')
+    id: UUID = Field(title='Идентификатор ограничения')
 
 
 class DeletePermissionResponse(BaseModel):
