@@ -11,13 +11,13 @@ from .base import BaseModel
 
 
 class UserRole(BaseModel):
-    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
-    role_id = Column(UUID(as_uuid=True), ForeignKey('roles.id'), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='cascade'), nullable=False)
+    role_id = Column(UUID(as_uuid=True), ForeignKey('roles.id', ondelete='cascade'), nullable=False)
 
 
 class RolePermission(BaseModel):
-    role_id = Column(UUID(as_uuid=True), ForeignKey('roles.id'), nullable=False)
-    permission_id = Column(UUID(as_uuid=True), ForeignKey('permissions.id'), nullable=False)
+    role_id = Column(UUID(as_uuid=True), ForeignKey('roles.id', ondelete='cascade'), nullable=False)
+    permission_id = Column(UUID(as_uuid=True), ForeignKey('permissions.id', ondelete='cascade'), nullable=False)
 
 
 class User(BaseModel):
@@ -68,10 +68,12 @@ class Role(BaseModel):
     title = Column(String(255), unique=True, nullable=False)
     description = Column(String(4096))
 
-    permissions = relationship('Permission', 
+    permissions = relationship(
+        'Permission',
         secondary='join(Permission, RolePermission, Permission.id == RolePermission.permission_id)',
         secondaryjoin='Role.id == RolePermission.role_id', 
-        viewonly=True)
+        viewonly=True,
+    )
 
     def __repr__(self):
         return f'<Role {self.title}>'
