@@ -59,6 +59,20 @@ def make_post_request(session):
     return inner
 
 
+@pytest.fixture
+def make_request(session):
+    async def inner(
+            method: str, target: str, headers: Optional[dict] = None, data: Optional[dict] = None,
+    ) -> HTTPResponse:
+        headers = headers or {}
+        data = data or {}
+        url = SERVICE_URL + f'{CONFIG.API.API_PATH}/{CONFIG.API.API_VERSION}/' + target
+        async with getattr(session, method)(url, json=data, headers=headers) as response:
+            return HTTPResponse(body=await response.json(), headers=response.headers, status=response.status,)
+
+    return inner
+
+
 @pytest.fixture(scope='session')
 def event_loop():
     loop = asyncio.get_event_loop()
