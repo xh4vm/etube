@@ -23,7 +23,7 @@ class GetPermissionError(BaseModel):
     """Схема ответа обновления ограничения
     ---
     """
-    message: Permission = Field(title='Сообщение об ошибке')
+    message: str = Field(title='Сообщение об ошибке')
 
 
 class GetPermissionHeader(AuthorizationHeader):

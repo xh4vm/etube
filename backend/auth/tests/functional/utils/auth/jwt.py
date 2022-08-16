@@ -1,6 +1,5 @@
 import jwt
 import json
-from uuid import uuid4
 
 from datetime import datetime
 from typing import Any
@@ -32,7 +31,3 @@ def verify_exp_jwt(token: str) -> bool:
 
 def create_token(claims: dict[str: Any]) -> str:
     return jwt.encode(claims, key=CONFIG.API.JWT_SECRET_KEY, algorithm=CONFIG.API.JWT_ALGORITHM)
-
-
-def create_bearer_token() -> str:
-    return f'Bearer {uuid4()}'
