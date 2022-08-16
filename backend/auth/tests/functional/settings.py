@@ -16,6 +16,8 @@ class ApiSettings(Settings):
     JWT_DECODE_ALGORITHMS: list[str] = Field(['HS256'], env='AUTH_JWT_DECODE_ALGORITHMS')
     JWT_SECRET_KEY: str = Field('fn_jj!qd2*mcd4kev#s+8o53sfnc!@(jda9&guxual=7#9#n^$', env='AUTH_JWT_SECRET_KEY')
     JWT_ALGORITHM: str = Field('HS256', env='AUTH_JWT_ALGORITHM')
+    JWT_HEADER_NAME: str = Field('X-Authorization-Token', env='AUTH_JWT_HEADER_NAME')
+    JWT_TOKEN_LOCATION: str = Field('headers', env='AUTH_JWT_TOKEN_LOCATION')
     
 
 class DatabaseSettings(BaseSettings):

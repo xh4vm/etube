@@ -26,10 +26,10 @@ TAG = 'Action'
     tags=[TAG]
 )
 @unpack_models
+@jwt_required(optional=True)
 @already_auth
 @user_required
 @json_response
-@jwt_required(optional=True)
 def sign_in(user: User, body: SignInBodyParams, headers: SignInHeader) -> SignInResponse:
     """ Авторизация пользователя
     ---
