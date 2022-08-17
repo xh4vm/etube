@@ -7,7 +7,6 @@ from flask_pydantic_spec import Request, Response
 from ..app import spec
 from ..containers.sign_in import ServiceContainer as SignInServiceContainer
 from ..containers.sign_up import ServiceContainer as SignUpServiceContainer
-from ..decorators.action import already_auth
 from ..schema.action.logout import (LogoutBodyParams, LogoutHeader,
                                     LogoutResponse)
 from ..schema.action.sign_in import (SignInBodyParams, SignInHeader,
