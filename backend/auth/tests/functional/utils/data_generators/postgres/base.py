@@ -54,10 +54,10 @@ class BasePostgresDataGenerator(BaseDataGenerator):
         return self.data
 
     async def clean(self):
-        ids: list[str] = [(elem['id'],) for elem in self.data]
+        ids: list[list] = [[elem['id'] for elem in self.data]]
         delete_query: str = (
             f'DELETE FROM {CONFIG.DB.SCHEMA_NAME}.{self.table} '
-            f'WHERE id = %s'
+            f'WHERE id in %s'
         )
         execute_values(self.conn, delete_query, ids)
         self.conn.execute('COMMIT;')
