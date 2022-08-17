@@ -1,7 +1,8 @@
 import uuid
 from typing import Union
 
-from flask import Blueprint, abort
+from flask import Blueprint
+from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Response
 
 from ...app import spec
@@ -29,6 +30,7 @@ TAG = 'Manager'
     tags=[TAG]
 )
 @unpack_models
+@jwt_required()
 @json_response
 def get_permissions(
         query: GetPermissionParams,
@@ -61,6 +63,7 @@ def get_permissions(
     tags=[TAG]
 )
 @unpack_models
+@jwt_required()
 @json_response
 def create_permission(body: CreatePermissionParams, headers: CreatePermissionHeader) -> CreatePermissionResponse:
     """ Создание ограничения.
@@ -98,6 +101,7 @@ def create_permission(body: CreatePermissionParams, headers: CreatePermissionHea
     tags=[TAG]
 )
 @unpack_models
+@jwt_required()
 @json_response
 def update_permission(
         body: UpdatePermissionParams,
@@ -132,6 +136,7 @@ def update_permission(
     tags=[TAG]
 )
 @unpack_models
+@jwt_required()
 @json_response
 def delete_permission(body: DeletePermissionParams, headers: DeletePermissionHeader) -> DeletePermissionResponse:
     """ Удаление ограничения.
