@@ -3,10 +3,11 @@ import pytest
 from ..utils.auth.jwt import create_token
 from functional.settings import CONFIG
 
-from flask_jwt_extended import create_access_token
-
 pytestmark = pytest.mark.asyncio
 claims={'sub': '6f2819c9-957b-45b6-8348-853f71bb6adf', 'login': 'cheburashka'}
+
+# В тесте создания разрешения создается новый объект, который затем надо удалить.
+created_permission_id = ''
 
 async def test_get_user_permissions(
         make_request,
@@ -24,8 +25,6 @@ async def test_get_user_permissions(
         headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}'},
     )
 
-    print('***', response)
-
     assert len(response.body.get('permissions')) == 2
 
 
@@ -42,6 +41,8 @@ async def test_create_permission(make_request):
         },
         headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}'},
     )
+    global created_permission_id
+    created_permission_id = response.body.get('id')
 
     assert response.body.get('message') == 'Разрешение get user создано.'
 
@@ -88,9 +89,9 @@ async def test_remove_permission(make_request, generate_permissions):
         method='delete',
         target=f'auth/manager/permission',
         json={
-            'id': '24637592-11a9-403a-8fc0-43363b5c55aa',
+            'id': created_permission_id,
         },
         headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}'},
     )
 
-    assert response.body.get('message') == 'Разрешение 24637592-11a9-403a-8fc0-43363b5c55aa удалено.'
+    assert response.body.get('message') == f'Разрешение {created_permission_id} удалено.'
