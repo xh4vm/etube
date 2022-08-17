@@ -13,7 +13,7 @@ from api.utils.system import json_abort
 from .base import BaseSignUpService
 
 
-class SignUpService(BaseSignUpService):
+class FormSignUpService(BaseSignUpService):
 
     def registration(self, login: str, email: str, password: str) -> uuid:
         if User.query.filter_by(email=email).first():

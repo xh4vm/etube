@@ -8,7 +8,7 @@ from typing import Optional, Type
 from dependency_injector import containers, providers
 
 from ..services.action.sign_up.base import BaseSignUpService
-from ..services.action.sign_up.sign_up import SignUpService
+from ..services.action.sign_up.form import FormSignUpService
 from .base import BaseContainer
 
 
@@ -19,4 +19,4 @@ class SignUpFactory(providers.Factory):
 class ServiceContainer(BaseContainer):
 
     wiring_config = containers.WiringConfiguration(modules=['..endpoint.action'])
-    sign_up_service = SignUpFactory(SignUpService)
+    sign_up_service = SignUpFactory(FormSignUpService)
