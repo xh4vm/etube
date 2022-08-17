@@ -61,7 +61,7 @@ async def test_create_existing_permission(make_request):
         headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}'},
     )
 
-    assert response.body.get('message') == 'Разрешение get user уже существует.'
+    assert response.body.get('message') == 'Разрешение уже существует.'
 
 
 async def test_update_permission(make_request, generate_permissions):

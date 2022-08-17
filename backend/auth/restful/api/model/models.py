@@ -1,12 +1,12 @@
 import uuid
 from typing import Any
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship
-from sqlalchemy import Column, String
-from sqlalchemy.dialects.postgresql import UUID
-from werkzeug.security import generate_password_hash, check_password_hash
 
-from .base import BaseModel
+from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from .base import BaseModel, db
 
 
 class UserRole(BaseModel):
@@ -29,7 +29,8 @@ class User(BaseModel):
     def __repr__(self):
         return f'<User {self.login}>'
 
-    def __init__(self, login: str, password: str, email: str) -> None:
+    def __init__(self, id: uuid, login: str, password: str, email: str) -> None:
+        self.id = id
         self.login = login
         self.password = self.encrypt_password(password)
         #TODO: mixin mail validator

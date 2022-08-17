@@ -1,25 +1,26 @@
-from flask import Blueprint
-from flask_pydantic_spec import Response, Request
-from flask_jwt_extended.view_decorators import jwt_required
-from dependency_injector.wiring import inject, Provide
+from dependency_injector.wiring import Provide, inject
 from http import HTTPStatus
-
-from ..services.token.base import BaseTokenService
-from ..services.sign_in_history import SignInHistoryService
-from ..services.action.sign_in.base import BaseSignInService
-
-from ..containers.sign_in import ServiceContainer
+from flask import Blueprint
+from flask_jwt_extended.view_decorators import jwt_required
+from flask_pydantic_spec import Request, Response
 
 from ..app import spec
-from ..schema.action.sign_in import SignInBodyParams, SignInHeader, SignInResponse
-from ..schema.action.sign_up import SignUpBodyParams, SignUpHeader, SignUpResponse
-from ..schema.action.logout import LogoutBodyParams, LogoutHeader, LogoutResponse
-
+from ..containers.sign_in import ServiceContainer as SignInServiceContainer
+from ..containers.sign_up import ServiceContainer as SignUpServiceContainer
+from ..decorators.action import already_auth
+from ..schema.action.logout import (LogoutBodyParams, LogoutHeader,
+                                    LogoutResponse)
+from ..schema.action.sign_in import (SignInBodyParams, SignInHeader,
+                                     SignInResponse)
+from ..schema.action.sign_up import (SignUpBodyParams, SignUpHeader,
+                                     SignUpResponse)
+from ..services.action.sign_in.base import BaseSignInService
+from ..services.action.sign_up.base import BaseSignUpService
+from ..services.sign_in_history import SignInHistoryService
+from ..services.token.base import BaseTokenService
 from ..errors.action.sign_in import SignInActionError
-
 from ..utils.decorators import json_response, unpack_models
 from ..utils.system import json_abort
-
 
 bp = Blueprint('action', __name__, url_prefix='/action')
 TAG = 'Action'
@@ -39,10 +40,10 @@ TAG = 'Action'
 def sign_in(
     body: SignInBodyParams, 
     headers: SignInHeader,
-    access_token_service: BaseTokenService = Provide[ServiceContainer.access_token_service],
-    refresh_token_service: BaseTokenService = Provide[ServiceContainer.refresh_token_service],
-    sign_in_service: BaseSignInService = Provide[ServiceContainer.sign_in_service],
-    sign_in_history_service: SignInHistoryService = Provide[ServiceContainer.sign_in_history_service]
+    access_token_service: BaseTokenService = Provide[SignInServiceContainer.access_token_service],
+    refresh_token_service: BaseTokenService = Provide[SignInServiceContainer.refresh_token_service],
+    sign_in_service: BaseSignInService = Provide[SignInServiceContainer.sign_in_service],
+    sign_in_history_service: SignInHistoryService = Provide[SignInServiceContainer.sign_in_history_service]
 ) -> SignInResponse:
     """ Авторизация пользователя
     ---
@@ -71,13 +72,23 @@ def sign_in(
     tags=[TAG]
 )
 @unpack_models
+@jwt_required(optional=True)
 @json_response
-def sign_up(body: SignUpBodyParams, headers: SignUpHeader) -> SignUpResponse:
+@inject
+def sign_up(
+    body: SignUpBodyParams,
+    headers: SignUpHeader,
+    sign_up_service: BaseSignUpService = Provide[SignUpServiceContainer.sign_up_service],
+) -> SignUpResponse:
     """ Регистрация пользователя
     ---
-        На вход поступает логин и пароль, если регистрация успешна то создается и возвразается пара jwt токенов.
+        На вход поступает логин, почта и пароль, если регистрация успешна, то возвращается id нового пользователя.
     """
-    return SignUpResponse(access_token='', refresh_token='')
+    user = sign_up_service.registration(login=body.login, email=body.email, password=body.password)
+    return SignUpResponse(
+        id=user,
+        message='Пользователь успешно зарегистрирован.'
+    )
 
 
 @bp.route('/logout', methods=['DELETE'])

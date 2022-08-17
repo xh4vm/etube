@@ -1,5 +1,7 @@
+import uuid
+
 from pydantic import BaseModel, EmailStr, Field
-from ..base import UserAgentHeader, JWT
+from ..base import UserAgentHeader
 
 
 class SignUpBodyParams(BaseModel):
@@ -11,11 +13,12 @@ class SignUpBodyParams(BaseModel):
     password: str = Field(title='Пароль пользователя')
 
 
-class SignUpResponse(JWT):
+class SignUpResponse(BaseModel):
     """Схема ответа регистрации пользователя
     ---
     """
-    pass
+    id: uuid.UUID = Field(title='Идентификатор пользователя')
+    message: str = Field(title='Сообщение ответа')
 
 
 class SignUpHeader(UserAgentHeader):
