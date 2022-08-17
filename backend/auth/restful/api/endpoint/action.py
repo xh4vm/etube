@@ -2,6 +2,7 @@ from flask import Blueprint
 from flask_pydantic_spec import Response, Request
 from flask_jwt_extended.view_decorators import jwt_required
 from dependency_injector.wiring import inject, Provide
+from http import HTTPStatus
 
 from ..services.token.base import BaseTokenService
 from ..services.sign_in_history import SignInHistoryService
@@ -14,8 +15,10 @@ from ..schema.action.sign_in import SignInBodyParams, SignInHeader, SignInRespon
 from ..schema.action.sign_up import SignUpBodyParams, SignUpHeader, SignUpResponse
 from ..schema.action.logout import LogoutBodyParams, LogoutHeader, LogoutResponse
 
-from ..decorators.action import already_auth
+from ..errors.action.sign_in import SignInActionError
+
 from ..utils.decorators import json_response, unpack_models
+from ..utils.system import json_abort
 
 
 bp = Blueprint('action', __name__, url_prefix='/action')
@@ -31,7 +34,6 @@ TAG = 'Action'
 )
 @unpack_models
 @jwt_required(optional=True)
-@already_auth
 @json_response
 @inject
 def sign_in(
@@ -47,6 +49,9 @@ def sign_in(
         На вход поступает логин и пароль, если пользователь существует и авторизация успешна, то 
         создается и возвразается пара jwt токенов.
     """
+
+    if access_token_service.is_valid_into_request():
+        json_abort(HTTPStatus.OK, SignInActionError.ALREADY_AUTH)
 
     user = sign_in_service.authorization(login=body.login, password=body.password)
 
