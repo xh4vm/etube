@@ -4,12 +4,12 @@
 """
 
 from typing import Optional, Type
+
 from dependency_injector import containers, providers
 
-from .base import BaseContainer
-
 from ..services.action.sign_up.base import BaseSignUpService
-from ..services.action.sign_up.sign_up import RegistrationSignUpService
+from ..services.action.sign_up.sign_up import SignUpService
+from .base import BaseContainer
 
 
 class SignUpFactory(providers.Factory):
@@ -19,4 +19,4 @@ class SignUpFactory(providers.Factory):
 class ServiceContainer(BaseContainer):
 
     wiring_config = containers.WiringConfiguration(modules=['..endpoint.action'])
-    sign_up_service = SignUpFactory(RegistrationSignUpService)
+    sign_up_service = SignUpFactory(SignUpService)

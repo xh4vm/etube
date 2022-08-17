@@ -1,24 +1,23 @@
+from dependency_injector.wiring import Provide, inject
 from flask import Blueprint
-from flask_pydantic_spec import Response, Request
 from flask_jwt_extended.view_decorators import jwt_required
-from dependency_injector.wiring import inject, Provide
-
-from ..services.token.base import BaseTokenService
-from ..services.sign_in_history import SignInHistoryService
-from ..services.action.sign_in.base import BaseSignInService
-from ..services.action.sign_up.base import BaseSignUpService
-
-from ..containers.sign_in import ServiceContainer as SignInServiceContainer
-from ..containers.sign_up import ServiceContainer as SignUpServiceContainer
+from flask_pydantic_spec import Request, Response
 
 from ..app import spec
-from ..schema.action.sign_in import SignInBodyParams, SignInHeader, SignInResponse
-from ..schema.action.sign_up import SignUpBodyParams, SignUpHeader, SignUpResponse
-from ..schema.action.logout import LogoutBodyParams, LogoutHeader, LogoutResponse
-
+from ..containers.sign_in import ServiceContainer as SignInServiceContainer
+from ..containers.sign_up import ServiceContainer as SignUpServiceContainer
 from ..decorators.action import already_auth
+from ..schema.action.logout import (LogoutBodyParams, LogoutHeader,
+                                    LogoutResponse)
+from ..schema.action.sign_in import (SignInBodyParams, SignInHeader,
+                                     SignInResponse)
+from ..schema.action.sign_up import (SignUpBodyParams, SignUpHeader,
+                                     SignUpResponse)
+from ..services.action.sign_in.base import BaseSignInService
+from ..services.action.sign_up.base import BaseSignUpService
+from ..services.sign_in_history import SignInHistoryService
+from ..services.token.base import BaseTokenService
 from ..utils.decorators import json_response, unpack_models
-
 
 bp = Blueprint('action', __name__, url_prefix='/action')
 TAG = 'Action'
@@ -67,6 +66,7 @@ def sign_in(
     tags=[TAG]
 )
 @unpack_models
+@jwt_required(optional=True)
 @json_response
 @inject
 def sign_up(

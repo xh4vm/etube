@@ -5,6 +5,8 @@ from flask import Blueprint
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Response
 
+from dependency_injector.wiring import inject, Provide
+
 from ...app import spec
 from ...schema.manager.permission.get import (GetPermissionParams, GetPermissionHeader,
                                               GetPermissionResponse, GetPermissionError)
@@ -17,6 +19,9 @@ from ...utils.decorators import json_response, unpack_models
 
 from ...model.models import User, Permission
 from ...model.base import db
+
+from ...services.manager.permissions.base import BasePermissionsService
+from ...containers.permissions import ServiceContainer
 
 
 bp = Blueprint('permission', __name__, url_prefix='/permission')
@@ -32,26 +37,16 @@ TAG = 'Manager'
 @unpack_models
 @jwt_required()
 @json_response
+@inject
 def get_permissions(
-        query: GetPermissionParams,
-        headers: GetPermissionHeader,
+    query: GetPermissionParams,
+    headers: GetPermissionHeader,
+    permissions_service: BasePermissionsService = Provide[ServiceContainer.permissions_service],
 ) -> Union[GetPermissionResponse, GetPermissionError]:
     """ Получение списка ограничений конкретной роли.
     """
-    user = User.query.get_or_404(query.user_id)
-    response = [
-        validator(
-            id=p.id,
-            title=p.title,
-            description=p.description,
-            http_method=p.http_method,
-            url=p.url,
-        )
-        for p in user.permissions
-    ]
-
     return GetPermissionResponse(
-        permissions=response,
+        permissions=permissions_service.permissions_list(query.user_id),
     )
 
 
@@ -65,30 +60,24 @@ def get_permissions(
 @unpack_models
 @jwt_required()
 @json_response
-def create_permission(body: CreatePermissionParams, headers: CreatePermissionHeader) -> CreatePermissionResponse:
-    """ Создание ограничения.
+@inject
+def create_permission(
+    body: CreatePermissionParams,
+    headers: CreatePermissionHeader,
+    permissions_service: BasePermissionsService = Provide[ServiceContainer.permissions_service],
+) -> CreatePermissionResponse:
+    """ Создание разрешения.
     """
-    id = uuid.uuid4()
-    permission = Permission.query.filter_by(title=body.title).first()
-    if permission:
-        return CreatePermissionResponse(
-            id='',
-            message=f'Разрешение {body.title} уже существует.',
-        )
-    permission = Permission(
-        **validator(
-            id=id,
-            title=body.title,
-            description=body.description,
-            http_method=body.http_method,
-            url=body.url,
-        ).dict()
+
+    permission = permissions_service.create(
+        title=body.title,
+        description=body.description,
+        http_method=body.http_method,
+        url=body.url,
     )
-    db.session.add(permission)
-    db.session.commit()
 
     return CreatePermissionResponse(
-        id=id,
+        id=permission,
         message=f'Разрешение {body.title} создано.',
     )
 
@@ -103,14 +92,16 @@ def create_permission(body: CreatePermissionParams, headers: CreatePermissionHea
 @unpack_models
 @jwt_required()
 @json_response
+@inject
 def update_permission(
-        body: UpdatePermissionParams,
-        headers: UpdatePermissionHeader,
+    body: UpdatePermissionParams,
+    headers: UpdatePermissionHeader,
+    permissions_service: BasePermissionsService = Provide[ServiceContainer.permissions_service],
 ) -> Union[UpdatePermissionResponse, UpdatePermissionError]:
     """ Обновление ограничения.
     """
-    permission = Permission.query.get_or_404(body.id)
-    validated_permission = validator(
+
+    permission = permissions_service.update(
         id=body.id,
         title=body.title,
         description=body.description,
@@ -118,14 +109,7 @@ def update_permission(
         url=body.url,
     )
 
-    permission.title = validated_permission.title
-    permission.description = validated_permission.description
-    permission.http_method = validated_permission.http_method
-    permission.url = validated_permission.url
-
-    db.session.commit()
-
-    return UpdatePermissionResponse(__root__=validated_permission)
+    return UpdatePermissionResponse(__root__=permission)
 
 
 @bp.route('', methods=['DELETE'])
@@ -138,10 +122,14 @@ def update_permission(
 @unpack_models
 @jwt_required()
 @json_response
-def delete_permission(body: DeletePermissionParams, headers: DeletePermissionHeader) -> DeletePermissionResponse:
+@inject
+def delete_permission(
+    body: DeletePermissionParams,
+    headers: DeletePermissionHeader,
+    permissions_service: BasePermissionsService = Provide[ServiceContainer.permissions_service],
+) -> DeletePermissionResponse:
     """ Удаление ограничения.
     """
-    Permission.query.filter_by(id=body.id).delete()
-    db.session.commit()
+    permissions_service.delete(permission_id=body.id)
 
     return DeletePermissionResponse(message=f'Разрешение {body.id} удалено.')

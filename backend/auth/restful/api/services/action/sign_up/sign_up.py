@@ -5,15 +5,15 @@
 import uuid
 from http import HTTPStatus
 
-from api.model.models import User
 from api.errors.action.sign_up import SignUpActionError
+from api.model.models import User
 from api.schema.base import User as validator
 from api.utils.system import json_abort
 
 from .base import BaseSignUpService
 
 
-class RegistrationSignUpService(BaseSignUpService):
+class SignUpService(BaseSignUpService):
 
     def registration(self, login: str, email: str, password: str) -> uuid:
         if User.query.filter_by(email=email).first():
@@ -26,7 +26,7 @@ class RegistrationSignUpService(BaseSignUpService):
                 email=email,
                 roles=[],
             ).dict()
-        user_data['password'] = User.encrypt_password(password)
+        user_data['password'] = password
         user_data.pop('roles')
 
         user = User(**user_data)

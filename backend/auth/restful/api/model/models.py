@@ -1,12 +1,13 @@
 import uuid
 from typing import Any
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship
-from sqlalchemy import Column, String
+
+from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
-from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.orm import relationship
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from .base import BaseModel, db
+
 
 class UserRole(BaseModel):
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
@@ -44,7 +45,6 @@ class User(BaseModel):
     def encrypt_password(password: str) -> str:
         return generate_password_hash(password, method='pbkdf2:sha256', salt_length=16)
 
-    @staticmethod
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password, password)
 
