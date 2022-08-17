@@ -6,6 +6,7 @@ from .base import BaseContainer
 from ..services.token.base import BaseTokenService
 from ..services.token.access import AccessTokenService
 from ..services.token.refresh import RefreshTokenService
+from ..services.user import UserService
 
 
 class TokenFactory(providers.Factory):
@@ -18,3 +19,4 @@ class ServiceContainer(BaseContainer):
 
     access_token_service = TokenFactory(AccessTokenService, storage_svc=BaseContainer.storage_svc)
     refresh_token_service = TokenFactory(RefreshTokenService, storage_svc=BaseContainer.storage_svc)
+    user_service = providers.Factory(UserService, storage_svc=BaseContainer.storage_svc)

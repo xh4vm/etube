@@ -1,12 +1,5 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from ..base import AuthorizationHeader
-
-
-class LogoutBodyParams(BaseModel):
-    """Схема body-параметров выхода пользователя
-    ---
-    """
-    access_token: str = Field(title='Кратковременный jwt токен')
 
 
 class LogoutResponse(BaseModel):

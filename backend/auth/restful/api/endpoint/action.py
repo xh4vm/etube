@@ -5,10 +5,11 @@ from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
 
 from ..app import spec
+from api.schema.base import User as UserSchema
 from ..containers.sign_in import ServiceContainer as SignInServiceContainer
 from ..containers.sign_up import ServiceContainer as SignUpServiceContainer
-from ..schema.action.logout import (LogoutBodyParams, LogoutHeader,
-                                    LogoutResponse)
+from ..containers.logout import ServiceContainer as LogoutServiceContainer
+from ..schema.action.logout import (LogoutHeader, LogoutResponse)
 from ..schema.action.sign_in import (SignInBodyParams, SignInHeader,
                                      SignInResponse)
 from ..schema.action.sign_up import (SignUpBodyParams, SignUpHeader,
@@ -53,10 +54,10 @@ def sign_in(
     if access_token_service.is_valid_into_request():
         json_abort(HTTPStatus.OK, SignInActionError.ALREADY_AUTH)
 
-    user = sign_in_service.authorization(login=body.login, password=body.password)
+    user: UserSchema = sign_in_service.authorization(login=body.login, password=body.password)
 
-    access_token = access_token_service.create(claims=user)
-    refresh_token = refresh_token_service.create(claims=user)
+    access_token: str = access_token_service.create(identity=user.id, claims=user.get_claims())
+    refresh_token: str = refresh_token_service.create(identity=user.id)
 
     sign_in_history_service.create_record(user_id=user.id, user_agent=headers.user_agent)
 
@@ -92,16 +93,25 @@ def sign_up(
 
 @bp.route('/logout', methods=['DELETE'])
 @spec.validate(
-    body=Request(LogoutBodyParams), 
     headers=LogoutHeader, 
     resp=Response(HTTP_200=LogoutResponse, HTTP_403=None), 
     tags=[TAG]
 )
 @unpack_models
+@jwt_required()
 @json_response
-def logout(body: LogoutBodyParams, **kwargs):
+@inject
+def logout(
+    headers: LogoutHeader,
+    access_token_service: BaseTokenService = Provide[LogoutServiceContainer.access_token_service],
+    refresh_token_service: BaseTokenService = Provide[LogoutServiceContainer.refresh_token_service],
+):
     """ Выход пользователя из текущей сессии
     ---
         Выход пользователя из текущей сессии. Текущая пара (access_token,refresh_token) становится недействительной.
     """
+    access_token = headers.token
+    access_token_service.add_to_blocklist(access_token)
+    #get refresh from storage by user_id and to blocklist it
+
     return LogoutResponse()

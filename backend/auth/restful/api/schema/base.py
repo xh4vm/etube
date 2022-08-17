@@ -1,3 +1,4 @@
+from typing import Any
 import uuid
 from pydantic import BaseModel, EmailStr, Field, validator
 from user_agents import parse
@@ -55,7 +56,6 @@ class BaseError(BaseModel):
     """
     
     message: str = Field(title='Сообщение об ошибке', default='Error')
-    code: int = Field(title='Код ошибки')
 
 
 class Permission(BaseModel):
@@ -69,14 +69,21 @@ class Permission(BaseModel):
 class Role(BaseModel):
     id: uuid.UUID = Field(title='Идентификатор роли', default_factory=get_new_id)
     title: str = Field(title='Название роли')
-    permissions: list[Permission] = Field(title='Список ограничений роли')
+    permissions: list[str] = Field(title='Список ограничений роли')
 
 
 class User(BaseModel):
     id: uuid.UUID = Field(title='Идентификатор роли', default_factory=get_new_id)
     login: str = Field(title='Логин пользователя')
     email: EmailStr = Field(title='Email пользователя')
-    roles: list[Role] = Field(title='Список ролей')
+    roles: list[str] = Field(title='Список ролей')
+
+    def get_claims(self) -> dict[str, Any]:
+        return {
+            'login': self.login,
+            'email': self.email,
+            'roles': self.roles,
+        }
 
 
 class SignInRecord(BaseModel):

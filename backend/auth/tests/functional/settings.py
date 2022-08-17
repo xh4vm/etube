@@ -20,6 +20,12 @@ class ApiSettings(Settings):
     JWT_TOKEN_LOCATION: str = Field('headers', env='AUTH_JWT_TOKEN_LOCATION')
     
 
+class RedisSettings(BaseSettings):
+    HOST: str = Field('localhost', env='REDIS_HOST')
+    PORT: int = Field(6379, env='REDIS_PORT')
+    EXPIRE: int = Field(600, env='CACHE_EXPIRE')
+
+
 class DatabaseSettings(BaseSettings):
     USER: str = Field('auth', env='AUTH_DB_USER')
     PASSWORD: str = Field('123qwe', env='AUTH_DB_PASSWORD')
@@ -41,6 +47,7 @@ class DatabaseSettings(BaseSettings):
 
 class Config(Settings):
     API: ApiSettings = ApiSettings()
+    REDIS: RedisSettings = RedisSettings()
     DB: DatabaseSettings = DatabaseSettings()
     BASE_DIR: str = os.path.dirname(os.path.abspath(__file__))
 

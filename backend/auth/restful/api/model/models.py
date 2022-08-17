@@ -41,6 +41,10 @@ class User(BaseModel):
         roles = self.roles
         return set([permission for role in roles for permission in role.permissions])
 
+    @property
+    def roles_names(self) -> list[str]:
+        return [role.title for role in self.roles]
+
     @staticmethod
     def encrypt_password(password: str) -> str:
         return generate_password_hash(password, method='pbkdf2:sha256', salt_length=16)

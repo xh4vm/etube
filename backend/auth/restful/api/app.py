@@ -1,20 +1,20 @@
-from typing import Any
-import uuid
 from flask import Flask, Blueprint
-from core.config import CONFIG, SQLALCHEMY_DATABASE_URI
+from core.config import CONFIG, INTERACTION_CONFIG
 from flask_migrate import Migrate
 from flask_redis import FlaskRedis
 from flask_jwt_extended import JWTManager
 from flask_pydantic_spec import FlaskPydanticSpec
 
 from .model.base import db
+from .utils.system import json_abort
+from .services.token.base import BaseTokenService
 
 from .containers.storage import StorageResource, RedisStorageResource
 from .containers.sign_in import ServiceContainer as SignInServiceContainer
 from .containers.sign_up import ServiceContainer as SignUpServiceContainer
 from .containers.token import ServiceContainer as TokenServiceContainer
+from .containers.logout import ServiceContainer as LogoutServiceContainer
 from .containers.permissions import ServiceContainer as PermissionsServiceContainer
-
 
 
 migrate = Migrate()
@@ -30,6 +30,16 @@ def register_di_containers():
     SignUpServiceContainer()
     TokenServiceContainer(storage_svc=redis_resource)
     PermissionsServiceContainer()
+    LogoutServiceContainer(storage_svc=redis_resource)
+
+
+def register_jwt_handelers():
+    jwt.expired_token_loader(BaseTokenService.expired_token_callback)
+    jwt.token_in_blocklist_loader(BaseTokenService.token_in_blocklist_callback)
+    jwt.invalid_token_loader(BaseTokenService.invalid_token_callback)
+    jwt.revoked_token_loader(BaseTokenService.revoked_token_callback)
+    jwt.unauthorized_loader(BaseTokenService.unauthorized_callback)
+    jwt.token_verification_failed_loader(BaseTokenService.token_verification_failed_callback)
 
 
 def register_blueprints(app):
@@ -47,24 +57,10 @@ def register_blueprints(app):
     app.register_blueprint(root_bp)
 
 
-@jwt.additional_claims_loader
-def add_claims(user) -> dict[str, Any]:
-    return {
-        'login': user.login,
-        'email': user.email,
-        # 'roles': user.roles,
-        # 'permissions': user.permissions
-    }
-
-@jwt.user_identity_loader
-def add_identity(user) -> uuid.UUID:
-    return user.id
-
-
-def create_app(config_class=CONFIG.APP):
+def create_app(config_classes=[CONFIG.APP, INTERACTION_CONFIG]):
     app = Flask(__name__)
-    app.config.from_object(config_class)
-    app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
+    
+    [app.config.from_object(config_class) for config_class in config_classes]
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -73,6 +69,7 @@ def create_app(config_class=CONFIG.APP):
 
     register_blueprints(app)
     register_di_containers()
+    register_jwt_handelers()
     spec.register(app)
 
     app.app_context().push()

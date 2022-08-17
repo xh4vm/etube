@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 import aiohttp
 import pytest
 import psycopg2
+import aioredis
 
 from multidict import CIMultiDictProxy
 from psycopg2.extras import DictCursor, register_uuid
@@ -26,6 +27,14 @@ class HTTPResponse:
     body: dict[str, Any]
     headers: CIMultiDictProxy[str]
     status: int
+
+
+@pytest.fixture(scope='session')
+async def redis_client():
+    client = await aioredis.create_redis_pool((CONFIG.REDIS.HOST, CONFIG.REDIS.PORT))
+    yield client
+    client.close()
+    await client.wait_closed()
 
 
 @pytest.fixture(scope='session')
@@ -114,3 +123,8 @@ async def generate_role_permissions(pg_cursor):
     role_permission_dg = RolePermissionDataGenerator(conn=pg_cursor)
     yield await role_permission_dg.load()
     await role_permission_dg.clean()
+
+
+@pytest.fixture(autouse=True)
+async def redis_flushall_storage(redis_client):
+    redis_client.flushall()

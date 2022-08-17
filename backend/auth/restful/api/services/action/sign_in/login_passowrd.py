@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from api.model.base import BaseModel
+from api.schema.base import User as UserSchema
 from api.model.models import User
 
 from api.errors.action.sign_in import SignInActionError
@@ -11,7 +11,7 @@ from .base import BaseSignInService
 
 class LoginPasswordSignInService(BaseSignInService):
 
-    def authorization(self, login: str, password: str) -> BaseModel:
+    def authorization(self, login: str, password: str) -> User:
         user = (User
             .query
             .filter_by(login=login)
@@ -21,4 +21,9 @@ class LoginPasswordSignInService(BaseSignInService):
             not user.check_password(password):
             json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_AUTH_DATA)
         
-        return user
+        return UserSchema(
+            id=user.id, 
+            login=user.login, 
+            email=user.email,
+            roles=user.roles_names
+        )

@@ -137,6 +137,7 @@ services:
     <<: *base_redis
     profiles:
       - dev
+      - dev_auth
     volumes:
       - etube-redis-data:/data
 
