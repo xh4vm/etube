@@ -6,8 +6,10 @@ from dependency_injector.wiring import inject, Provide
 from ..services.token.base import BaseTokenService
 from ..services.sign_in_history import SignInHistoryService
 from ..services.action.sign_in.base import BaseSignInService
+from ..services.action.sign_up.base import BaseSignUpService
 
-from ..containers.sign_in import ServiceContainer
+from ..containers.sign_in import ServiceContainer as SignInServiceContainer
+from ..containers.sign_up import ServiceContainer as SignUpServiceContainer
 
 from ..app import spec
 from ..schema.action.sign_in import SignInBodyParams, SignInHeader, SignInResponse
@@ -37,17 +39,16 @@ TAG = 'Action'
 def sign_in(
     body: SignInBodyParams, 
     headers: SignInHeader,
-    access_token_service: BaseTokenService = Provide[ServiceContainer.access_token_service],
-    refresh_token_service: BaseTokenService = Provide[ServiceContainer.refresh_token_service],
-    sign_in_service: BaseSignInService = Provide[ServiceContainer.sign_in_service],
-    sign_in_history_service: SignInHistoryService = Provide[ServiceContainer.sign_in_history_service]
+    access_token_service: BaseTokenService = Provide[SignInServiceContainer.access_token_service],
+    refresh_token_service: BaseTokenService = Provide[SignInServiceContainer.refresh_token_service],
+    sign_in_service: BaseSignInService = Provide[SignInServiceContainer.sign_in_service],
+    sign_in_history_service: SignInHistoryService = Provide[SignInServiceContainer.sign_in_history_service]
 ) -> SignInResponse:
     """ Авторизация пользователя
     ---
         На вход поступает логин и пароль, если пользователь существует и авторизация успешна, то 
         создается и возвразается пара jwt токенов.
     """
-
     user = sign_in_service.authorization(login=body.login, password=body.password)
 
     access_token = access_token_service.create(claims=user)
@@ -67,12 +68,21 @@ def sign_in(
 )
 @unpack_models
 @json_response
-def sign_up(body: SignUpBodyParams, headers: SignUpHeader) -> SignUpResponse:
+@inject
+def sign_up(
+    body: SignUpBodyParams,
+    headers: SignUpHeader,
+    sign_up_service: BaseSignUpService = Provide[SignUpServiceContainer.sign_up_service],
+) -> SignUpResponse:
     """ Регистрация пользователя
     ---
-        На вход поступает логин и пароль, если регистрация успешна то создается и возвразается пара jwt токенов.
+        На вход поступает логин, почта и пароль, если регистрация успешна, то возвращается id нового пользователя.
     """
-    return SignUpResponse(access_token='', refresh_token='')
+    user = sign_up_service.registration(login=body.login, email=body.email, password=body.password)
+    return SignUpResponse(
+        id=user,
+        message='Пользователь успешно зарегистрирован.'
+    )
 
 
 @bp.route('/logout', methods=['DELETE'])

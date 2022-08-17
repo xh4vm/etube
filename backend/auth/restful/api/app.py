@@ -11,6 +11,7 @@ from .model.base import db
 
 from .containers.storage import StorageResource, RedisStorageResource
 from .containers.sign_in import ServiceContainer as SignInServiceContainer
+from .containers.sign_up import ServiceContainer as SignUpServiceContainer
 from .containers.token import ServiceContainer as TokenServiceContainer
 
 
@@ -25,6 +26,7 @@ def register_di_containers():
     redis_resource = StorageResource(RedisStorageResource)
 
     SignInServiceContainer(storage_svc=redis_resource)
+    SignUpServiceContainer(storage_svc=redis_resource)
     TokenServiceContainer(storage_svc=redis_resource)
 
 
