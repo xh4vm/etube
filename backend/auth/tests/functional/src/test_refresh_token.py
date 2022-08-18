@@ -1,4 +1,5 @@
 import pytest
+import uuid
 from datetime import datetime
 from http import HTTPStatus
 
@@ -8,9 +9,13 @@ from ..utils.errors.token import TokenError
 pytestmark = pytest.mark.asyncio
 
 
-async def test_refresh_token_success(make_request, generate_users):
+async def test_refresh_token_success(make_request, generate_users, redis_client):
     # Успешный рефреш токена.
-    refresh_token = create_token(claims={'sub': '6f2819c9-957b-45b6-8348-853f71bb6adf', 'type': 'refresh'})
+    refresh_token = create_token(claims={
+        'sub': '6f2819c9-957b-45b6-8348-853f71bb6adf', 
+        'type': 'refresh',
+    })
+    
     response = await make_request(
         method='post',
         target=f'auth/token/refresh', 

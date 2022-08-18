@@ -1,5 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from ..base import AuthorizationHeader
+
+
+class LogoutBodyRequest(BaseModel):
+    """Схема запроса выхода пользователя
+    ---
+    """
+    refresh_token: str = Field(title='Рефреш токен пользователя')
 
 
 class LogoutResponse(BaseModel):

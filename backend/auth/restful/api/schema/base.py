@@ -24,6 +24,9 @@ class AuthorizationHeader(BaseModel):
             raise ValueError('Bearer authorization токен не найден')
         return token
 
+    def get_token(self) -> str:
+        return self.token.split()[1]
+
 
 class UserAgentHeader(BaseModel):
     """Схема заголовков получения / обработки юзерагента пользователя  

@@ -9,7 +9,7 @@ from api.schema.base import User as UserSchema
 from ..containers.sign_in import ServiceContainer as SignInServiceContainer
 from ..containers.sign_up import ServiceContainer as SignUpServiceContainer
 from ..containers.logout import ServiceContainer as LogoutServiceContainer
-from ..schema.action.logout import (LogoutHeader, LogoutResponse)
+from ..schema.action.logout import (LogoutBodyRequest, LogoutHeader, LogoutResponse)
 from ..schema.action.sign_in import (SignInBodyParams, SignInHeader,
                                      SignInResponse)
 from ..schema.action.sign_up import (SignUpBodyParams, SignUpHeader,
@@ -93,6 +93,7 @@ def sign_up(
 
 @bp.route('/logout', methods=['DELETE'])
 @spec.validate(
+    body=Request(LogoutBodyRequest),
     headers=LogoutHeader, 
     resp=Response(HTTP_200=LogoutResponse, HTTP_403=None), 
     tags=[TAG]
@@ -102,6 +103,7 @@ def sign_up(
 @json_response
 @inject
 def logout(
+    body: LogoutBodyRequest,
     headers: LogoutHeader,
     access_token_service: BaseTokenService = Provide[LogoutServiceContainer.access_token_service],
     refresh_token_service: BaseTokenService = Provide[LogoutServiceContainer.refresh_token_service],
@@ -110,8 +112,9 @@ def logout(
     ---
         Выход пользователя из текущей сессии. Текущая пара (access_token,refresh_token) становится недействительной.
     """
-    access_token = headers.token
+    access_token = headers.get_token()
     access_token_service.add_to_blocklist(access_token)
-    #get refresh from storage by user_id and to blocklist it
+
+    refresh_token_service.add_to_blocklist(body.refresh_token)
 
     return LogoutResponse()

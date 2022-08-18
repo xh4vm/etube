@@ -34,8 +34,10 @@ async def test_sign_in_login_error(make_request, generate_users):
     assert response.body['message'] == SignInActionError.NOT_VALID_AUTH_DATA
 
 
-async def test_sign_in_login_success(make_request, generate_users):
+async def test_sign_in_login_success(make_request, generate_users, redis_client):
     # Попытка входа.
+    assert await redis_client.get('refresh_token::6f2819c9-957b-45b6-8348-853f71bb6adf') is None
+
     response = await make_request(
         method='post',
         target=f'auth/action/sign_in', 
@@ -62,6 +64,8 @@ async def test_sign_in_login_success(make_request, generate_users):
     
     assert '6f2819c9-957b-45b6-8348-853f71bb6adf' == identity
     assert verify_exp_jwt(refresh_token) is True
+
+    assert await redis_client.get('refresh_token::6f2819c9-957b-45b6-8348-853f71bb6adf') is not None
 
 
 async def test_sign_in_alredy_auth(make_request, generate_users):

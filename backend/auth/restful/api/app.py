@@ -7,7 +7,8 @@ from flask_pydantic_spec import FlaskPydanticSpec
 
 from .model.base import db
 from .utils.system import json_abort
-from .services.token.base import BaseTokenService
+from .services.token.handler import TokenHandlerService
+from .services.storage.redis import RedisStorage, BaseStorage
 
 from .containers.storage import StorageResource, RedisStorageResource
 from .containers.sign_in import ServiceContainer as SignInServiceContainer
@@ -33,13 +34,15 @@ def register_di_containers():
     LogoutServiceContainer(storage_svc=redis_resource)
 
 
-def register_jwt_handelers():
-    jwt.expired_token_loader(BaseTokenService.expired_token_callback)
-    jwt.token_in_blocklist_loader(BaseTokenService.token_in_blocklist_callback)
-    jwt.invalid_token_loader(BaseTokenService.invalid_token_callback)
-    jwt.revoked_token_loader(BaseTokenService.revoked_token_callback)
-    jwt.unauthorized_loader(BaseTokenService.unauthorized_callback)
-    jwt.token_verification_failed_loader(BaseTokenService.token_verification_failed_callback)
+def register_jwt_handelers(storage_service: BaseStorage):
+    token_handelr_service = TokenHandlerService(storage_service)
+
+    jwt.expired_token_loader(token_handelr_service.expired_token_callback)
+    jwt.token_in_blocklist_loader(token_handelr_service.token_in_blocklist_callback)
+    jwt.invalid_token_loader(token_handelr_service.invalid_token_callback)
+    jwt.revoked_token_loader(token_handelr_service.revoked_token_callback)
+    jwt.unauthorized_loader(token_handelr_service.unauthorized_callback)
+    jwt.token_verification_failed_loader(token_handelr_service.token_verification_failed_callback)
 
 
 def register_blueprints(app):
@@ -69,9 +72,11 @@ def create_app(config_classes=[CONFIG.APP, INTERACTION_CONFIG]):
 
     register_blueprints(app)
     register_di_containers()
-    register_jwt_handelers()
-    spec.register(app)
 
+    redis_storage = RedisStorage(redis=redis_client)
+    register_jwt_handelers(storage_service=redis_storage)
+    
+    spec.register(app)
     app.app_context().push()
 
     return app
