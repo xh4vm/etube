@@ -1,16 +1,31 @@
 import uuid
+
+from dependency_injector.wiring import Provide, inject
 from flask import Blueprint
-from flask_pydantic_spec import Response, Request
+from flask_jwt_extended.view_decorators import jwt_required
+from flask_pydantic_spec import Request, Response
 
 from ...app import spec
-from ...schema.manager.role.get import GetRoleQueryParams, GetRoleHeader, GetRoleResponse
-from ...schema.manager.role.create import CreateRoleBodyParams, CreateRoleHeader, CreateRoleResponse
-from ...schema.manager.role.update import UpdateRoleBodyParams, UpdateRoleHeader, UpdateRoleResponse
-from ...schema.manager.role.delete import DeleteRoleBodyParams, DeleteRoleHeader, DeleteRoleResponse
-from ...schema.manager.role.set import RoleSetPermissionBodyParams, RoleSetPermissionHeader, RoleSetPermissionResponse
-from ...schema.manager.role.retrive import RoleRetrivePermissionBodyParams, RoleRetrivePermissionHeader, RoleRetrivePermissionResponse
+from ...containers.roles import ServiceContainer
+from ...schema.manager.role.create import (CreateRoleBodyParams,
+                                           CreateRoleHeader,
+                                           CreateRoleResponse)
+from ...schema.manager.role.delete import (DeleteRoleBodyParams,
+                                           DeleteRoleHeader,
+                                           DeleteRoleResponse)
+from ...schema.manager.role.get import (GetRoleHeader, GetRoleQueryParams,
+                                        GetRoleResponse)
+from ...schema.manager.role.retrieve import (RoleRetrievePermissionBodyParams,
+                                             RoleRetrievePermissionHeader,
+                                             RoleRetrievePermissionResponse)
+from ...schema.manager.role.set import (RoleSetPermissionBodyParams,
+                                        RoleSetPermissionHeader,
+                                        RoleSetPermissionResponse)
+from ...schema.manager.role.update import (UpdateRoleBodyParams,
+                                           UpdateRoleHeader,
+                                           UpdateRoleResponse)
+from ...services.manager.roles.base import BaseRolesService
 from ...utils.decorators import json_response, unpack_models
-
 
 bp = Blueprint('role', __name__, url_prefix='/role')
 TAG = 'Manager'
@@ -23,13 +38,21 @@ TAG = 'Manager'
     tags=[TAG]
 )
 @unpack_models
+@jwt_required()
 @json_response
-def get_roles(query: GetRoleQueryParams, headers: GetRoleHeader):
+@inject
+def get_roles(
+    query: GetRoleQueryParams,
+    headers: GetRoleHeader,
+    roles_service: BaseRolesService = Provide[ServiceContainer.roles_service],
+):
     """ Получение списка ролей пользователя
     ---
         По uuid пользователя получаем список ролей
     """
-    return GetRoleResponse(__root__=[])
+    return GetRoleResponse(
+        roles=roles_service.roles_list(query.user_id),
+    )
 
 
 @bp.route('', methods=['POST'])
@@ -40,78 +63,132 @@ def get_roles(query: GetRoleQueryParams, headers: GetRoleHeader):
     tags=[TAG]
 )
 @unpack_models
+@jwt_required()
 @json_response
-def create_role(body: CreateRoleBodyParams, headers: CreateRoleHeader) -> CreateRoleResponse:
+@inject
+def create_role(
+    body: CreateRoleBodyParams,
+    headers: CreateRoleHeader,
+    roles_service: BaseRolesService = Provide[ServiceContainer.roles_service],
+) -> CreateRoleResponse:
     """ Создание роли 
     ---
         Создаем новую роль
     """
-    return CreateRoleResponse(id=uuid.uuid4())
+    role = roles_service.create(
+        title=body.title,
+        description=body.description,
+    )
+
+    return CreateRoleResponse(
+        id=role,
+        message=f'Роль {body.title} создана.',
+    )
 
 
 @bp.route('', methods=['PUT'])
 @spec.validate(
-    body=Request(UpdateRoleBodyParams), 
-    headers=UpdateRoleHeader, 
-    resp=Response(HTTP_200=UpdateRoleResponse, HTTP_403=None), 
+    body=Request(UpdateRoleBodyParams),
+    headers=UpdateRoleHeader,
+    resp=Response(HTTP_200=UpdateRoleResponse, HTTP_403=None),
     tags=[TAG]
 )
 @unpack_models
+@jwt_required()
 @json_response
-def update_role(body: UpdateRoleBodyParams, headers: UpdateRoleHeader) -> UpdateRoleResponse:
+@inject
+def update_role(
+    body: UpdateRoleBodyParams,
+    headers: UpdateRoleHeader,
+    roles_service: BaseRolesService = Provide[ServiceContainer.roles_service],
+) -> UpdateRoleResponse:
     """ Обновление роли
     ---
         Обновляем роль
     """
-    UpdateRoleResponse(id=uuid.uuid4(), title='')
+    role = roles_service.update(
+        id=body.id,
+        title=body.title,
+        description=body.description,
+    )
+
+    return UpdateRoleResponse(__root__=role)
 
 
 @bp.route('', methods=['DELETE'])
 @spec.validate(
-    body=Request(DeleteRoleBodyParams), 
-    headers=DeleteRoleHeader, 
-    resp=Response(HTTP_200=DeleteRoleResponse, HTTP_403=None), 
+    body=Request(DeleteRoleBodyParams),
+    headers=DeleteRoleHeader,
+    resp=Response(HTTP_200=DeleteRoleResponse, HTTP_403=None),
     tags=[TAG]
 )
 @unpack_models
+@jwt_required()
 @json_response
-def delete_role(body: DeleteRoleBodyParams, headers: DeleteRoleHeader) -> DeleteRoleResponse:
+@inject
+def delete_role(
+    body: DeleteRoleBodyParams,
+    headers: DeleteRoleHeader,
+    roles_service: BaseRolesService = Provide[ServiceContainer.roles_service],
+) -> DeleteRoleResponse:
     """ Удаление роли
     ---
         Удаляем роль
     """
-    return DeleteRoleResponse()
+    roles_service.delete(role_id=body.id)
+
+    return DeleteRoleResponse(message=f'Роль {body.id} удалена.')
 
 
 @bp.route('/permission', methods=['POST'])
 @spec.validate(
-    body=Request(RoleSetPermissionBodyParams), 
-    headers=RoleSetPermissionHeader, 
-    resp=Response(HTTP_200=RoleSetPermissionResponse, HTTP_403=None), 
+    body=Request(RoleSetPermissionBodyParams),
+    headers=RoleSetPermissionHeader,
+    resp=Response(HTTP_200=RoleSetPermissionResponse, HTTP_403=None),
     tags=[TAG]
 )
 @unpack_models
+@jwt_required()
 @json_response
-def set_permission(body: RoleSetPermissionBodyParams, headers: RoleSetPermissionHeader) -> RoleSetPermissionResponse:
+@inject
+def set_permission(
+    body: RoleSetPermissionBodyParams,
+    headers: RoleSetPermissionHeader,
+    roles_service: BaseRolesService = Provide[ServiceContainer.roles_service],
+) -> RoleSetPermissionResponse:
     """ Докинуть ограничение в роль
     ---
         Докидываем ограничение ID::HTTP_METHOD::URL::<ACCESS or DENY>::TITLE::DESCRIPTION в роль
     """
-    return RoleSetPermissionResponse()
+    permissions = roles_service.set_permission(role_id=body.role_id, permissions=body.permission_ids)
+    return RoleSetPermissionResponse(
+        permissions=permissions,
+        message=f'Разрешения {body.permission_ids} для роли {body.role_id} добавлены.',
+    )
 
 
 @bp.route('/permission', methods=['DELETE'])
 @spec.validate(
-    body=Request(RoleRetrivePermissionBodyParams), 
-    headers=RoleRetrivePermissionHeader, 
-    resp=Response(HTTP_200=RoleRetrivePermissionResponse, HTTP_403=None), 
+    body=Request(RoleRetrievePermissionBodyParams),
+    headers=RoleRetrievePermissionHeader,
+    resp=Response(HTTP_200=RoleRetrievePermissionResponse, HTTP_403=None),
     tags=[TAG]
 )
 @unpack_models
+@jwt_required()
 @json_response
-def retrive_permission(body: RoleRetrivePermissionBodyParams, headers: RoleRetrivePermissionHeader) -> RoleRetrivePermissionResponse:
+@inject
+def retrieve_permission(
+    body: RoleRetrievePermissionBodyParams,
+    headers: RoleRetrievePermissionHeader,
+    roles_service: BaseRolesService = Provide[ServiceContainer.roles_service],
+) -> RoleRetrievePermissionResponse:
     """ Отобрать ограничение из роли
     ---
         Отобрать ограничение ID::HTTP_METHOD::URL::<ACCESS or DENY>::TITLE::DESCRIPTION из роли
     """
-    return RoleRetrivePermissionResponse()
+    permissions = roles_service.retrieve_permission(role_id=body.role_id, permissions=body.permission_ids)
+    return RoleRetrievePermissionResponse(
+        permissions=permissions,
+        message=f'Разрешения {body.permission_ids} для роли {body.role_id} удалены.',
+    )

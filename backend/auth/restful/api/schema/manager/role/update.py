@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel, Field
 
 from ...base import AuthorizationHeader, Role
@@ -7,8 +9,9 @@ class UpdateRoleBodyParams(BaseModel):
     """Схема body-параметров обновления ограничения
     ---
     """
-    role_id: int = Field(title='Идентификатор ограничения')
-    title: str = Field(title='Название ограничения')
+    id: UUID = Field(title='Идентификатор роли')
+    title: str = Field(title='Название роли')
+    description: str = Field(title='Описание роли')
 
 
 class UpdateRoleResponse(BaseModel):
