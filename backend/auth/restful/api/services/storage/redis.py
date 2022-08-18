@@ -7,9 +7,8 @@ from .base import BaseStorage
 
 
 class RedisStorage(BaseStorage):
-    def __init__(self, redis: FlaskRedis, expire: int = CONFIG.APP.ACCESS_EXPIRES):
+    def __init__(self, redis: FlaskRedis):
         self.redis = redis
-        self.expire = expire
 
     def get(self, key: str, default_value: Optional[str] = None) -> Optional[str]:
         data = self.redis.get(key)
@@ -19,5 +18,8 @@ class RedisStorage(BaseStorage):
 
         return orjson.loads(data)
 
-    def set(self, key: str, data: Any) -> None:
-        self.redis.setex(key, self.expire, orjson.dumps(data))
+    def set(self, key: str, data: Any, expire: int = CONFIG.APP.ACCESS_EXPIRES) -> None:
+        self.redis.setex(key, expire, orjson.dumps(data))
+
+    def delete(self, key: str) -> None:
+        self.redis.delete(key)

@@ -8,5 +8,9 @@ class BaseStorage(ABC):
         """Получение данных из хранилище"""
 
     @abstractmethod
-    def set(self, key: str, data: Any) -> None:
+    def set(self, key: str, data: Any, expire: int) -> None:
         """Установка данных в хранилище"""
+
+    @abstractmethod
+    def delete(self, key: str) -> None:
+        """Удаление данных из хранилище"""
