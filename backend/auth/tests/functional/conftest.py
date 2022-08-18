@@ -91,9 +91,7 @@ def event_loop():
 @pytest.fixture(scope='session')
 async def generate_users(pg_cursor):
     user_dg = UserDataGenerator(conn=pg_cursor)
-
     yield await user_dg.load()
-
     await user_dg.clean()
 
 
