@@ -140,3 +140,6 @@ auth_connect:
 
 db_auth_connect:
 	docker exec -it ${db_auth} psql --username=${AUTH_DB_USER} --dbname=${AUTH_DB_NAME}
+
+db_create_superuser:
+	python3 backend/auth/restful/api/utils/superuser.py
