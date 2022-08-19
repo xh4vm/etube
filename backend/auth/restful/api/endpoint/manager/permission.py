@@ -1,4 +1,3 @@
-import uuid
 from typing import Union
 
 from flask import Blueprint
@@ -14,11 +13,7 @@ from ...schema.manager.permission.create import CreatePermissionParams, CreatePe
 from ...schema.manager.permission.update import (UpdatePermissionParams, UpdatePermissionHeader,
                                                  UpdatePermissionResponse, UpdatePermissionError)
 from ...schema.manager.permission.delete import DeletePermissionParams, DeletePermissionHeader, DeletePermissionResponse
-from ...schema.base import Permission as validator
 from ...utils.decorators import json_response, unpack_models
-
-from ...model.models import User, Permission
-from ...model.base import db
 
 from ...services.manager.permissions.base import BasePermissionsService
 from ...containers.permissions import ServiceContainer

@@ -7,13 +7,12 @@ from typing import Optional, Type
 
 from dependency_injector import containers, providers
 
-from ..services.manager.roles.base import BaseRolesService
 from ..services.manager.roles.roles import RolesService
 from .base import BaseContainer
 
 
 class RoleFactory(providers.Factory):
-    provided_type: Optional[Type] = BaseRolesService
+    provided_type: Optional[Type] = RolesService
 
 
 class ServiceContainer(BaseContainer):

@@ -1,5 +1,3 @@
-import uuid
-
 from dependency_injector.wiring import Provide, inject
 from flask import Blueprint
 from flask_jwt_extended.view_decorators import jwt_required
@@ -24,7 +22,7 @@ from ...schema.manager.role.set import (RoleSetPermissionBodyParams,
 from ...schema.manager.role.update import (UpdateRoleBodyParams,
                                            UpdateRoleHeader,
                                            UpdateRoleResponse)
-from ...services.manager.roles.base import BaseRolesService
+from ...services.manager.roles.roles import RolesService
 from ...utils.decorators import json_response, unpack_models
 
 bp = Blueprint('role', __name__, url_prefix='/role')
@@ -44,7 +42,7 @@ TAG = 'Manager'
 def get_roles(
     query: GetRoleQueryParams,
     headers: GetRoleHeader,
-    roles_service: BaseRolesService = Provide[ServiceContainer.roles_service],
+    roles_service: RolesService = Provide[ServiceContainer.roles_service],
 ):
     """ Получение списка ролей пользователя
     ---
@@ -69,7 +67,7 @@ def get_roles(
 def create_role(
     body: CreateRoleBodyParams,
     headers: CreateRoleHeader,
-    roles_service: BaseRolesService = Provide[ServiceContainer.roles_service],
+    roles_service: RolesService = Provide[ServiceContainer.roles_service],
 ) -> CreateRoleResponse:
     """ Создание роли 
     ---
@@ -100,7 +98,7 @@ def create_role(
 def update_role(
     body: UpdateRoleBodyParams,
     headers: UpdateRoleHeader,
-    roles_service: BaseRolesService = Provide[ServiceContainer.roles_service],
+    roles_service: RolesService = Provide[ServiceContainer.roles_service],
 ) -> UpdateRoleResponse:
     """ Обновление роли
     ---
@@ -129,7 +127,7 @@ def update_role(
 def delete_role(
     body: DeleteRoleBodyParams,
     headers: DeleteRoleHeader,
-    roles_service: BaseRolesService = Provide[ServiceContainer.roles_service],
+    roles_service: RolesService = Provide[ServiceContainer.roles_service],
 ) -> DeleteRoleResponse:
     """ Удаление роли
     ---
@@ -154,7 +152,7 @@ def delete_role(
 def set_permission(
     body: RoleSetPermissionBodyParams,
     headers: RoleSetPermissionHeader,
-    roles_service: BaseRolesService = Provide[ServiceContainer.roles_service],
+    roles_service: RolesService = Provide[ServiceContainer.roles_service],
 ) -> RoleSetPermissionResponse:
     """ Докинуть ограничение в роль
     ---
@@ -181,7 +179,7 @@ def set_permission(
 def retrieve_permission(
     body: RoleRetrievePermissionBodyParams,
     headers: RoleRetrievePermissionHeader,
-    roles_service: BaseRolesService = Provide[ServiceContainer.roles_service],
+    roles_service: RolesService = Provide[ServiceContainer.roles_service],
 ) -> RoleRetrievePermissionResponse:
     """ Отобрать ограничение из роли
     ---

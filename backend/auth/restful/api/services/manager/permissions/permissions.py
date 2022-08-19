@@ -4,6 +4,7 @@
 """
 import uuid
 from http import HTTPStatus
+from typing import Union
 
 from api.errors.manager.permissions import PermissionsError
 from api.errors.user import UserError
@@ -19,7 +20,7 @@ class PermissionsService(BasePermissionsService):
 
     def permissions_list(self, user_id: str) -> list:
         # Получение списка разрешений пользователя.
-        user = User.query.filter_by(id=user_id).first()
+        user = User.query.get(user_id)
         if not user:
             json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, UserError.NOT_EXISTS)
 
@@ -38,11 +39,8 @@ class PermissionsService(BasePermissionsService):
         # Создание разрешения.
         if Permission.query.filter_by(title=title).first():
             json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, PermissionsError.ALREADY_EXISTS)
-
-        id = uuid.uuid4()
         permission = Permission(
             **validator(
-                id=id,
                 title=title,
                 description=description,
                 http_method=http_method,
@@ -55,10 +53,7 @@ class PermissionsService(BasePermissionsService):
 
     def update(self, id: str, title: str, description: str, http_method: str, url: str) -> validator:
         # Обновление разрешения.
-        permission = Permission.query.filter_by(id=id).first()
-        if not permission:
-            json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, PermissionsError.NOT_EXISTS)
-
+        permission = PermissionsService.check_existence(id)
         validated_permission = validator(
             id=id,
             title=title,
@@ -66,7 +61,6 @@ class PermissionsService(BasePermissionsService):
             http_method=http_method,
             url=url,
         )
-
         permission.title = validated_permission.title
         permission.description = validated_permission.description
         permission.http_method = validated_permission.http_method
@@ -77,9 +71,14 @@ class PermissionsService(BasePermissionsService):
         return validated_permission
 
     def delete(self, permission_id: str) -> None:
-        permission = Permission.query.filter_by(id=permission_id).first()
+        permission = PermissionsService.check_existence(permission_id)
+        db.session.delete(permission)
+        db.session.commit()
+
+    @staticmethod
+    def check_existence(permission_id: str) -> Union[None, Permission]:
+        permission = Permission.query.get(permission_id)
         if not permission:
             json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, PermissionsError.NOT_EXISTS)
 
-        db.session.delete(permission)
-        db.session.commit()
+        return permission

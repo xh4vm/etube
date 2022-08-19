@@ -5,7 +5,6 @@
 import uuid
 from http import HTTPStatus
 
-from api.errors.manager.permissions import PermissionsError
 from api.errors.manager.roles import RolesError
 from api.errors.user import UserError
 from api.model.base import db
@@ -13,14 +12,14 @@ from api.model.models import Permission, Role, RolePermission, User
 from api.utils.system import json_abort
 
 from ....schema.base import Role as validator
-from .base import BaseRolesService
+from ..permissions.permissions import PermissionsService
 
 
-class RolesService(BaseRolesService):
+class RolesService:
 
-    def roles_list(self, user_id: str) -> list:
+    def roles_list(self, user_id: uuid) -> list:
         # Получение списка ролей пользователя.
-        user = User.query.filter_by(id=user_id).first()
+        user = User.query.get(user_id)
         if not user:
             json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, UserError.NOT_EXISTS)
 
@@ -38,11 +37,8 @@ class RolesService(BaseRolesService):
         # Создание роли.
         if Role.query.filter_by(title=title).first():
             json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, RolesError.ALREADY_EXISTS)
-
-        id = uuid.uuid4()
         role = Role(
             **validator(
-                id=id,
                 title=title,
                 description=description,
                 permissions=[],
@@ -54,7 +50,7 @@ class RolesService(BaseRolesService):
 
     def update(self, id: str, title: str, description: str) -> validator:
         # Обновление роли.
-        role = Role.query.filter_by(id=id).first()
+        role = Role.query.get(id)
         if not role:
             json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, RolesError.NOT_EXISTS)
 
@@ -72,26 +68,23 @@ class RolesService(BaseRolesService):
 
         return validated_role
 
-    def delete(self, role_id: str) -> None:
+    def delete(self, role_id: uuid) -> None:
         # Удаление роли.
-        role = Role.query.filter_by(id=role_id).first()
+        role = Role.query.get(role_id)
         if not role:
             json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, RolesError.NOT_EXISTS)
 
         db.session.delete(role)
         db.session.commit()
 
-    def set_permission(self, role_id: str, permissions: list) -> list:
+    def set_permission(self, role_id: uuid, permissions: list) -> list:
         # Добавление разрешения роли.
-        role = Role.query.filter_by(id=role_id).first()
+        role = Role.query.get(role_id)
         if not role:
             json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, RolesError.NOT_EXISTS)
         for permission_id in permissions:
-            if not Permission.query.filter_by(id=permission_id).first():
-                json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, PermissionsError.NOT_EXISTS)
-            id = uuid.uuid4()
+            PermissionsService.check_existence(permission_id)
             role_permission = RolePermission(
-                id=id,
                 role_id=role_id,
                 permission_id=permission_id,
             )
@@ -99,14 +92,13 @@ class RolesService(BaseRolesService):
 
         return [p.title for p in role.permissions]
 
-    def retrieve_permission(self, role_id: str, permissions: list) -> list:
+    def retrieve_permission(self, role_id: uuid, permissions: list) -> list:
         # Удаление разрешения роли.
-        role = Role.query.filter_by(id=role_id).first()
+        role = Role.query.get(role_id)
         if not role:
             json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, RolesError.NOT_EXISTS)
         for permission_id in permissions:
-            if not Permission.query.filter_by(id=permission_id).first():
-                json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, PermissionsError.NOT_EXISTS)
+            PermissionsService.check_existence(permission_id)
             role_permission = RolePermission.query.filter_by(
                 role_id=role_id,
                 permission_id=permission_id,
