@@ -1,36 +1,41 @@
+from http import HTTPStatus
 from dependency_injector.wiring import Provide, inject
 from flask import Blueprint
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
 
-from ...app import spec
-from ...containers.roles import ServiceContainer
-from ...schema.manager.role.create import (CreateRoleBodyParams,
+from api.app import spec
+from api.containers.roles import ServiceContainer
+from api.errors.manager.roles import RolesError
+from api.errors.manager.permissions import PermissionsError
+from api.schema.manager.role.create import (CreateRoleBodyParams,
                                            CreateRoleHeader,
                                            CreateRoleResponse)
-from ...schema.manager.role.delete import (DeleteRoleBodyParams,
+from api.schema.manager.role.delete import (DeleteRoleBodyParams,
                                            DeleteRoleHeader,
                                            DeleteRoleResponse)
-from ...schema.manager.role.get import (GetRoleHeader, GetRoleQueryParams,
+from api.schema.manager.role.get import (GetRoleHeader, GetRoleQueryParams,
                                         GetRoleResponse)
-from ...schema.manager.role.retrieve import (RoleRetrievePermissionBodyParams,
+from api.schema.manager.role.retrieve import (RoleRetrievePermissionBodyParams,
                                              RoleRetrievePermissionHeader,
                                              RoleRetrievePermissionResponse)
-from ...schema.manager.role.set import (RoleSetPermissionBodyParams,
+from api.schema.manager.role.set import (RoleSetPermissionBodyParams,
                                         RoleSetPermissionHeader,
                                         RoleSetPermissionResponse)
-from ...schema.manager.role.update import (UpdateRoleBodyParams,
+from api.schema.manager.role.update import (UpdateRoleBodyParams,
                                            UpdateRoleHeader,
                                            UpdateRoleResponse)
-from ...services.manager.roles.roles import RolesService
-from ...utils.decorators import json_response, unpack_models
+from api.services.manager.roles import RolesService
+from api.services.manager.permissions import PermissionsService
+from api.utils.decorators import json_response, unpack_models
+from api.utils.system import json_abort
+
 
 bp = Blueprint('role', __name__, url_prefix='/role')
 TAG = 'Manager'
 
 @bp.route('', methods=['GET'])
 @spec.validate(
-    query=GetRoleQueryParams, 
     headers=GetRoleHeader,
     resp=Response(HTTP_200=GetRoleResponse, HTTP_403=None), 
     tags=[TAG]
@@ -40,17 +45,15 @@ TAG = 'Manager'
 @json_response
 @inject
 def get_roles(
-    query: GetRoleQueryParams,
     headers: GetRoleHeader,
     roles_service: RolesService = Provide[ServiceContainer.roles_service],
 ):
-    """ Получение списка ролей пользователя
+    """ Получение списка ролей
     ---
-        По uuid пользователя получаем список ролей
+        Получаем список ролей
     """
-    return GetRoleResponse(
-        roles=roles_service.roles_list(query.user_id),
-    )
+
+    return GetRoleResponse(roles=roles_service.all())
 
 
 @bp.route('', methods=['POST'])
@@ -73,15 +76,12 @@ def create_role(
     ---
         Создаем новую роль
     """
-    role = roles_service.create(
-        title=body.title,
-        description=body.description,
-    )
+    if roles_service.exists(title=body.title):
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, RolesError.ALREADY_EXISTS)
 
-    return CreateRoleResponse(
-        id=role,
-        message=f'Роль {body.title} создана.',
-    )
+    role_id = roles_service.create(title=body.title, description=body.description)
+
+    return CreateRoleResponse(id=role_id, message=f'Роль {body.title} создана.')
 
 
 @bp.route('', methods=['PUT'])
@@ -104,11 +104,10 @@ def update_role(
     ---
         Обновляем роль
     """
-    role = roles_service.update(
-        id=body.id,
-        title=body.title,
-        description=body.description,
-    )
+    if not roles_service.exists(id=body.id):
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, RolesError.NOT_EXISTS)
+
+    role = roles_service.update(id=body.id, title=body.title, description=body.description)
 
     return UpdateRoleResponse(__root__=role)
 
@@ -133,7 +132,11 @@ def delete_role(
     ---
         Удаляем роль
     """
-    roles_service.delete(role_id=body.id)
+
+    if not roles_service.exists(id=body.id):
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, RolesError.NOT_EXISTS)
+
+    roles_service.delete(id=body.id)
 
     return DeleteRoleResponse(message=f'Роль {body.id} удалена.')
 
@@ -153,16 +156,21 @@ def set_permission(
     body: RoleSetPermissionBodyParams,
     headers: RoleSetPermissionHeader,
     roles_service: RolesService = Provide[ServiceContainer.roles_service],
+    permissions_service: PermissionsService = Provide[ServiceContainer.permissions_service],
 ) -> RoleSetPermissionResponse:
     """ Докинуть ограничение в роль
     ---
         Докидываем ограничение ID::HTTP_METHOD::URL::<ACCESS or DENY>::TITLE::DESCRIPTION в роль
     """
-    permissions = roles_service.set_permission(role_id=body.role_id, permissions=body.permission_ids)
-    return RoleSetPermissionResponse(
-        permissions=permissions,
-        message=f'Разрешения {body.permission_ids} для роли {body.role_id} добавлены.',
-    )
+    if not roles_service.exists(id=body.role_id):
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, RolesError.NOT_EXISTS)
+
+    if not permissions_service.exists(id=body.permission_id):
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, PermissionsError.NOT_EXISTS)
+
+    roles_service.set_permission(role_id=body.role_id, permission_id=body.permission_id)
+    
+    return RoleSetPermissionResponse(message=f'Разрешение {body.permission_id} для роли {body.role_id} добавлено.')
 
 
 @bp.route('/permission', methods=['DELETE'])
@@ -180,13 +188,19 @@ def retrieve_permission(
     body: RoleRetrievePermissionBodyParams,
     headers: RoleRetrievePermissionHeader,
     roles_service: RolesService = Provide[ServiceContainer.roles_service],
+    permissions_service: PermissionsService = Provide[ServiceContainer.permissions_service],
 ) -> RoleRetrievePermissionResponse:
     """ Отобрать ограничение из роли
     ---
         Отобрать ограничение ID::HTTP_METHOD::URL::<ACCESS or DENY>::TITLE::DESCRIPTION из роли
     """
-    permissions = roles_service.retrieve_permission(role_id=body.role_id, permissions=body.permission_ids)
-    return RoleRetrievePermissionResponse(
-        permissions=permissions,
-        message=f'Разрешения {body.permission_ids} для роли {body.role_id} удалены.',
-    )
+
+    if not roles_service.exists(id=body.role_id):
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, RolesError.NOT_EXISTS)
+
+    if not permissions_service.exists(id=body.permission_id):
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, PermissionsError.NOT_EXISTS)
+
+    roles_service.retrieve_permission(role_id=body.role_id, permission_id=body.permission_id)
+    
+    return RoleRetrievePermissionResponse(message=f'Разрешение {body.permission_id} для роли {body.role_id} удалено.')

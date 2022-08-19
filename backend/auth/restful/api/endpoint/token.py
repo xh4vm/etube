@@ -43,7 +43,7 @@ def refresh(
 
     user_id: uuid.UUID = refresh_token_service.get_identity()
     
-    user: User = user_service.get_by_id(user_id)
+    user: User = user_service.get(id=user_id)
 
     access_token: str = access_token_service.create(identity=user.id, claims=user.get_claims())
     refresh_token: str = refresh_token_service.create(identity=user.id)

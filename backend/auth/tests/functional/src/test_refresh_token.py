@@ -50,7 +50,8 @@ async def test_refresh_token_expired_error(make_request, generate_users):
         claims={
             'type': 'refresh',
             'sub': '6f2819c9-957b-45b6-8348-853f71bb6adf', 
-            'exp': int(datetime.timestamp(datetime.now()) - 100)}
+            'exp': int(datetime.timestamp(datetime.now()) - 100)
+        }
     )
     response = await make_request(
         method='post',

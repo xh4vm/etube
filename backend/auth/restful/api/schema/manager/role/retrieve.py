@@ -10,14 +10,13 @@ class RoleRetrievePermissionBodyParams(BaseModel):
     ---
     """
     role_id: uuid.UUID = Field(title='Идентификатор пользователя, которому назначается разрешение')
-    permission_ids: list[uuid.UUID] = Field(title='Идентификаторы ограничений')
+    permission_id: uuid.UUID = Field(title='Идентификаторы ограничений')
 
 
 class RoleRetrievePermissionResponse(BaseModel):
     """Схема ответа удаления ограничения у роли
     ---
     """
-    permissions: list = Field(title='Список разрешений')
     message: str = Field(title='Сообщение ответа')
 
 

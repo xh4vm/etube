@@ -85,6 +85,10 @@ class Role(BaseModel):
         viewonly=True,
     )
 
+    @property
+    def permissions_names(self) -> list[str]:
+        return [perm.title for perm in self.permissions]
+
     def __repr__(self):
         return f'<Role {self.title}>'
 

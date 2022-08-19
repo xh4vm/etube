@@ -73,7 +73,13 @@ class Role(BaseModel):
     id: uuid.UUID = Field(title='Идентификатор роли', default_factory=get_new_id)
     title: str = Field(title='Название роли')
     description: str = Field(title='Описание роли')
-    permissions: list[str] = Field(title='Список ограничений роли')
+    permissions: list[str] = Field(title='Список ограничений роли', default=[])
+
+
+class RoleMap(BaseModel):
+    id: uuid.UUID = Field(title='Идентификатор роли', default_factory=get_new_id)
+    title: str = Field(title='Название роли')
+    description: str = Field(title='Описание роли')
 
 
 class User(BaseModel):

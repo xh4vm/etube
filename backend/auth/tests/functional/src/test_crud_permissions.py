@@ -1,13 +1,15 @@
+from http import HTTPStatus
 import pytest
+from datetime import datetime
 
 from ..utils.auth.jwt import create_token
+from ..utils.fake_models.permission import FakePermission
+# from ..utils.errors.role import RolesError
 from functional.settings import CONFIG
 
 pytestmark = pytest.mark.asyncio
-claims={'sub': '6f2819c9-957b-45b6-8348-853f71bb6adf', 'login': 'cheburashka'}
+claims={'sub': '6f2819c9-957b-45b6-8348-853f71bb6adf', 'login': 'cheburashka', 'exp': int(datetime.timestamp(datetime.now()) + 100)}
 
-# В тесте создания разрешения создается новый объект, который затем надо удалить.
-created_permission_id = ''
 
 async def test_get_user_permissions(
         make_request,
@@ -21,57 +23,66 @@ async def test_get_user_permissions(
     response = await make_request(
         method='get',
         target='auth/manager/permission',
-        params={'user_id': '6f2819c9-957b-45b6-8348-853f71bb6adf'},
         headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}'},
     )
 
-    assert len(response.body.get('permissions')) == 2
+    assert response.status == HTTPStatus.OK
+
+    recv_perms = response.body.get('permissions')
+    assert len(recv_perms) == 3
+    assert {perm.get('title') for perm in recv_perms} == {'create user', 'update user', 'remove user'}
 
 
-async def test_create_permission(make_request):
+async def test_create_permission(make_request, pg_cursor):
     # Создание разрешения.
+    perm = FakePermission()
     response = await make_request(
         method='post',
         target=f'auth/manager/permission',
         json={
-            'title': 'get user',
-            "description": 'permission description',
-            "http_method": 'GET',
-            'url': 'permission url',
+            'title': perm.title,
+            "description": perm.description,
+            "http_method": perm.http_method,
+            'url': perm.url,
         },
         headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}'},
     )
-    global created_permission_id
-    created_permission_id = response.body.get('id')
 
-    assert response.body.get('message') == 'Разрешение get user создано.'
+    delete_statement = f"DELETE FROM {CONFIG.DB.SCHEMA_NAME}.permissions WHERE title = '{perm.title}';"
+    pg_cursor.execute(delete_statement)
+
+    assert response.status == HTTPStatus.OK
+    assert response.body.get('message') == f'Разрешение {perm.title} создано.'
 
 
-async def test_create_existing_permission(make_request):
+async def test_create_existing_permission(make_request, generate_permissions,):
     # Создание существующего разрешения.
+    perm = FakePermission(title='create user')
     response = await make_request(
         method='post',
         target=f'auth/manager/permission',
         json={
-            'title': 'get user',
-            "description": 'permission description',
-            "http_method": 'GET',
-            'url': 'permission url',
+            'title': perm.title,
+            "description": perm.description,
+            "http_method": perm.http_method,
+            'url': perm.url,
         },
         headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}'},
     )
 
+    assert response.status == HTTPStatus.UNPROCESSABLE_ENTITY
     assert response.body.get('message') == 'Разрешение уже существует.'
 
 
 async def test_update_permission(make_request, generate_permissions):
     # Обновление разрешения.
+    perm = FakePermission()
     json = {
        'id': 'b8ac6615-012f-4469-ad03-cc87a42db5e0',
-       'title': 'create user',
-       "description": '',
-       "http_method": 'POST',
-       'url': '',
+       'title': perm.title,
+       "description": perm.description,
+       "http_method": perm.http_method,
+       'url': perm.url,
    }
     response = await make_request(
         method='put',
@@ -80,6 +91,7 @@ async def test_update_permission(make_request, generate_permissions):
         headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}'},
     )
 
+    assert response.status == HTTPStatus.OK
     assert response.body.get('__root__') == json
 
 
@@ -89,9 +101,10 @@ async def test_remove_permission(make_request, generate_permissions):
         method='delete',
         target=f'auth/manager/permission',
         json={
-            'id': created_permission_id,
+            'id': 'b8ac6615-012f-4469-ad03-cc87a42db5e0',
         },
         headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}'},
     )
 
-    assert response.body.get('message') == f'Разрешение {created_permission_id} удалено.'
+    assert response.status == HTTPStatus.OK
+    assert response.body.get('message') == f'Разрешение b8ac6615-012f-4469-ad03-cc87a42db5e0 удалено.'

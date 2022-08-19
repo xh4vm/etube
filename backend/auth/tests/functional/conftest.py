@@ -93,35 +93,45 @@ def event_loop():
 @pytest.fixture(scope='session')
 async def generate_users(pg_cursor):
     user_dg = UserDataGenerator(conn=pg_cursor)
+
     yield await user_dg.load()
+    
     await user_dg.clean()
 
 
 @pytest.fixture(scope='session')
 async def generate_roles(pg_cursor):
     role_dg = RoleDataGenerator(conn=pg_cursor)
+    
     yield await role_dg.load()
+
     await role_dg.clean()
 
 
 @pytest.fixture(scope='session')
 async def generate_permissions(pg_cursor):
     permission_dg = PermissionDataGenerator(conn=pg_cursor)
+
     yield await permission_dg.load()
+
     await permission_dg.clean()
 
 
 @pytest.fixture(scope='session')
 async def generate_user_roles(pg_cursor):
     user_role_dg = UserRoleDataGenerator(conn=pg_cursor)
+
     yield await user_role_dg.load()
+
     await user_role_dg.clean()
 
 
 @pytest.fixture(scope='session')
 async def generate_role_permissions(pg_cursor):
     role_permission_dg = RolePermissionDataGenerator(conn=pg_cursor)
+
     yield await role_permission_dg.load()
+
     await role_permission_dg.clean()
 
 

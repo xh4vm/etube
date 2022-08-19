@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from typing import Union
 
 from flask import Blueprint
@@ -6,17 +7,17 @@ from flask_pydantic_spec import Response
 
 from dependency_injector.wiring import inject, Provide
 
-from ...app import spec
-from ...schema.manager.permission.get import (GetPermissionParams, GetPermissionHeader,
-                                              GetPermissionResponse, GetPermissionError)
-from ...schema.manager.permission.create import CreatePermissionParams, CreatePermissionHeader, CreatePermissionResponse
-from ...schema.manager.permission.update import (UpdatePermissionParams, UpdatePermissionHeader,
-                                                 UpdatePermissionResponse, UpdatePermissionError)
-from ...schema.manager.permission.delete import DeletePermissionParams, DeletePermissionHeader, DeletePermissionResponse
-from ...utils.decorators import json_response, unpack_models
+from api.app import spec
+from api.schema.manager.permission.get import (GetPermissionHeader, GetPermissionResponse, GetPermissionError)
+from api.schema.manager.permission.create import CreatePermissionParams, CreatePermissionHeader, CreatePermissionResponse
+from api.schema.manager.permission.update import (UpdatePermissionParams, UpdatePermissionHeader, UpdatePermissionResponse, UpdatePermissionError)
+from api.schema.manager.permission.delete import DeletePermissionParams, DeletePermissionHeader, DeletePermissionResponse
+from api.errors.manager.permissions import PermissionsError
+from api.utils.decorators import json_response, unpack_models
+from api.utils.system import json_abort
 
-from ...services.manager.permissions.base import BasePermissionsService
-from ...containers.permissions import ServiceContainer
+from api.services.manager.permissions import PermissionsService
+from api.containers.permissions import ServiceContainer
 
 
 bp = Blueprint('permission', __name__, url_prefix='/permission')
@@ -24,7 +25,6 @@ TAG = 'Manager'
 
 @bp.route('', methods=['GET'])
 @spec.validate(
-    query=GetPermissionParams,
     headers=GetPermissionHeader,
     resp=Response(HTTP_200=GetPermissionResponse, HTTP_404=GetPermissionError, HTTP_403=None),
     tags=[TAG]
@@ -34,15 +34,12 @@ TAG = 'Manager'
 @json_response
 @inject
 def get_permissions(
-    query: GetPermissionParams,
     headers: GetPermissionHeader,
-    permissions_service: BasePermissionsService = Provide[ServiceContainer.permissions_service],
+    permissions_service: PermissionsService = Provide[ServiceContainer.permissions_service],
 ) -> Union[GetPermissionResponse, GetPermissionError]:
-    """ Получение списка ограничений конкретной роли.
+    """ Получение списка ограничений.
     """
-    return GetPermissionResponse(
-        permissions=permissions_service.permissions_list(query.user_id),
-    )
+    return GetPermissionResponse(permissions=permissions_service.all())
 
 
 @bp.route('', methods=['POST'])
@@ -59,10 +56,13 @@ def get_permissions(
 def create_permission(
     body: CreatePermissionParams,
     headers: CreatePermissionHeader,
-    permissions_service: BasePermissionsService = Provide[ServiceContainer.permissions_service],
+    permissions_service: PermissionsService = Provide[ServiceContainer.permissions_service],
 ) -> CreatePermissionResponse:
     """ Создание разрешения.
     """
+
+    if permissions_service.exists(title=body.title):
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, PermissionsError.ALREADY_EXISTS)
 
     permission = permissions_service.create(
         title=body.title,
@@ -91,10 +91,13 @@ def create_permission(
 def update_permission(
     body: UpdatePermissionParams,
     headers: UpdatePermissionHeader,
-    permissions_service: BasePermissionsService = Provide[ServiceContainer.permissions_service],
+    permissions_service: PermissionsService = Provide[ServiceContainer.permissions_service],
 ) -> Union[UpdatePermissionResponse, UpdatePermissionError]:
     """ Обновление ограничения.
     """
+
+    if not permissions_service.exists(id=body.id):
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, PermissionsError.NOT_EXISTS)
 
     permission = permissions_service.update(
         id=body.id,
@@ -121,10 +124,14 @@ def update_permission(
 def delete_permission(
     body: DeletePermissionParams,
     headers: DeletePermissionHeader,
-    permissions_service: BasePermissionsService = Provide[ServiceContainer.permissions_service],
+    permissions_service: PermissionsService = Provide[ServiceContainer.permissions_service],
 ) -> DeletePermissionResponse:
     """ Удаление ограничения.
     """
-    permissions_service.delete(permission_id=body.id)
+
+    if not permissions_service.exists(id=body.id):
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, PermissionsError.NOT_EXISTS)
+
+    permissions_service.delete(id=body.id)
 
     return DeletePermissionResponse(message=f'Разрешение {body.id} удалено.')

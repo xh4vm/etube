@@ -7,14 +7,13 @@ from typing import Optional, Type
 
 from dependency_injector import containers, providers
 
-from ..services.manager.roles.roles import RolesService
+from ..services.manager.roles import RolesService
+from ..services.manager.permissions import PermissionsService
 from .base import BaseContainer
-
-
-class RoleFactory(providers.Factory):
-    provided_type: Optional[Type] = RolesService
 
 
 class ServiceContainer(BaseContainer):
     wiring_config = containers.WiringConfiguration(modules=['..endpoint.manager.role'])
-    roles_service = RoleFactory(RolesService)
+
+    roles_service = providers.Factory(RolesService, storage_svc=BaseContainer.storage_svc)
+    permissions_service = providers.Factory(PermissionsService, storage_svc=BaseContainer.storage_svc)
