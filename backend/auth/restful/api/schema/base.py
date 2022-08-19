@@ -79,8 +79,8 @@ class User(BaseModel):
     id: uuid.UUID = Field(title='Идентификатор роли', default_factory=get_new_id)
     login: str = Field(title='Логин пользователя')
     email: EmailStr = Field(title='Email пользователя')
-    roles: list[str] = Field(title='Список ролей')
-    permissions: dict[str, list[str]] = Field(title='Список permissions: md5_hashed_url: list(http_methods)')
+    roles: list[str] = Field(title='Список ролей', default=[])
+    permissions: dict[str, list[str]] = Field(title='Список permissions: md5_hashed_url: list(http_methods)', default={})
 
     def get_claims(self) -> dict[str, Any]:
         return {
@@ -89,6 +89,13 @@ class User(BaseModel):
             'roles': self.roles,
             'permissions': self.permissions,
         }
+
+
+class UserMap(BaseModel):
+    id: uuid.UUID = Field(title='Идентификатор роли', default_factory=get_new_id)
+    login: str = Field(title='Логин пользователя')
+    password: str = Field(title='Пароль пользователя')
+    email: EmailStr = Field(title='Email пользователя')
 
 
 class SignInRecord(BaseModel):

@@ -28,9 +28,9 @@ def register_di_containers():
     redis_resource = StorageResource(RedisStorageResource)
 
     SignInServiceContainer(storage_svc=redis_resource)
-    SignUpServiceContainer()
+    SignUpServiceContainer(storage_svc=redis_resource)
     TokenServiceContainer(storage_svc=redis_resource)
-    PermissionsServiceContainer()
+    PermissionsServiceContainer(storage_svc=redis_resource)
     LogoutServiceContainer(storage_svc=redis_resource)
 
 
@@ -83,6 +83,6 @@ def create_app(config_classes=[CONFIG.APP, INTERACTION_CONFIG]):
     spec.register(app)
     app.app_context().push()
 
-    create_db_schema(db)
+    # create_db_schema(db)
 
     return app

@@ -1,6 +1,6 @@
-CREATE SCHEMA IF NOT EXISTS auth;
+CREATE SCHEMA IF NOT EXISTS auth_etube;
 
-CREATE TABLE IF NOT EXISTS auth.users (
+CREATE TABLE IF NOT EXISTS auth_etube.users (
     id UUID PRIMARY KEY,
     login TEXT NOT NULL,
     password TEXT,
@@ -8,18 +8,18 @@ CREATE TABLE IF NOT EXISTS auth.users (
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
 ); 
-CREATE UNIQUE INDEX IF NOT EXISTS user_email_idx ON auth.users(email);
+CREATE UNIQUE INDEX IF NOT EXISTS user_email_idx ON auth_etube.users(email);
 
-CREATE TABLE IF NOT EXISTS auth.roles (
+CREATE TABLE IF NOT EXISTS auth_etube.roles (
     id UUID PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT,
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
 ); 
-CREATE UNIQUE INDEX IF NOT EXISTS role_title_idx ON auth.roles(title);
+CREATE UNIQUE INDEX IF NOT EXISTS role_title_idx ON auth_etube.roles(title);
 
-CREATE TABLE IF NOT EXISTS auth.permissions (
+CREATE TABLE IF NOT EXISTS auth_etube.permissions (
     id UUID PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT,
@@ -28,27 +28,27 @@ CREATE TABLE IF NOT EXISTS auth.permissions (
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
 ); 
-CREATE UNIQUE INDEX IF NOT EXISTS permission_title_idx ON auth.permissions(title);
+CREATE UNIQUE INDEX IF NOT EXISTS permission_title_idx ON auth_etube.permissions(title);
 
-CREATE TABLE IF NOT EXISTS auth.role_permissions (
+CREATE TABLE IF NOT EXISTS auth_etube.role_permissions (
     id UUID PRIMARY KEY,
-    role_id UUID NOT NULL REFERENCES auth.roles ON DELETE CASCADE,
-    permission_id UUID NOT NULL REFERENCES auth.permissions ON DELETE CASCADE,
+    role_id UUID NOT NULL REFERENCES auth_etube.roles ON DELETE CASCADE,
+    permission_id UUID NOT NULL REFERENCES auth_etube.permissions ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
 ); 
 
-CREATE TABLE IF NOT EXISTS auth.user_roles (
+CREATE TABLE IF NOT EXISTS auth_etube.user_roles (
     id UUID PRIMARY KEY,
-    user_id UUID NOT NULL REFERENCES auth.users ON DELETE CASCADE,
-    role_id UUID NOT NULL REFERENCES auth.roles ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth_etube.users ON DELETE CASCADE,
+    role_id UUID NOT NULL REFERENCES auth_etube.roles ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
 ); 
 
-CREATE TABLE IF NOT EXISTS auth.sign_in_history (
+CREATE TABLE IF NOT EXISTS auth_etube.sign_in_history (
     id UUID PRIMARY KEY,
-    user_id UUID NOT NULL REFERENCES auth.users ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth_etube.users ON DELETE CASCADE,
     os TEXT,
     device TEXT,
     browser TEXT,

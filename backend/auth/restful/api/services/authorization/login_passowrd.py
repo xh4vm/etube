@@ -1,15 +1,15 @@
 from http import HTTPStatus
 
 from api.schema.base import User as UserSchema
-from api.model.models import User, Role, Permission
+from api.model.models import User
 
 from api.errors.action.sign_in import SignInActionError
 from api.utils.system import json_abort
 
-from .base import BaseSignInService
+from .base import BaseAuthService
 
 
-class LoginPasswordSignInService(BaseSignInService):
+class LoginPasswordAuthService(BaseAuthService):
 
     def authorization(self, login: str, password: str) -> User:
         user = (User

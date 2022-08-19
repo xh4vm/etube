@@ -1,7 +1,7 @@
 import uuid
 from flask import Blueprint
-from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
-from flask_pydantic_spec import Response, Request
+from flask_jwt_extended import jwt_required
+from flask_pydantic_spec import Response
 from dependency_injector.wiring import inject, Provide
 
 from ..services.token.access import AccessTokenService
