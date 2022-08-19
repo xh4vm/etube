@@ -1,4 +1,7 @@
+from uuid import UUID
+
 from pydantic import BaseModel, Field
+
 from ...base import AuthorizationHeader
 
 
@@ -6,14 +9,14 @@ class DeleteRoleBodyParams(BaseModel):
     """Схема body-параметров удаления роли
     ---
     """
-    role_id: int = Field(title='Идентификатор роли')
+    id: UUID = Field(title='Идентификатор роли')
 
 
 class DeleteRoleResponse(BaseModel):
     """Схема ответа удаления роли
     ---
     """
-    pass
+    message: str = Field(title='Сообщение ответа')
 
 
 class DeleteRoleHeader(AuthorizationHeader):

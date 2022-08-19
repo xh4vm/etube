@@ -1,5 +1,7 @@
 import uuid
+
 from pydantic import BaseModel, Field
+
 from ...base import AuthorizationHeader
 
 
@@ -15,7 +17,8 @@ class RoleSetPermissionResponse(BaseModel):
     """Схема ответа назначения ограничения роли
     ---
     """
-    pass
+    permissions: list = Field(title='Список разрешений')
+    message: str = Field(title='Сообщение ответа')
 
 
 class RoleSetPermissionHeader(AuthorizationHeader):
