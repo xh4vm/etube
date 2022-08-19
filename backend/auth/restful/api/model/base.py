@@ -7,12 +7,16 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm.scoping import scoped_session
 
+from core.config import CONFIG
+
 db = SQLAlchemy()
+
 
 class BaseModel(db.Model):
     """Базовая модель объекта БД"""
 
     __abstract__ = True
+    __table_args__ = {'schema' : CONFIG.DB.SCHEMA_NAME}
 
     session: scoped_session = db.session
 

@@ -6,10 +6,10 @@ from api.model.models import User
 from api.errors.action.sign_in import SignInActionError
 from api.utils.system import json_abort
 
-from .base import BaseSignInService
+from .base import BaseAuthService
 
 
-class LoginPasswordSignInService(BaseSignInService):
+class LoginPasswordAuthService(BaseAuthService):
 
     def authorization(self, login: str, password: str) -> User:
         user = (User
@@ -20,10 +20,13 @@ class LoginPasswordSignInService(BaseSignInService):
         if user is None or \
             not user.check_password(password):
             json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_AUTH_DATA)
-        
+
+        roles_with_permissions = user.roles_with_permissions
+
         return UserSchema(
             id=user.id, 
             login=user.login, 
             email=user.email,
-            roles=user.roles_names
+            roles=roles_with_permissions.get('roles'),
+            permissions=roles_with_permissions.get('permissions')
         )

@@ -233,6 +233,9 @@ services:
     profiles: 
       - dev_auth
     env_file: .env
+    depends_on:
+      db-auth:
+        condition: service_healthy
     ports:
       - ${AUTH_APP_PORT}:${AUTH_APP_PORT}
     # expose:

@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 import pytest
 
+from functional.settings import CONFIG
 from ..utils.fake_models.base import fake
 from ..utils.fake_models.user import FakeUser 
 
@@ -36,7 +37,7 @@ async def test_sign_up(make_request, pg_cursor):
         }
     )
     
-    delete_statement = f"DELETE FROM users WHERE login = '{user.login}' AND email = '{user.email}' AND password = '{user.password}';"
+    delete_statement = f"DELETE FROM {CONFIG.DB.SCHEMA_NAME}.users WHERE login = '{user.login}' AND email = '{user.email}' AND password = '{user.password}';"
     pg_cursor.execute(delete_statement)
 
     assert response.status == HTTPStatus.OK

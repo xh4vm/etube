@@ -2,6 +2,7 @@ import pytest
 
 from http import HTTPStatus
 
+from functional.settings import CONFIG
 from ..utils.auth.jwt import get_jwt_claims, get_jwt_identity, verify_exp_jwt, create_token, get_jti
 from ..utils.errors.action.sign_in import SignInActionError
 
@@ -80,7 +81,7 @@ async def test_sign_in_alredy_auth(make_request, generate_users):
 
 async def test_sign_in_history_record(make_request, generate_users, pg_cursor):
     
-    select_statement = "SELECT COUNT(*) FROM sign_in_history WHERE user_id = '6f2819c9-957b-45b6-8348-853f71bb6adf';"
+    select_statement = f"SELECT COUNT(*) FROM {CONFIG.DB.SCHEMA_NAME}.sign_in_history WHERE user_id = '6f2819c9-957b-45b6-8348-853f71bb6adf';"
     
     pg_cursor.execute(select_statement)
     count = pg_cursor.fetchone()[0]

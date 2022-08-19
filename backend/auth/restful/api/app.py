@@ -6,7 +6,6 @@ from flask_jwt_extended import JWTManager
 from flask_pydantic_spec import FlaskPydanticSpec
 
 from .model.base import db
-from .utils.system import json_abort
 from .services.token.handler import TokenHandlerService
 from .services.storage.redis import RedisStorage, BaseStorage
 
@@ -29,10 +28,10 @@ def register_di_containers():
     redis_resource = StorageResource(RedisStorageResource)
 
     SignInServiceContainer(storage_svc=redis_resource)
-    SignUpServiceContainer()
+    SignUpServiceContainer(storage_svc=redis_resource)
     TokenServiceContainer(storage_svc=redis_resource)
-    PermissionsServiceContainer()
-    RolesServiceContainer()
+    RolesServiceContainer(storage_svc=redis_resource)
+    PermissionsServiceContainer(storage_svc=redis_resource)
     LogoutServiceContainer(storage_svc=redis_resource)
 
 
@@ -62,6 +61,10 @@ def register_blueprints(app):
     app.register_blueprint(root_bp)
 
 
+def create_db_schema(db, schema_name=CONFIG.DB.SCHEMA_NAME):
+    db.engine.execute(f"CREATE SCHEMA IF NOT EXISTS {schema_name};")
+
+
 def create_app(config_classes=[CONFIG.APP, INTERACTION_CONFIG]):
     app = Flask(__name__)
     
@@ -80,5 +83,7 @@ def create_app(config_classes=[CONFIG.APP, INTERACTION_CONFIG]):
     
     spec.register(app)
     app.app_context().push()
+
+    # create_db_schema(db)
 
     return app

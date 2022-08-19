@@ -5,6 +5,7 @@ from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
 
 from ..app import spec
+from api.errors.action.sign_up import SignUpActionError
 from api.schema.base import User as UserSchema
 from ..containers.sign_in import ServiceContainer as SignInServiceContainer
 from ..containers.sign_up import ServiceContainer as SignUpServiceContainer
@@ -14,8 +15,8 @@ from ..schema.action.sign_in import (SignInBodyParams, SignInHeader,
                                      SignInResponse)
 from ..schema.action.sign_up import (SignUpBodyParams, SignUpHeader,
                                      SignUpResponse)
-from ..services.action.sign_in.base import BaseSignInService
-from ..services.action.sign_up.base import BaseSignUpService
+from ..services.authorization.base import BaseAuthService
+from ..services.user import UserService
 from ..services.sign_in_history import SignInHistoryService
 from ..services.token.base import BaseTokenService
 from ..errors.action.sign_in import SignInActionError
@@ -42,7 +43,7 @@ def sign_in(
     headers: SignInHeader,
     access_token_service: BaseTokenService = Provide[SignInServiceContainer.access_token_service],
     refresh_token_service: BaseTokenService = Provide[SignInServiceContainer.refresh_token_service],
-    sign_in_service: BaseSignInService = Provide[SignInServiceContainer.sign_in_service],
+    auth_service: BaseAuthService = Provide[SignInServiceContainer.auth_service],
     sign_in_history_service: SignInHistoryService = Provide[SignInServiceContainer.sign_in_history_service]
 ) -> SignInResponse:
     """ Авторизация пользователя
@@ -54,7 +55,7 @@ def sign_in(
     if access_token_service.is_valid_into_request():
         json_abort(HTTPStatus.OK, SignInActionError.ALREADY_AUTH)
 
-    user: UserSchema = sign_in_service.authorization(login=body.login, password=body.password)
+    user: UserSchema = auth_service.authorization(login=body.login, password=body.password)
 
     access_token: str = access_token_service.create(identity=user.id, claims=user.get_claims())
     refresh_token: str = refresh_token_service.create(identity=user.id)
@@ -78,15 +79,23 @@ def sign_in(
 def sign_up(
     body: SignUpBodyParams,
     headers: SignUpHeader,
-    sign_up_service: BaseSignUpService = Provide[SignUpServiceContainer.sign_up_service],
+    access_token_service: BaseTokenService = Provide[SignUpServiceContainer.access_token_service],
+    user_service: UserService = Provide[SignUpServiceContainer.user_service],
 ) -> SignUpResponse:
     """ Регистрация пользователя
     ---
         На вход поступает логин, почта и пароль, если регистрация успешна, то возвращается id нового пользователя.
     """
-    user = sign_up_service.registration(login=body.login, email=body.email, password=body.password)
+    if access_token_service.is_valid_into_request():
+        json_abort(HTTPStatus.OK, SignInActionError.ALREADY_AUTH)
+
+    if user_service.exists(login=body.login, email=body.email):
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignUpActionError.ALREADY_EXISTS)
+
+    user_id = user_service.create(login=body.login, email=body.email, password=body.password)
+
     return SignUpResponse(
-        id=user,
+        id=user_id,
         message='Пользователь успешно зарегистрирован.'
     )
 
