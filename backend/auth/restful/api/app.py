@@ -6,7 +6,6 @@ from flask_jwt_extended import JWTManager
 from flask_pydantic_spec import FlaskPydanticSpec
 
 from .model.base import db
-from .utils.system import json_abort
 from .services.token.handler import TokenHandlerService
 from .services.storage.redis import RedisStorage, BaseStorage
 
