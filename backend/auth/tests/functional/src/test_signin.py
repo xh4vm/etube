@@ -2,9 +2,7 @@ import pytest
 
 from http import HTTPStatus
 
-from functional.settings import CONFIG
-
-from ..utils.auth.jwt import get_jwt_claims, get_jwt_identity, verify_exp_jwt, create_token
+from ..utils.auth.jwt import get_jwt_claims, get_jwt_identity, verify_exp_jwt, create_token, get_jti
 from ..utils.errors.action.sign_in import SignInActionError
 
 pytestmark = pytest.mark.asyncio
@@ -36,8 +34,6 @@ async def test_sign_in_login_error(make_request, generate_users):
 
 async def test_sign_in_login_success(make_request, generate_users, redis_client):
     # Попытка входа.
-    assert await redis_client.get('refresh_token::6f2819c9-957b-45b6-8348-853f71bb6adf') is None
-
     response = await make_request(
         method='post',
         target=f'auth/action/sign_in', 
@@ -65,7 +61,8 @@ async def test_sign_in_login_success(make_request, generate_users, redis_client)
     assert '6f2819c9-957b-45b6-8348-853f71bb6adf' == identity
     assert verify_exp_jwt(refresh_token) is True
 
-    assert await redis_client.get('refresh_token::6f2819c9-957b-45b6-8348-853f71bb6adf') is not None
+    refresh_jti = get_jti(refresh_token)
+    assert await redis_client.get(f'refresh_token::{refresh_jti}') is not None
 
 
 async def test_sign_in_alredy_auth(make_request, generate_users):

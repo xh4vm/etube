@@ -1,17 +1,14 @@
 from abc import ABC, abstractmethod
 from typing import Any, Optional
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity, get_jwt
-from http import HTTPStatus
 from string import Template
 
 
 from ..storage.base import BaseStorage
-from api.errors.token import TokenError
-from api.schema.base import BaseError
 
 
 revoke_key = Template('revoked::token::$jti')
-user_refresh_key = Template('refresh_token::$user_id')
+user_refresh_key = Template('refresh_token::$jti')
 
 class BaseTokenService(ABC):
 

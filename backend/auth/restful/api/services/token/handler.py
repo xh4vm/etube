@@ -1,4 +1,3 @@
-from typing import Any, Optional
 from http import HTTPStatus
 
 from .base import revoke_key
