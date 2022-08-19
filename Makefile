@@ -33,6 +33,9 @@ s2p: create-venv pip-install-s2p load_data_from_s2p
 .PHONY: test api
 test: create-venv pip-install-test test-api
 
+.PHONY: test auth api
+test-auth: create-venv pip-install-test-auth test-auth-api
+
 .PHONY: daemon run services
 rund:
 	docker-compose --profile dev up -d
@@ -82,6 +85,11 @@ load_data_from_s2p:
 test-api:
 	./venv/bin/pytest backend/tests/functional/src
 
+.PHONY: test auth api
+test-auth-api:
+	PYTHONPATH=`pwd`/backend/auth/tests/functional/utils/grpc/:`pwd`/backend/auth/tests/functional/utils/grpc:`pwd`/backend/auth/tests/functional/utils/grpc/messages \
+	./venv/bin/pytest backend/auth/tests/functional/src
+
 .PHONY: collect static files
 collectstatic-with-venv:
 	./venv/bin/python3 backend/admin/manage.py collectstatic --noinput
@@ -89,6 +97,10 @@ collectstatic-with-venv:
 .PHONY: install requirements-test
 pip-install-test:
 	./venv/bin/pip3 install -r requirements-test.txt
+
+.PHONY: install requirements-test
+pip-install-test-auth:
+	./venv/bin/pip3 install -r requirements-test-auth.txt
 
 .PHONY: collect static files
 collectstatic: create-venv pip-install-build collectstatic-with-venv

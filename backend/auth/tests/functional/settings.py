@@ -20,6 +20,11 @@ class ApiSettings(Settings):
     JWT_TOKEN_LOCATION: str = Field('headers', env='AUTH_JWT_TOKEN_LOCATION')
     
 
+class GRPCSettings(Settings):
+    HOST: str = Field('localhost', env='AUTH_GRPC_HOST')
+    PORT: str = Field('56567', env='AUTH_GRPC_PORT')
+
+
 class RedisSettings(BaseSettings):
     HOST: str = Field('localhost', env='REDIS_HOST')
     PORT: int = Field(6379, env='REDIS_PORT')
@@ -32,7 +37,7 @@ class DatabaseSettings(BaseSettings):
     HOST: str = Field('localhost', env='AUTH_DB_HOST')
     PORT: int = Field('5432', env='AUTH_DB_PORT')
     NAME: str = Field('auth_database', env='AUTH_DB_NAME')
-    SCHEMA_NAME: str = Field('public', env='AUTH_DB_SCHEMA')
+    SCHEMA_NAME: str = Field('auth', env='AUTH_DB_SCHEMA')
     SCHEMA_FILE_NAME: str = Field('schema.sql', env='AUTH_DB_SCHEMA_FILE_PATH')
 
     def dsn(self):
@@ -47,6 +52,7 @@ class DatabaseSettings(BaseSettings):
 
 class Config(Settings):
     API: ApiSettings = ApiSettings()
+    GRPC: GRPCSettings = GRPCSettings()
     REDIS: RedisSettings = RedisSettings()
     DB: DatabaseSettings = DatabaseSettings()
     BASE_DIR: str = os.path.dirname(os.path.abspath(__file__))

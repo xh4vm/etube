@@ -60,6 +60,10 @@ def register_blueprints(app):
     app.register_blueprint(root_bp)
 
 
+def create_db_schema(db, schema_name=CONFIG.DB.SCHEMA_NAME):
+    db.engine.execute(f"CREATE SCHEMA IF NOT EXISTS {schema_name};")
+
+
 def create_app(config_classes=[CONFIG.APP, INTERACTION_CONFIG]):
     app = Flask(__name__)
     
@@ -78,5 +82,7 @@ def create_app(config_classes=[CONFIG.APP, INTERACTION_CONFIG]):
     
     spec.register(app)
     app.app_context().push()
+
+    create_db_schema(db)
 
     return app

@@ -16,11 +16,14 @@ class UserService:
         if user is None:
             user = User.query.get(id)
 
+            roles_with_permissions = user.roles_with_permissions
+
             user = UserSchema(
                 id=user.id, 
                 login=user.login, 
                 email=user.email, 
-                roles=user.roles_names
+                roles=roles_with_permissions.get('roles'),
+                permissions=roles_with_permissions.get('permissions')
             ).dict()
         
         self.storage_svc.set(key=f'user::get_by_id::{id}', data=user)

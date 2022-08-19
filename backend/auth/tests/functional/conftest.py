@@ -18,6 +18,8 @@ from .utils.data_generators.postgres.permission import PermissionDataGenerator
 from .utils.data_generators.postgres.user_role import UserRoleDataGenerator
 from .utils.data_generators.postgres.role_permission import RolePermissionDataGenerator
 
+import functional.utils.grpc.client as grpc_client_connector
+
 
 SERVICE_URL = f'{CONFIG.API.URL}:{CONFIG.API.PORT}'
 
@@ -123,6 +125,11 @@ async def generate_role_permissions(pg_cursor):
     role_permission_dg = RolePermissionDataGenerator(conn=pg_cursor)
     yield await role_permission_dg.load()
     await role_permission_dg.clean()
+
+
+@pytest.fixture(scope='session')
+async def grpc_client():
+    return grpc_client_connector.PermissionClient(f'{CONFIG.GRPC.HOST}:{CONFIG.GRPC.PORT}')
 
 
 @pytest.fixture(autouse=True)

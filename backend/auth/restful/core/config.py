@@ -28,6 +28,7 @@ class RedisSettings(BaseSettings):
 
 
 class DatabaseSettings(BaseSettings):
+    SCHEMA_NAME: str = Field('auth', env='AUTH_DB_SCHEMA')
     DRIVER: str = Field(..., env='AUTH_DB_DRIVER')
     USER: str = Field(..., env='AUTH_DB_USER')
     PASSWORD: str = Field(..., env='AUTH_DB_PASSWORD')

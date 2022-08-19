@@ -80,12 +80,14 @@ class User(BaseModel):
     login: str = Field(title='Логин пользователя')
     email: EmailStr = Field(title='Email пользователя')
     roles: list[str] = Field(title='Список ролей')
+    permissions: dict[str, list[str]] = Field(title='Список permissions: md5_hashed_url: list(http_methods)')
 
     def get_claims(self) -> dict[str, Any]:
         return {
             'login': self.login,
             'email': self.email,
             'roles': self.roles,
+            'permissions': self.permissions,
         }
 
 

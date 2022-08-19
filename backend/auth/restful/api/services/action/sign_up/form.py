@@ -25,9 +25,11 @@ class FormSignUpService(BaseSignUpService):
                 login=login,
                 email=email,
                 roles=[],
+                permissions={}
             ).dict()
         user_data['password'] = password
         user_data.pop('roles')
+        user_data.pop('permissions')
 
         user = User(**user_data)
         user.insert_and_commit()
