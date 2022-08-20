@@ -139,3 +139,4 @@ commands.md
 *.idea
 *._cache
 .env_local
+backend/auth/api/migrations

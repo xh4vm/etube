@@ -1,5 +1,14 @@
+include .env
+db = db
+db_auth = db-auth
+app = etl
+auth = auth
+
 .PHONY: interactive build services
 build: collectstatic build-dockers
+
+.PHONY: interactive build auth services
+build-auth: build-dockers-auth
 
 .PHONY: interactive build services with test profile
 build-test: collectstatic build-dockers-test-profile
@@ -23,6 +32,9 @@ s2p: create-venv pip-install-s2p load_data_from_s2p
 
 .PHONY: test api
 test: create-venv pip-install-test test-api
+
+.PHONY: test auth api
+test-auth: create-venv pip-install-test-auth test-auth-api
 
 .PHONY: daemon run services
 rund:
@@ -73,6 +85,11 @@ load_data_from_s2p:
 test-api:
 	./venv/bin/pytest backend/tests/functional/src
 
+.PHONY: test auth api
+test-auth-api:
+	PYTHONPATH=`pwd`/backend/auth/tests/functional/utils/grpc/:`pwd`/backend/auth/tests/functional/utils/grpc:`pwd`/backend/auth/tests/functional/utils/grpc/messages \
+	./venv/bin/pytest backend/auth/tests/functional/src
+
 .PHONY: collect static files
 collectstatic-with-venv:
 	./venv/bin/python3 backend/admin/manage.py collectstatic --noinput
@@ -81,12 +98,20 @@ collectstatic-with-venv:
 pip-install-test:
 	./venv/bin/pip3 install -r requirements-test.txt
 
+.PHONY: install requirements-test
+pip-install-test-auth:
+	./venv/bin/pip3 install -r requirements-test-auth.txt
+
 .PHONY: collect static files
 collectstatic: create-venv pip-install-build collectstatic-with-venv
 
 .PHONY: interactive build docker services
 build-dockers:
 	docker-compose --profile dev up --build
+
+.PHONY: interactive build docker auth services 
+build-dockers-auth:
+	docker-compose --profile dev_auth up --build
 
 .PHONY: daemon build docker services
 buildd-dockers:
@@ -116,20 +141,17 @@ clean-all-dockers:
 clean-dockers:
 	T="backend-admin backend-client db swagger"; docker stop $$T; docker rm $$T; docker container prune -f
 
-
-include .env
-db = db
-app = etl
-
-create_schema:
-	docker exec -it ${db} psql --username=${DB_USER} --dbname=${DB_NAME} -c \
-	'CREATE SCHEMA IF NOT EXISTS content;'
-migrate:
-	docker-compose exec backend-admin ./manage.py migrate
-fill_db:
-	docker-compose exec backend-admin python ./sqlite_to_postgres/load_data.py
 db_connect:
 	docker exec -it ${db} psql --username=${DB_USER} --dbname=${DB_NAME}
 
 app_connect:
 	docker exec -it ${app} sh
+
+auth_connect:
+	docker exec -it ${auth} sh
+
+db_auth_connect:
+	docker exec -it ${db_auth} psql --username=${AUTH_DB_USER} --dbname=${AUTH_DB_NAME}
+
+db_create_superuser:
+	python3 backend/auth/restful/api/utils/superuser.py

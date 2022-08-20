@@ -1,0 +1,18 @@
+syntax = "proto3";
+package permission;
+
+
+message AccessibleRequest {
+    string token = 1;
+    string method = 2;
+    string url = 3;
+}
+
+message AccessibleResponse {
+    bool is_accessible = 1;
+    string message = 2;
+}
+
+service Permission {
+    rpc is_accessible (AccessibleRequest) returns (AccessibleResponse) {}
+}
