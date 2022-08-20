@@ -12,7 +12,6 @@ FROM python:3.10-slim
 
 WORKDIR /opt/app
 EXPOSE ${AUTH_APP_PORT}
-# ENTRYPOINT ["python", "./main.py"]
 ENTRYPOINT ["uwsgi", "--strict", "--ini", "uwsgi.ini"]
 
 COPY --from=auth-builder /usr/local /usr/local
