@@ -1,38 +1,38 @@
+import uuid
 from abc import ABC, abstractmethod, abstractproperty
 from http import HTTPStatus
-import uuid
+
 from pydantic.main import ModelMetaclass
 
-from ..model.base import BaseModel, db
-from .storage.base import BaseStorage
 from ..errors.base import BaseError
+from ..model.base import BaseModel, db
 from ..utils.system import json_abort
+from .storage.base import BaseStorage
 
 
 class BaseService(ABC):
-
     @abstractproperty
     def schema(self) -> ModelMetaclass:
-        '''Схема данных'''
+        """Схема данных"""
 
     @abstractproperty
     def map(self) -> ModelMetaclass:
-        '''Схема данных в бд'''
+        """Схема данных в бд"""
 
     @abstractproperty
     def model(self) -> BaseModel:
-        '''Схема данных в бд'''
+        """Схема данных в бд"""
 
     @abstractproperty
     def error(self) -> BaseError:
-        '''Класс ошибок'''
+        """Класс ошибок"""
 
     def __init__(self, storage_svc: BaseStorage) -> None:
         self.storage_svc = storage_svc
 
     @abstractmethod
     def get(self, **kwargs) -> ModelMetaclass:
-        '''Получение экземпляра'''
+        """Получение экземпляра"""
 
     def exists(self, **kwargs) -> bool:
         storage_key = f'{self.model.__tablename__}::exists::{"::".join(kwargs.keys())}'

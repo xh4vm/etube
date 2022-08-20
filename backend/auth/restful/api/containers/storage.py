@@ -1,8 +1,7 @@
 from typing import Optional, Type
 
-from dependency_injector import providers, resources
-
 import api.app as application_factory
+from dependency_injector import providers, resources
 
 from ..services.storage.base import BaseStorage
 from ..services.storage.redis import RedisStorage

@@ -1,33 +1,39 @@
 from http import HTTPStatus
 from typing import Union
 
+from api.app import spec
+from api.containers.permissions import ServiceContainer
+from api.errors.manager.permissions import PermissionsError
+from api.schema.manager.permission.create import (CreatePermissionHeader,
+                                                  CreatePermissionParams,
+                                                  CreatePermissionResponse)
+from api.schema.manager.permission.delete import (DeletePermissionHeader,
+                                                  DeletePermissionParams,
+                                                  DeletePermissionResponse)
+from api.schema.manager.permission.get import (GetPermissionError,
+                                               GetPermissionHeader,
+                                               GetPermissionResponse)
+from api.schema.manager.permission.update import (UpdatePermissionError,
+                                                  UpdatePermissionHeader,
+                                                  UpdatePermissionParams,
+                                                  UpdatePermissionResponse)
+from api.services.permissions import PermissionsService
+from api.utils.decorators import json_response, unpack_models
+from api.utils.system import json_abort
+from dependency_injector.wiring import Provide, inject
 from flask import Blueprint
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Response
 
-from dependency_injector.wiring import inject, Provide
-
-from api.app import spec
-from api.schema.manager.permission.get import (GetPermissionHeader, GetPermissionResponse, GetPermissionError)
-from api.schema.manager.permission.create import CreatePermissionParams, CreatePermissionHeader, CreatePermissionResponse
-from api.schema.manager.permission.update import (UpdatePermissionParams, UpdatePermissionHeader, UpdatePermissionResponse, UpdatePermissionError)
-from api.schema.manager.permission.delete import DeletePermissionParams, DeletePermissionHeader, DeletePermissionResponse
-from api.errors.manager.permissions import PermissionsError
-from api.utils.decorators import json_response, unpack_models
-from api.utils.system import json_abort
-
-from api.services.permissions import PermissionsService
-from api.containers.permissions import ServiceContainer
-
-
 bp = Blueprint('permission', __name__, url_prefix='/permission')
 TAG = 'Manager'
+
 
 @bp.route('', methods=['GET'])
 @spec.validate(
     headers=GetPermissionHeader,
     resp=Response(HTTP_200=GetPermissionResponse, HTTP_404=GetPermissionError, HTTP_403=None),
-    tags=[TAG]
+    tags=[TAG],
 )
 @unpack_models
 @jwt_required()
@@ -46,8 +52,8 @@ def get_permissions(
 @spec.validate(
     body=CreatePermissionParams,
     headers=CreatePermissionHeader,
-    resp=Response(HTTP_200=CreatePermissionResponse, HTTP_403=None), 
-    tags=[TAG]
+    resp=Response(HTTP_200=CreatePermissionResponse, HTTP_403=None),
+    tags=[TAG],
 )
 @unpack_models
 @jwt_required()
@@ -65,16 +71,10 @@ def create_permission(
         json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, PermissionsError.ALREADY_EXISTS)
 
     permission = permissions_service.create(
-        title=body.title,
-        description=body.description,
-        http_method=body.http_method,
-        url=body.url,
+        title=body.title, description=body.description, http_method=body.http_method, url=body.url,
     )
 
-    return CreatePermissionResponse(
-        id=permission,
-        message=f'Разрешение {body.title} создано.',
-    )
+    return CreatePermissionResponse(id=permission, message=f'Разрешение {body.title} создано.',)
 
 
 @bp.route('', methods=['PUT'])
@@ -82,7 +82,7 @@ def create_permission(
     body=UpdatePermissionParams,
     headers=UpdatePermissionHeader,
     resp=Response(HTTP_200=UpdatePermissionResponse, HTTP_404=UpdatePermissionError, HTTP_403=None),
-    tags=[TAG]
+    tags=[TAG],
 )
 @unpack_models
 @jwt_required()
@@ -100,11 +100,7 @@ def update_permission(
         json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, PermissionsError.NOT_EXISTS)
 
     permission = permissions_service.update(
-        id=body.id,
-        title=body.title,
-        description=body.description,
-        http_method=body.http_method,
-        url=body.url,
+        id=body.id, title=body.title, description=body.description, http_method=body.http_method, url=body.url,
     )
 
     return UpdatePermissionResponse(__root__=permission)
@@ -114,8 +110,8 @@ def update_permission(
 @spec.validate(
     body=DeletePermissionParams,
     headers=DeletePermissionHeader,
-    resp=Response(HTTP_200=DeletePermissionResponse, HTTP_403=None), 
-    tags=[TAG]
+    resp=Response(HTTP_200=DeletePermissionResponse, HTTP_403=None),
+    tags=[TAG],
 )
 @unpack_models
 @jwt_required()

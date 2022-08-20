@@ -1,5 +1,3 @@
-
-
 class TokenError:
     INVALIDED_SIGNATURE_ERROR = 'Сигнатура не совпадает'
     EXPIRED_SIGNATURE_ERROR = 'Срок жизни токена прошел'

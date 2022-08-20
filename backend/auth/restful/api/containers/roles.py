@@ -3,12 +3,10 @@
 
 """
 
-from typing import Optional, Type
-
 from dependency_injector import containers, providers
 
-from ..services.roles import RolesService
 from ..services.permissions import PermissionsService
+from ..services.roles import RolesService
 from .base import BaseContainer
 
 

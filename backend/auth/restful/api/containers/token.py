@@ -1,12 +1,12 @@
 from typing import Optional, Type
+
 from dependency_injector import containers, providers
 
-from .base import BaseContainer
-
-from ..services.token.base import BaseTokenService
 from ..services.token.access import AccessTokenService
+from ..services.token.base import BaseTokenService
 from ..services.token.refresh import RefreshTokenService
 from ..services.user import UserService
+from .base import BaseContainer
 
 
 class TokenFactory(providers.Factory):

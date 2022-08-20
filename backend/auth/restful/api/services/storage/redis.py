@@ -1,8 +1,9 @@
 from typing import Any, Optional
+
 import orjson
+from core.config import CONFIG
 from flask_redis import FlaskRedis
 
-from core.config import CONFIG
 from .base import BaseStorage
 
 

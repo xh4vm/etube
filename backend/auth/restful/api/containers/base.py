@@ -5,4 +5,3 @@ from ..services.storage.base import BaseStorage
 
 class BaseContainer(containers.DeclarativeContainer):
     storage_svc = providers.Dependency(instance_of=BaseStorage)
-

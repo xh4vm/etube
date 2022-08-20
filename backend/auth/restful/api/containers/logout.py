@@ -1,10 +1,9 @@
 from dependency_injector import containers
 
-from .base import BaseContainer
-from .token import TokenFactory
-
 from ..services.token.access import AccessTokenService
 from ..services.token.refresh import RefreshTokenService
+from .base import BaseContainer
+from .token import TokenFactory
 
 
 class ServiceContainer(BaseContainer):

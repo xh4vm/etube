@@ -1,25 +1,22 @@
 import asyncio
 from dataclasses import dataclass
 from typing import Any, Optional
-from urllib.parse import urlencode
 
 import aiohttp
-import pytest
-import psycopg2
 import aioredis
-
+import functional.utils.grpc.client as grpc_client_connector
+import psycopg2
+import pytest
 from multidict import CIMultiDictProxy
 from psycopg2.extras import DictCursor, register_uuid
 
 from .settings import CONFIG
-from .utils.data_generators.postgres.user import UserDataGenerator
-from .utils.data_generators.postgres.role import RoleDataGenerator
 from .utils.data_generators.postgres.permission import PermissionDataGenerator
+from .utils.data_generators.postgres.role import RoleDataGenerator
+from .utils.data_generators.postgres.role_permission import \
+    RolePermissionDataGenerator
+from .utils.data_generators.postgres.user import UserDataGenerator
 from .utils.data_generators.postgres.user_role import UserRoleDataGenerator
-from .utils.data_generators.postgres.role_permission import RolePermissionDataGenerator
-
-import functional.utils.grpc.client as grpc_client_connector
-
 
 SERVICE_URL = f'{CONFIG.API.URL}:{CONFIG.API.PORT}'
 
@@ -43,13 +40,13 @@ async def redis_client():
 async def pg_cursor():
     conn = psycopg2.connect(**CONFIG.DB.dsn(), cursor_factory=DictCursor)
 
-    _pg_cursor = conn.cursor() 
-        
+    _pg_cursor = conn.cursor()
+
     with open(f'{CONFIG.BASE_DIR}/{CONFIG.DB.SCHEMA_FILE_NAME}', 'r') as schema_fd:
         _pg_cursor.execute(schema_fd.read())
 
     register_uuid()
-    
+
     yield _pg_cursor
 
     _pg_cursor.close()
@@ -67,11 +64,11 @@ async def session():
 @pytest.fixture
 def make_request(session):
     async def inner(
-            method: str,
-            target: str,
-            params: Optional[dict[str, Any]] = None,
-            headers: Optional[dict[str, Any]] = None,
-            json: Optional[dict[str, Any]] = None,
+        method: str,
+        target: str,
+        params: Optional[dict[str, Any]] = None,
+        headers: Optional[dict[str, Any]] = None,
+        json: Optional[dict[str, Any]] = None,
     ) -> HTTPResponse:
         params = params or {}
         headers = headers or {}
@@ -95,14 +92,14 @@ async def generate_users(pg_cursor):
     user_dg = UserDataGenerator(conn=pg_cursor)
 
     yield await user_dg.load()
-    
+
     await user_dg.clean()
 
 
 @pytest.fixture(scope='session')
 async def generate_roles(pg_cursor):
     role_dg = RoleDataGenerator(conn=pg_cursor)
-    
+
     yield await role_dg.load()
 
     await role_dg.clean()

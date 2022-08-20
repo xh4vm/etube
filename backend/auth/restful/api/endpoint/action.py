@@ -1,25 +1,27 @@
-from dependency_injector.wiring import Provide, inject
 from http import HTTPStatus
+
+from api.errors.action.sign_up import SignUpActionError
+from api.schema.base import User as UserSchema
+from dependency_injector.wiring import Provide, inject
 from flask import Blueprint
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
 
 from ..app import spec
-from api.errors.action.sign_up import SignUpActionError
-from api.schema.base import User as UserSchema
+from ..containers.logout import ServiceContainer as LogoutServiceContainer
 from ..containers.sign_in import ServiceContainer as SignInServiceContainer
 from ..containers.sign_up import ServiceContainer as SignUpServiceContainer
-from ..containers.logout import ServiceContainer as LogoutServiceContainer
-from ..schema.action.logout import (LogoutBodyRequest, LogoutHeader, LogoutResponse)
+from ..errors.action.sign_in import SignInActionError
+from ..schema.action.logout import (LogoutBodyRequest, LogoutHeader,
+                                    LogoutResponse)
 from ..schema.action.sign_in import (SignInBodyParams, SignInHeader,
                                      SignInResponse)
 from ..schema.action.sign_up import (SignUpBodyParams, SignUpHeader,
                                      SignUpResponse)
 from ..services.authorization.base import BaseAuthService
-from ..services.user import UserService
 from ..services.sign_in_history import SignInHistoryService
 from ..services.token.base import BaseTokenService
-from ..errors.action.sign_in import SignInActionError
+from ..services.user import UserService
 from ..utils.decorators import json_response, unpack_models
 from ..utils.system import json_abort
 
@@ -29,26 +31,26 @@ TAG = 'Action'
 
 @bp.route('/sign_in', methods=['POST'])
 @spec.validate(
-    body=Request(SignInBodyParams), 
-    headers=SignInHeader, 
-    resp=Response(HTTP_200=SignInResponse, HTTP_403=None), 
-    tags=[TAG]
+    body=Request(SignInBodyParams),
+    headers=SignInHeader,
+    resp=Response(HTTP_200=SignInResponse, HTTP_403=None),
+    tags=[TAG],
 )
 @unpack_models
 @jwt_required(optional=True)
 @json_response
 @inject
 def sign_in(
-    body: SignInBodyParams, 
+    body: SignInBodyParams,
     headers: SignInHeader,
     access_token_service: BaseTokenService = Provide[SignInServiceContainer.access_token_service],
     refresh_token_service: BaseTokenService = Provide[SignInServiceContainer.refresh_token_service],
     auth_service: BaseAuthService = Provide[SignInServiceContainer.auth_service],
-    sign_in_history_service: SignInHistoryService = Provide[SignInServiceContainer.sign_in_history_service]
+    sign_in_history_service: SignInHistoryService = Provide[SignInServiceContainer.sign_in_history_service],
 ) -> SignInResponse:
     """ Авторизация пользователя
     ---
-        На вход поступает логин и пароль, если пользователь существует и авторизация успешна, то 
+        На вход поступает логин и пароль, если пользователь существует и авторизация успешна, то
         создается и возвразается пара jwt токенов.
     """
 
@@ -67,10 +69,10 @@ def sign_in(
 
 @bp.route('/sign_up', methods=['POST'])
 @spec.validate(
-    body=Request(SignUpBodyParams), 
-    headers=SignUpHeader, 
-    resp=Response(HTTP_200=SignUpResponse, HTTP_403=None), 
-    tags=[TAG]
+    body=Request(SignUpBodyParams),
+    headers=SignUpHeader,
+    resp=Response(HTTP_200=SignUpResponse, HTTP_403=None),
+    tags=[TAG],
 )
 @unpack_models
 @jwt_required(optional=True)
@@ -94,18 +96,15 @@ def sign_up(
 
     user_id = user_service.create(login=body.login, email=body.email, password=body.password)
 
-    return SignUpResponse(
-        id=user_id,
-        message='Пользователь успешно зарегистрирован.'
-    )
+    return SignUpResponse(id=user_id, message='Пользователь успешно зарегистрирован.')
 
 
 @bp.route('/logout', methods=['DELETE'])
 @spec.validate(
     body=Request(LogoutBodyRequest),
-    headers=LogoutHeader, 
-    resp=Response(HTTP_200=LogoutResponse, HTTP_403=None), 
-    tags=[TAG]
+    headers=LogoutHeader,
+    resp=Response(HTTP_200=LogoutResponse, HTTP_403=None),
+    tags=[TAG],
 )
 @unpack_models
 @jwt_required()

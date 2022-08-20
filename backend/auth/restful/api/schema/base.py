@@ -1,5 +1,6 @@
-from typing import Any
 import uuid
+from typing import Any
+
 from pydantic import BaseModel, EmailStr, Field, validator
 from user_agents import parse
 
@@ -9,13 +10,12 @@ def get_new_id() -> str:
 
 
 class AuthorizationHeader(BaseModel):
-    """Схема заголовков JWT авторизации 
+    """Схема заголовков JWT авторизации
     ---
     """
 
     token: str = Field(
-        title='Authorization JWT токен', 
-        alias='X-Authorization-Token',
+        title='Authorization JWT токен', alias='X-Authorization-Token',
     )
 
     @validator('token')
@@ -29,14 +29,17 @@ class AuthorizationHeader(BaseModel):
 
 
 class UserAgentHeader(BaseModel):
-    """Схема заголовков получения / обработки юзерагента пользователя  
+    """Схема заголовков получения / обработки юзерагента пользователя
     ---
     """
 
     user_agent: str = Field(
-        title='Заголовок User-Agent', 
-        alias='User-Agent', 
-        example='Mozilla/5.0 (iPhone; CPU iPhone OS 5_1 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9B179 Safari/7534.48.3'
+        title='Заголовок User-Agent',
+        alias='User-Agent',
+        example=(
+            'Mozilla/5.0 (iPhone; CPU iPhone OS 5_1 like Mac OS X) AppleWebKit/534.46 '
+            '(KHTML, like Gecko) Version/5.1 Mobile/9B179 Safari/7534.48.3'
+        ),
     )
 
     @validator('user_agent')
@@ -45,19 +48,19 @@ class UserAgentHeader(BaseModel):
 
 
 class JWT(BaseModel):
-    """Схема JWT токенаов  
+    """Схема JWT токенаов
     ---
     """
-    
+
     access: str = Field(title='Кратковременный JWT токен', alias='access_token')
     refresh: str = Field(title='Долговременный JWT токен', alias='refresh_token')
 
 
 class BaseError(BaseModel):
-    """Базования схема ошибки  
+    """Базования схема ошибки
     ---
     """
-    
+
     message: str = Field(title='Сообщение об ошибке', default='Error')
 
 
@@ -87,7 +90,9 @@ class User(BaseModel):
     login: str = Field(title='Логин пользователя')
     email: EmailStr = Field(title='Email пользователя')
     roles: list[str] = Field(title='Список ролей', default=[])
-    permissions: dict[str, list[str]] = Field(title='Список permissions: md5_hashed_url: list(http_methods)', default={})
+    permissions: dict[str, list[str]] = Field(
+        title='Список permissions: md5_hashed_url: list(http_methods)', default={}
+    )
 
     def get_claims(self) -> dict[str, Any]:
         return {

@@ -23,7 +23,6 @@ class Settings(BaseSettings):
 
 
 class SuperUser:
-
     def __init__(self):
         self.user_id = str(uuid.uuid4())
         self.role_id = str(uuid.uuid4())
@@ -62,13 +61,7 @@ class SuperUser:
         # Назначение админу всех разрешений.
         self.curs.execute("""SELECT id FROM permissions;""")
         data = [
-            (
-                str(uuid.uuid4()),
-                self.role_id,
-                permission[0],
-                datetime.utcnow(),
-                datetime.utcnow(),
-            )
+            (str(uuid.uuid4()), self.role_id, permission[0], datetime.utcnow(), datetime.utcnow(),)
             for permission in self.curs.fetchall()
         ]
         query = """

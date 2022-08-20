@@ -1,13 +1,13 @@
 from http import HTTPStatus
 
-from .base import revoke_key
-from ..storage.base import BaseStorage
 from api.errors.token import TokenError
 from api.schema.base import BaseError
 
+from ..storage.base import BaseStorage
+from .base import revoke_key
+
 
 class TokenHandlerService:
-
     def __init__(self, storage_svc: BaseStorage):
         self.storage_svc = storage_svc
 
@@ -15,7 +15,7 @@ class TokenHandlerService:
         return BaseError(message=TokenError.EXPIRED).dict(), HTTPStatus.UNAUTHORIZED
 
     def token_in_blocklist_callback(self, header, payload) -> bool:
-        jti = payload.get("jti")
+        jti = payload.get('jti')
 
         if jti is None:
             return False

@@ -1,23 +1,30 @@
-import uuid
-from typing import Any
 import hashlib
+import uuid
 
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import backref, relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from .base import BaseModel, db, CONFIG
+from .base import CONFIG, BaseModel
 
 
 class UserRole(BaseModel):
-    user_id = Column(UUID(as_uuid=True), ForeignKey(f'{CONFIG.DB.SCHEMA_NAME}.users.id', ondelete='CASCADE'), nullable=False)
-    role_id = Column(UUID(as_uuid=True), ForeignKey(f'{CONFIG.DB.SCHEMA_NAME}.roles.id', ondelete='CASCADE'), nullable=False)
+    user_id = Column(
+        UUID(as_uuid=True), ForeignKey(f'{CONFIG.DB.SCHEMA_NAME}.users.id', ondelete='CASCADE'), nullable=False
+    )
+    role_id = Column(
+        UUID(as_uuid=True), ForeignKey(f'{CONFIG.DB.SCHEMA_NAME}.roles.id', ondelete='CASCADE'), nullable=False
+    )
 
 
 class RolePermission(BaseModel):
-    role_id = Column(UUID(as_uuid=True), ForeignKey(f'{CONFIG.DB.SCHEMA_NAME}.roles.id', ondelete='CASCADE'), nullable=False)
-    permission_id = Column(UUID(as_uuid=True), ForeignKey(f'{CONFIG.DB.SCHEMA_NAME}.permissions.id', ondelete='CASCADE'), nullable=False)
+    role_id = Column(
+        UUID(as_uuid=True), ForeignKey(f'{CONFIG.DB.SCHEMA_NAME}.roles.id', ondelete='CASCADE'), nullable=False
+    )
+    permission_id = Column(
+        UUID(as_uuid=True), ForeignKey(f'{CONFIG.DB.SCHEMA_NAME}.permissions.id', ondelete='CASCADE'), nullable=False
+    )
 
 
 class User(BaseModel):
@@ -25,7 +32,9 @@ class User(BaseModel):
     password = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, nullable=False)
 
-    roles = relationship('Role', secondary='join(Role, UserRole, Role.id == UserRole.role_id)', viewonly=True, backref=backref('users'))
+    roles = relationship(
+        'Role', secondary='join(Role, UserRole, Role.id == UserRole.role_id)', viewonly=True, backref=backref('users')
+    )
 
     def __repr__(self):
         return f'<User {self.login}>'
@@ -34,7 +43,7 @@ class User(BaseModel):
         self.id = id
         self.login = login
         self.password = self.encrypt_password(password)
-        #TODO: mixin mail validator
+        # TODO: mixin mail validator
         self.email = email
 
     @property
@@ -46,19 +55,19 @@ class User(BaseModel):
     def roles_with_permissions(self) -> list[str]:
         result = {'roles': set(), 'permissions': {}}
 
-        _roles_with_permissions = (Role
-            .query
-            .with_entities(Role.title, Permission.url, Permission.http_method)
+        _roles_with_permissions = (
+            Role.query.with_entities(Role.title, Permission.url, Permission.http_method)
             .join(Permission, Role.permissions)
             .join(User, Role.users)
             .filter(User.id == self.id)
-            .all())
+            .all()
+        )
 
         for entity in _roles_with_permissions:
             result['roles'].add(entity.title)
-            
+
             md5_hashed_url = hashlib.md5(entity.url.encode(), usedforsecurity=False).hexdigest()
-            
+
             if md5_hashed_url in result['permissions'].keys():
                 result['permissions'][md5_hashed_url].append(entity.http_method)
             else:
@@ -81,7 +90,7 @@ class Role(BaseModel):
     permissions = relationship(
         'Permission',
         secondary='join(Permission, RolePermission, Permission.id == RolePermission.permission_id)',
-        secondaryjoin='Role.id == RolePermission.role_id', 
+        secondaryjoin='Role.id == RolePermission.role_id',
         viewonly=True,
     )
 
@@ -107,7 +116,9 @@ class Permission(BaseModel):
 class SignInHistory(BaseModel):
     __tablename__ = 'sign_in_history'
 
-    user_id = Column(UUID(as_uuid=True), ForeignKey(f'{CONFIG.DB.SCHEMA_NAME}.users.id', ondelete='CASCADE'), nullable=False)
+    user_id = Column(
+        UUID(as_uuid=True), ForeignKey(f'{CONFIG.DB.SCHEMA_NAME}.users.id', ondelete='CASCADE'), nullable=False
+    )
     os = Column(String(255))
     device = Column(String(255))
     browser = Column(String(255))

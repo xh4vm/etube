@@ -7,10 +7,8 @@ from dependency_injector import containers, providers
 
 from ..services.token.access import AccessTokenService
 from ..services.user import UserService
-
-from .token import TokenFactory
 from .base import BaseContainer
-
+from .token import TokenFactory
 
 
 class ServiceContainer(BaseContainer):
