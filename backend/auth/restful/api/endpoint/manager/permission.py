@@ -16,7 +16,7 @@ from api.errors.manager.permissions import PermissionsError
 from api.utils.decorators import json_response, unpack_models
 from api.utils.system import json_abort
 
-from api.services.manager.permissions import PermissionsService
+from api.services.permissions import PermissionsService
 from api.containers.permissions import ServiceContainer
 
 

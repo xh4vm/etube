@@ -1,7 +1,8 @@
 from http import HTTPStatus
+import uuid
 
 from api.schema.base import User as UserSchema, UserMap
-from api.model.models import User
+from api.model.models import User, UserRole, db
 
 from .base import BaseService
 from ..errors.user import UserError
@@ -38,3 +39,46 @@ class UserService(BaseService):
     
         self.storage_svc.set(key=storage_key, data=user.dict())
         return user
+
+    def all(self) -> schema:
+        storage_key: str = f'{self.model.__tablename__}::all'
+        users = self.storage_svc.get(key=storage_key)
+        
+        if users is not None: 
+            return [self.schema(**user) for user in users]
+
+        users = []
+        for user in self.model.query.all():
+            roles_with_permissions = user.roles_with_permissions
+
+            users.append(
+                self.schema(
+                    id=user.id, 
+                    login=user.login, 
+                    email=user.email, 
+                    roles=roles_with_permissions.get('roles'),
+                    permissions=roles_with_permissions.get('permissions')
+                )
+            )
+    
+        self.storage_svc.set(key=storage_key, data=[user.dict() for user in users])
+        return users
+
+    def update(self, id: str, login: str, email: str, password: str) -> UserMap:
+        map_data = UserMap(id=id, login=login, email=email, password=User.encrypt_password(password))
+        return super().update(**map_data.dict())
+
+    def set_role(self, user_id: uuid.UUID, role_id: uuid.UUID) -> None:
+        UserRole(id=uuid.uuid4(), user_id=user_id, role_id=role_id).insert_and_commit()
+
+    def retrieve_role(self, user_id: uuid.UUID, role_id: uuid.UUID) -> None:
+        user_role = UserRole.query.filter_by(
+            user_id=user_id,
+            role_id=role_id,
+        ).first()
+
+        if not user_role:
+            json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, UserError.NOT_BELONG)
+        
+        db.session.delete(user_role)
+        db.session.commit()

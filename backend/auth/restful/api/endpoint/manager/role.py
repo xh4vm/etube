@@ -25,8 +25,8 @@ from api.schema.manager.role.set import (RoleSetPermissionBodyParams,
 from api.schema.manager.role.update import (UpdateRoleBodyParams,
                                            UpdateRoleHeader,
                                            UpdateRoleResponse)
-from api.services.manager.roles import RolesService
-from api.services.manager.permissions import PermissionsService
+from api.services.roles import RolesService
+from api.services.permissions import PermissionsService
 from api.utils.decorators import json_response, unpack_models
 from api.utils.system import json_abort
 

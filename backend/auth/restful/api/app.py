@@ -14,6 +14,7 @@ from .containers.sign_in import ServiceContainer as SignInServiceContainer
 from .containers.sign_up import ServiceContainer as SignUpServiceContainer
 from .containers.token import ServiceContainer as TokenServiceContainer
 from .containers.logout import ServiceContainer as LogoutServiceContainer
+from .containers.user import ServiceContainer as UserServiceContainer
 from .containers.permissions import ServiceContainer as PermissionsServiceContainer
 from .containers.roles import ServiceContainer as RolesServiceContainer
 
@@ -30,6 +31,7 @@ def register_di_containers():
     SignInServiceContainer(storage_svc=redis_resource)
     SignUpServiceContainer(storage_svc=redis_resource)
     TokenServiceContainer(storage_svc=redis_resource)
+    UserServiceContainer(storage_svc=redis_resource)
     RolesServiceContainer(storage_svc=redis_resource)
     PermissionsServiceContainer(storage_svc=redis_resource)
     LogoutServiceContainer(storage_svc=redis_resource)

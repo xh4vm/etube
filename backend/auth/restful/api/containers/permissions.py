@@ -5,7 +5,7 @@
 
 from dependency_injector import containers, providers
 
-from ..services.manager.permissions import PermissionsService
+from ..services.permissions import PermissionsService
 from .base import BaseContainer
 
 

@@ -9,7 +9,7 @@ from api.model.models import Permission
 from api.utils.system import json_abort
 
 from api.schema.base import Permission as PermissionSchema
-from ..base import BaseService
+from .base import BaseService
 
 
 class PermissionsService(BaseService):

@@ -3,8 +3,6 @@
 
 """
 
-from typing import Optional, Type
-
 from dependency_injector import containers, providers
 
 from ..services.token.access import AccessTokenService

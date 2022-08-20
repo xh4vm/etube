@@ -11,7 +11,7 @@ pytestmark = pytest.mark.asyncio
 claims={'sub': '6f2819c9-957b-45b6-8348-853f71bb6adf', 'login': 'cheburashka', 'exp': int(datetime.timestamp(datetime.now()) + 100)}
 
 
-async def test_get_user_roles(
+async def test_get_roles(
         make_request,
         generate_users,
         generate_roles,

@@ -2,9 +2,8 @@
 Ошибки пользователя.
 
 """
-from .base import BaseError
 
-class UserError(BaseError):
+class UserError:
     NOT_EXISTS = 'Пользователь не существует.'
     ALREADY_EXISTS = 'Пользователь уже существует.'
     NOT_BELONG = 'Роль не принадлежит пользователю.'

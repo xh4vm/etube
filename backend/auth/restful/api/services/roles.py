@@ -7,13 +7,11 @@ from http import HTTPStatus
 
 from api.errors.manager.roles import RolesError
 from api.model.base import db
-from api.model.models import Permission, Role, RolePermission, UserRole
+from api.model.models import Role, RolePermission
 from api.utils.system import json_abort
-from ..storage.base import BaseStorage
 
 from api.schema.base import Role as RoleSchema, RoleMap
-from .permissions import PermissionsService
-from ..base import BaseService
+from .base import BaseService
 
 
 class RolesService(BaseService):

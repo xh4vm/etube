@@ -37,7 +37,7 @@ async def test_sign_up(make_request, pg_cursor):
         }
     )
     
-    delete_statement = f"DELETE FROM {CONFIG.DB.SCHEMA_NAME}.users WHERE login = '{user.login}' AND email = '{user.email}' AND password = '{user.password}';"
+    delete_statement = f"DELETE FROM {CONFIG.DB.SCHEMA_NAME}.users WHERE login = '{user.login}' AND email = '{user.email}';"
     pg_cursor.execute(delete_statement)
 
     assert response.status == HTTPStatus.OK

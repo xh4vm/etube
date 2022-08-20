@@ -8,7 +8,7 @@ class UserRetriveRoleBodyParams(BaseModel):
     ---
     """
     user_id: uuid.UUID = Field(title='Идентификатор пользователя, которому назначается роль')
-    role_ids: list[uuid.UUID] = Field(title='Идентификаторы ролей')
+    role_id: uuid.UUID = Field(title='Идентификатор роли')
 
 
 class UserRetriveRoleResponse(BaseModel):

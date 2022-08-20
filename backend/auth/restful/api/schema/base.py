@@ -105,9 +105,15 @@ class UserMap(BaseModel):
     email: EmailStr = Field(title='Email пользователя')
 
 
-class SignInRecord(BaseModel):
+class SignInRecordMap(BaseModel):
     id: uuid.UUID = Field(title='Идентификатор записи', default_factory=get_new_id)
     user_id: uuid.UUID = Field(title='Идентификатор пользователя')
+    os: str = Field(title='Операционная система пользователя')
+    device: str = Field(title='Устройство пользователя')
+    browser: str = Field(title='Браузер пользователя')
+
+
+class SignInRecord(BaseModel):
     os: str = Field(title='Операционная система пользователя')
     device: str = Field(title='Устройство пользователя')
     browser: str = Field(title='Браузер пользователя')
