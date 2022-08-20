@@ -1,8 +1,8 @@
-from typing import Any
-from werkzeug.security import generate_password_hash
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
+from werkzeug.security import generate_password_hash
 
 from .base import fake, get_new_id
 
@@ -16,5 +16,7 @@ class FakeUser(BaseModel):
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     def __init__(self, **data: dict[str, Any]):
-        data['password'] = generate_password_hash(data.get('password') or fake.password(), method='pbkdf2:sha256', salt_length=16)
+        data['password'] = generate_password_hash(
+            data.get('password') or fake.password(), method='pbkdf2:sha256', salt_length=16
+        )
         super().__init__(**data)

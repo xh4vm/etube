@@ -1,41 +1,40 @@
 from http import HTTPStatus
-from flask import Blueprint
-from dependency_injector.wiring import Provide, inject
-from flask_jwt_extended.view_decorators import jwt_required
-from flask_pydantic_spec import Response, Request
 
 from api.app import spec
+from api.containers.user import ServiceContainer
 from api.errors.manager.roles import RolesError
 from api.errors.user import UserError
-from api.containers.user import ServiceContainer
+from api.schema.manager.user.get import GetUserHeader, GetUserResponse
+from api.schema.manager.user.retrive_role import (UserRetriveRoleBodyParams,
+                                                  UserRetriveRoleHeader,
+                                                  UserRetriveRoleResponse)
+from api.schema.manager.user.set_role import (UserSetRoleBodyParams,
+                                              UserSetRoleHeader,
+                                              UserSetRoleResponse)
+from api.schema.manager.user.update import (UpdateUserBodyParams,
+                                            UpdateUserHeader,
+                                            UpdateUserResponse)
 from api.services.roles import RolesService
 from api.services.user import UserService
-
-from api.schema.manager.user.get import GetUserHeader, GetUserResponse
-from api.schema.manager.user.update import UpdateUserBodyParams, UpdateUserHeader, UpdateUserResponse
-from api.schema.manager.user.set_role import UserSetRoleBodyParams, UserSetRoleHeader, UserSetRoleResponse
-from api.schema.manager.user.retrive_role import UserRetriveRoleBodyParams, UserRetriveRoleHeader, UserRetriveRoleResponse
 from api.utils.decorators import json_response, unpack_models
 from api.utils.system import json_abort
-
+from dependency_injector.wiring import Provide, inject
+from flask import Blueprint
+from flask_jwt_extended.view_decorators import jwt_required
+from flask_pydantic_spec import Request, Response
 
 bp = Blueprint('user', __name__, url_prefix='/user')
 TAG = 'Manager'
 
 
 @bp.route('', methods=['GET'])
-@spec.validate(
-    headers=GetUserHeader,
-    resp=Response(HTTP_200=GetUserResponse, HTTP_403=None), 
-    tags=[TAG]
-)
+@spec.validate(headers=GetUserHeader, resp=Response(HTTP_200=GetUserResponse, HTTP_403=None), tags=[TAG])
 @unpack_models
 @jwt_required()
 @json_response
 @inject
 def get_user(
-    headers: GetUserHeader,
-    user_service: UserService = Provide[ServiceContainer.user_service],
+    headers: GetUserHeader, user_service: UserService = Provide[ServiceContainer.user_service],
 ):
     """ Получение списка пользователей
     ---
@@ -50,7 +49,7 @@ def get_user(
     body=Request(UpdateUserBodyParams),
     headers=UpdateUserHeader,
     resp=Response(HTTP_200=UpdateUserResponse, HTTP_403=None),
-    tags=[TAG]
+    tags=[TAG],
 )
 @unpack_models
 @jwt_required()
@@ -75,17 +74,17 @@ def update_user(
 
 @bp.route('/role', methods=['POST'])
 @spec.validate(
-    body=Request(UserSetRoleBodyParams), 
-    headers=UserSetRoleHeader, 
-    resp=Response(HTTP_200=UserSetRoleResponse, HTTP_403=None), 
-    tags=[TAG]
+    body=Request(UserSetRoleBodyParams),
+    headers=UserSetRoleHeader,
+    resp=Response(HTTP_200=UserSetRoleResponse, HTTP_403=None),
+    tags=[TAG],
 )
 @unpack_models
 @jwt_required()
 @json_response
 @inject
 def set_role(
-    body: UserSetRoleBodyParams, 
+    body: UserSetRoleBodyParams,
     headers: UserSetRoleHeader,
     roles_service: RolesService = Provide[ServiceContainer.roles_service],
     user_service: UserService = Provide[ServiceContainer.user_service],
@@ -101,23 +100,23 @@ def set_role(
         json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, UserError.NOT_EXISTS)
 
     user_service.set_role(role_id=body.role_id, user_id=body.user_id)
-    
+
     return UserSetRoleResponse(message=f'Роль {body.role_id} для пользователя {body.user_id} добавлено.')
 
 
 @bp.route('/role', methods=['DELETE'])
 @spec.validate(
-    body=Request(UserRetriveRoleBodyParams), 
-    headers=UserRetriveRoleHeader, 
-    resp=Response(HTTP_200=UserRetriveRoleResponse, HTTP_403=None), 
-    tags=[TAG]
+    body=Request(UserRetriveRoleBodyParams),
+    headers=UserRetriveRoleHeader,
+    resp=Response(HTTP_200=UserRetriveRoleResponse, HTTP_403=None),
+    tags=[TAG],
 )
 @unpack_models
 @jwt_required()
 @json_response
 @inject
 def retrive_role(
-    body: UserRetriveRoleBodyParams, 
+    body: UserRetriveRoleBodyParams,
     headers: UserRetriveRoleHeader,
     roles_service: RolesService = Provide[ServiceContainer.roles_service],
     user_service: UserService = Provide[ServiceContainer.user_service],
@@ -133,5 +132,5 @@ def retrive_role(
         json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, UserError.NOT_EXISTS)
 
     user_service.retrieve_role(role_id=body.role_id, user_id=body.user_id)
-    
+
     return UserRetriveRoleResponse(message=f'Роль {body.role_id} для пользователя {body.user_id} удалена.')

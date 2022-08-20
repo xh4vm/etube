@@ -18,7 +18,7 @@ class ApiSettings(Settings):
     JWT_ALGORITHM: str = Field('HS256', env='AUTH_JWT_ALGORITHM')
     JWT_HEADER_NAME: str = Field('X-Authorization-Token', env='AUTH_JWT_HEADER_NAME')
     JWT_TOKEN_LOCATION: str = Field('headers', env='AUTH_JWT_TOKEN_LOCATION')
-    
+
 
 class GRPCSettings(Settings):
     HOST: str = Field('localhost', env='AUTH_GRPC_HOST')

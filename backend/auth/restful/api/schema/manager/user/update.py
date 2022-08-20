@@ -9,6 +9,7 @@ class UpdateUserBodyParams(BaseModel):
     """Схема body-параметров обновления пользователя
     ---
     """
+
     id: UUID = Field(title='Идентификатор пользователя')
     login: str = Field(title='Название пользователя')
     email: str = Field(title='Email пользователя')
@@ -19,6 +20,7 @@ class UpdateUserResponse(BaseModel):
     """Схема ответа обновления пользователя
     ---
     """
+
     __root__: User = Field(title='Результат изменения пользователя')
 
 
@@ -26,4 +28,5 @@ class UpdateUserHeader(AuthorizationHeader):
     """Схема заголовков обновления пользователя
     ---
     """
+
     pass

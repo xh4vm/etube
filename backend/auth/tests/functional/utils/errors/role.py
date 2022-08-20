@@ -1,5 +1,3 @@
-
-
 class RolesError:
     ALREADY_EXISTS = 'Роль уже существует.'
     NOT_EXISTS = 'Роль не существует.'

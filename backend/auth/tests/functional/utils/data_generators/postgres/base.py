@@ -3,11 +3,9 @@ from abc import abstractmethod
 from datetime import datetime
 from typing import Any
 
-from elasticsearch import AsyncElasticsearch
-from elasticsearch.helpers import async_bulk
 from functional.settings import CONFIG
+from psycopg2.extras import DictCursor, execute_values
 from pydantic.main import ModelMetaclass
-from psycopg2.extras import execute_values, DictCursor
 
 from ..base import BaseDataGenerator
 
@@ -41,24 +39,25 @@ class BasePostgresDataGenerator(BaseDataGenerator):
             postgres_data.append(model)
 
         self.data = self._data_wrapper(fake_docs=postgres_data)
-        
+
         into_statement: list[str] = [field for field in model.dict().keys()]
         insert_query: str = (
             f'INSERT INTO {CONFIG.DB.SCHEMA_NAME}.{self.table}'
             f'({", ".join(into_statement)}) '
             f'VALUES %s ON CONFLICT (id) DO NOTHING'
         )
-        execute_values(self.conn, insert_query, (self._get_values_statement(into_statement=into_statement, data=elem) for elem in self.data))
+        execute_values(
+            self.conn,
+            insert_query,
+            (self._get_values_statement(into_statement=into_statement, data=elem) for elem in self.data),
+        )
         self.conn.execute('COMMIT;')
 
         return self.data
 
     async def clean(self):
         ids: list[list] = [[elem['id'] for elem in self.data]]
-        delete_query: str = (
-            f'DELETE FROM {CONFIG.DB.SCHEMA_NAME}.{self.table} '
-            f'WHERE id in %s'
-        )
+        delete_query: str = (f'DELETE FROM {CONFIG.DB.SCHEMA_NAME}.{self.table} ' f'WHERE id in %s')
         execute_values(self.conn, delete_query, ids)
         self.conn.execute('COMMIT;')
 

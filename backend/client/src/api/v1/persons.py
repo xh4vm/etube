@@ -6,7 +6,8 @@ from src.containers.person import ServiceContainer
 from src.errors.person import PersonError
 from src.models.base import PageModel, Paginator
 from src.models.film import FilmModelBrief, FilmModelFull, FilmModelSort
-from src.models.person import PersonModelBrief, PersonModelFull, PersonModelRole
+from src.models.person import (PersonModelBrief, PersonModelFull,
+                               PersonModelRole)
 from src.services.film import FilmService
 from src.services.person import PersonService
 

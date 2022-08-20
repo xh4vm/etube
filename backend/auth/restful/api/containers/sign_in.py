@@ -1,14 +1,14 @@
 from typing import Optional, Type
+
 from dependency_injector import containers, providers
 
-from .base import BaseContainer
-from .token import TokenFactory
-
 from ..services.authorization.base import BaseAuthService
-from ..services.token.access import AccessTokenService
-from ..services.token.refresh import RefreshTokenService
 from ..services.authorization.login_passowrd import LoginPasswordAuthService
 from ..services.sign_in_history import SignInHistoryService
+from ..services.token.access import AccessTokenService
+from ..services.token.refresh import RefreshTokenService
+from .base import BaseContainer
+from .token import TokenFactory
 
 
 class AuthFactory(providers.Factory):

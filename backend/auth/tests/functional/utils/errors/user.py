@@ -3,6 +3,7 @@
 
 """
 
+
 class UserError:
     NOT_EXISTS = 'Пользователь не существует.'
     ALREADY_EXISTS = 'Пользователь уже существует.'

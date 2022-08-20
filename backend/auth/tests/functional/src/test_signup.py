@@ -1,10 +1,10 @@
 from http import HTTPStatus
 
 import pytest
-
 from functional.settings import CONFIG
+
 from ..utils.fake_models.base import fake
-from ..utils.fake_models.user import FakeUser 
+from ..utils.fake_models.user import FakeUser
 
 pytestmark = pytest.mark.asyncio
 
@@ -14,11 +14,7 @@ async def test_sign_up_not_full_data(make_request):
 
     user = FakeUser()
 
-    response = await make_request(
-        method='post',
-        target=f'auth/action/sign_up',
-        json={'login': user.login}
-    )
+    response = await make_request(method='post', target='auth/action/sign_up', json={'login': user.login})
     assert response.status == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
@@ -29,15 +25,13 @@ async def test_sign_up(make_request, pg_cursor):
 
     response = await make_request(
         method='post',
-        target=f'auth/action/sign_up',
-        json={
-            'login': user.login,
-            'email': user.email,
-            'password': password,
-        }
+        target='auth/action/sign_up',
+        json={'login': user.login, 'email': user.email, 'password': password, },
     )
-    
-    delete_statement = f"DELETE FROM {CONFIG.DB.SCHEMA_NAME}.users WHERE login = '{user.login}' AND email = '{user.email}';"
+
+    delete_statement = (
+        f"DELETE FROM {CONFIG.DB.SCHEMA_NAME}.users WHERE login = '{user.login}' AND email = '{user.email}';"
+    )
     pg_cursor.execute(delete_statement)
 
     assert response.status == HTTPStatus.OK
@@ -51,12 +45,8 @@ async def test_sign_up_login_error(make_request, generate_users):
 
     response = await make_request(
         method='post',
-        target=f'auth/action/sign_up',
-        json={
-            'login': user.login,
-            'email': user.email,
-            'password': fake.password(),
-        }
+        target='auth/action/sign_up',
+        json={'login': user.login, 'email': user.email, 'password': fake.password(), },
     )
 
     assert response.status == HTTPStatus.UNPROCESSABLE_ENTITY

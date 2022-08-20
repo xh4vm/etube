@@ -1,11 +1,8 @@
-import jwt
-import json
-
 from datetime import datetime
 from typing import Any
 
+import jwt
 from functional.settings import CONFIG
-from functional.conftest import HTTPResponse
 
 
 def get_jwt_claims(token: str) -> dict[str, Any]:
@@ -17,11 +14,11 @@ def get_jwt_identity(token: str) -> int:
 
 
 def get_jwt_exp(token: str) -> int:
-    return jwt.decode(token, key=CONFIG.API.JWT_SECRET_KEY, algorithms=CONFIG.API.JWT_DECODE_ALGORITHMS)['exp']  
+    return jwt.decode(token, key=CONFIG.API.JWT_SECRET_KEY, algorithms=CONFIG.API.JWT_DECODE_ALGORITHMS)['exp']
 
 
 def get_jti(token: str) -> str:
-    return jwt.decode(token, key=CONFIG.API.JWT_SECRET_KEY, algorithms=CONFIG.API.JWT_DECODE_ALGORITHMS)['jti']  
+    return jwt.decode(token, key=CONFIG.API.JWT_SECRET_KEY, algorithms=CONFIG.API.JWT_DECODE_ALGORITHMS)['jti']
 
 
 def verify_exp_jwt(token: str) -> bool:
@@ -29,5 +26,5 @@ def verify_exp_jwt(token: str) -> bool:
     return exp > datetime.now().timestamp()
 
 
-def create_token(claims: dict[str: Any]) -> str:
+def create_token(claims: dict[str:Any]) -> str:
     return jwt.encode(claims, key=CONFIG.API.JWT_SECRET_KEY, algorithm=CONFIG.API.JWT_ALGORITHM)
