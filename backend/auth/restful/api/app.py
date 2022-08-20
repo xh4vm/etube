@@ -88,6 +88,6 @@ def create_app(config_classes=[CONFIG.APP, INTERACTION_CONFIG]):
     spec.register(app)
     app.app_context().push()
 
-    # create_db_schema(db)
+    create_db_schema(db)
 
     return app
