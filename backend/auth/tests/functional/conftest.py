@@ -9,6 +9,7 @@ import psycopg2
 import pytest
 from multidict import CIMultiDictProxy
 from psycopg2.extras import DictCursor, register_uuid
+from grpc import aio
 
 from .settings import CONFIG
 from .utils.data_generators.postgres.permission import PermissionDataGenerator
@@ -132,9 +133,10 @@ async def generate_role_permissions(pg_cursor):
     await role_permission_dg.clean()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture()
 async def grpc_client():
-    return grpc_client_connector.PermissionClient(f'{CONFIG.GRPC.HOST}:{CONFIG.GRPC.PORT}')
+    async with aio.insecure_channel(target=f'{CONFIG.GRPC.HOST}:{CONFIG.GRPC.PORT}') as channel:
+        yield grpc_client_connector.PermissionClient(channel)
 
 
 @pytest.fixture(autouse=True)

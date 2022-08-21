@@ -9,7 +9,7 @@ from messages.permission_pb2_grpc import PermissionServicer
 
 
 class PermissionServer(PermissionServicer):
-    def is_accessible(self, request, context):
+    async def is_accessible(self, request, context):
 
         try:
             payload = jwt.decode(jwt=request.token, key=CONFIG.JWT_SECRET_KEY, algorithms=CONFIG.JWT_DECODE_ALGORITHMS)

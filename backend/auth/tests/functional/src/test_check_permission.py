@@ -17,7 +17,7 @@ async def test_check_permission_success(make_request, grpc_client):
         }
     )
 
-    result = grpc_client.is_accessible(token=access_token, method='POST', url=url)
+    result = await grpc_client.is_accessible(token=access_token, method='POST', url=url)
     assert result.get('is_accessible') is True
     assert result.get('message') == PermissionGranterError.ACCESS_SUCCESS
 
@@ -31,7 +31,7 @@ async def test_check_permission_denied_method(make_request, grpc_client):
         }
     )
 
-    result = grpc_client.is_accessible(token=access_token, method='POST', url=url)
+    result = await grpc_client.is_accessible(token=access_token, method='POST', url=url)
     assert result.get('is_accessible') is False
     assert result.get('message') == PermissionGranterError.ACCESS_ERROR
 
@@ -45,6 +45,6 @@ async def test_check_permission_denied_url(make_request, grpc_client):
         }
     )
 
-    result = grpc_client.is_accessible(token=access_token, method='POST', url=url)
+    result = await grpc_client.is_accessible(token=access_token, method='POST', url=url)
     assert result.get('is_accessible') is False
     assert result.get('message') == PermissionGranterError.ACCESS_ERROR
