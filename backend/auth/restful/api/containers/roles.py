@@ -11,7 +11,7 @@ from .base import BaseContainer
 
 
 class ServiceContainer(BaseContainer):
-    wiring_config = containers.WiringConfiguration(modules=['..endpoint.manager.role'])
+    wiring_config = containers.WiringConfiguration(modules=['..endpoint.v1.manager.role'])
 
     roles_service = providers.Factory(RolesService, storage_svc=BaseContainer.storage_svc)
     permissions_service = providers.Factory(PermissionsService, storage_svc=BaseContainer.storage_svc)

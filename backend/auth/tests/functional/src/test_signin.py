@@ -77,7 +77,7 @@ async def test_sign_in_alredy_auth(make_request, generate_users):
 async def test_sign_in_history_record(make_request, generate_users, pg_cursor):
 
     select_statement = (
-        f"SELECT COUNT(*) FROM {CONFIG.DB.SCHEMA_NAME}.sign_in_history WHERE "
+        f'SELECT COUNT(*) FROM {CONFIG.DB.SCHEMA_NAME}.sign_in_history WHERE '
         f" user_id = '6f2819c9-957b-45b6-8348-853f71bb6adf';"
     )
 

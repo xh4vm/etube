@@ -15,7 +15,7 @@ class TokenFactory(providers.Factory):
 
 class ServiceContainer(BaseContainer):
 
-    wiring_config = containers.WiringConfiguration(modules=['..endpoint.token'])
+    wiring_config = containers.WiringConfiguration(modules=['..endpoint.v1.token'])
 
     access_token_service = TokenFactory(AccessTokenService, storage_svc=BaseContainer.storage_svc)
     refresh_token_service = TokenFactory(RefreshTokenService, storage_svc=BaseContainer.storage_svc)

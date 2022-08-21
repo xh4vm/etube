@@ -48,10 +48,8 @@ CONFIG = Config()
 
 class InteractionConfig:
     SQLALCHEMY_DATABASE_URI = (
-        (
-            f'{CONFIG.DB.DRIVER}://{CONFIG.DB.USER}:{CONFIG.DB.PASSWORD}'
-            f'@{CONFIG.DB.HOST}:{CONFIG.DB.PORT}/{CONFIG.DB.NAME}'
-        )
+        f'{CONFIG.DB.DRIVER}://{CONFIG.DB.USER}:{CONFIG.DB.PASSWORD}'
+        f'@{CONFIG.DB.HOST}:{CONFIG.DB.PORT}/{CONFIG.DB.NAME}'
     )
     REDIS_URL = f'redis://{CONFIG.REDIS.HOST}:{CONFIG.REDIS.PORT}/0'
 

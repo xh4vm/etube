@@ -1,29 +1,28 @@
 from http import HTTPStatus
 
+from api.app import spec
+from api.containers.logout import ServiceContainer as LogoutServiceContainer
+from api.containers.sign_in import ServiceContainer as SignInServiceContainer
+from api.containers.sign_up import ServiceContainer as SignUpServiceContainer
+from api.errors.action.sign_in import SignInActionError
 from api.errors.action.sign_up import SignUpActionError
+from api.schema.action.logout import (LogoutBodyRequest, LogoutHeader,
+                                      LogoutResponse)
+from api.schema.action.sign_in import (SignInBodyParams, SignInHeader,
+                                       SignInResponse)
+from api.schema.action.sign_up import (SignUpBodyParams, SignUpHeader,
+                                       SignUpResponse)
 from api.schema.base import User as UserSchema
+from api.services.authorization.base import BaseAuthService
+from api.services.sign_in_history import SignInHistoryService
+from api.services.token.base import BaseTokenService
+from api.services.user import UserService
+from api.utils.decorators import json_response, unpack_models
+from api.utils.system import json_abort
 from dependency_injector.wiring import Provide, inject
 from flask import Blueprint
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
-
-from ..app import spec
-from ..containers.logout import ServiceContainer as LogoutServiceContainer
-from ..containers.sign_in import ServiceContainer as SignInServiceContainer
-from ..containers.sign_up import ServiceContainer as SignUpServiceContainer
-from ..errors.action.sign_in import SignInActionError
-from ..schema.action.logout import (LogoutBodyRequest, LogoutHeader,
-                                    LogoutResponse)
-from ..schema.action.sign_in import (SignInBodyParams, SignInHeader,
-                                     SignInResponse)
-from ..schema.action.sign_up import (SignUpBodyParams, SignUpHeader,
-                                     SignUpResponse)
-from ..services.authorization.base import BaseAuthService
-from ..services.sign_in_history import SignInHistoryService
-from ..services.token.base import BaseTokenService
-from ..services.user import UserService
-from ..utils.decorators import json_response, unpack_models
-from ..utils.system import json_abort
 
 bp = Blueprint('action', __name__, url_prefix='/action')
 TAG = 'Action'

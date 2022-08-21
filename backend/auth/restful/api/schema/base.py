@@ -1,7 +1,8 @@
 import uuid
-from typing import Any
+from typing import Any, Generic, Optional, TypeVar
 
 from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic.generics import GenericModel
 from user_agents import parse
 
 
@@ -54,6 +55,28 @@ class JWT(BaseModel):
 
     access: str = Field(title='Кратковременный JWT токен', alias='access_token')
     refresh: str = Field(title='Долговременный JWT токен', alias='refresh_token')
+
+
+class Paginator(BaseModel):
+
+    page: int = Field(default=1, title='Номер текущей страницы')
+    page_size: int = Field(default=50, title='Мощность выборки')
+
+
+PTYPE = TypeVar('PTYPE', bound=BaseModel)
+
+
+class Page(GenericModel, Generic[PTYPE]):
+    """Схема пагинации
+    ---
+    """
+
+    page: int = Field(default=1, title='Номер текущей страницы')
+    page_size: int = Field(default=50, title='Мощность выборки')
+    page_prev: Optional[int] = Field(default=None, title='Предыдущая страница')
+    page_next: Optional[int] = Field(default=None, title='Следующая страница')
+    total: int = Field(default=0, title='Всего записей')
+    items: list[PTYPE] = Field(default=[], title='Список объектов')
 
 
 class BaseError(BaseModel):
@@ -122,3 +145,4 @@ class SignInRecord(BaseModel):
     os: str = Field(title='Операционная система пользователя')
     device: str = Field(title='Устройство пользователя')
     browser: str = Field(title='Браузер пользователя')
+    created_at: str = Field(title='Дата успешной авторизации')

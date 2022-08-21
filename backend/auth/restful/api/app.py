@@ -50,17 +50,21 @@ def register_jwt_handelers(storage_service: BaseStorage):
 def register_blueprints(app):
     root_bp = Blueprint('root', __name__, url_prefix=f'/api/{CONFIG.APP.API_VERSION}/auth')
 
-    from .endpoint.action import bp as action_bp
+    from .endpoint.v1.action import bp as action_bp
 
     root_bp.register_blueprint(action_bp)
 
-    from .endpoint.token import bp as token_bp
+    from .endpoint.v1.token import bp as token_bp
 
     root_bp.register_blueprint(token_bp)
 
-    from .endpoint.manager import bp as manager_bp
+    from .endpoint.v1.manager import bp as manager_bp
 
     root_bp.register_blueprint(manager_bp)
+
+    from .utils.superuser_cli import bp as superuser_bp
+
+    app.register_blueprint(superuser_bp)
 
     app.register_blueprint(root_bp)
 

@@ -4,7 +4,11 @@ from api.app import spec
 from api.containers.user import ServiceContainer
 from api.errors.manager.roles import RolesError
 from api.errors.user import UserError
+from api.schema.base import Page, SignInRecord
 from api.schema.manager.user.get import GetUserHeader, GetUserResponse
+from api.schema.manager.user.history import (GetHistoryUserHeader,
+                                             GetHistoryUserQuery,
+                                             GetHistoryUserResponse)
 from api.schema.manager.user.retrive_role import (UserRetriveRoleBodyParams,
                                                   UserRetriveRoleHeader,
                                                   UserRetriveRoleResponse)
@@ -15,6 +19,8 @@ from api.schema.manager.user.update import (UpdateUserBodyParams,
                                             UpdateUserHeader,
                                             UpdateUserResponse)
 from api.services.roles import RolesService
+from api.services.sign_in_history import SignInHistoryService
+from api.services.token.base import BaseTokenService
 from api.services.user import UserService
 from api.utils.decorators import json_response, unpack_models
 from api.utils.system import json_abort
@@ -134,3 +140,31 @@ def retrive_role(
     user_service.retrieve_role(role_id=body.role_id, user_id=body.user_id)
 
     return UserRetriveRoleResponse(message=f'Роль {body.role_id} для пользователя {body.user_id} удалена.')
+
+
+@bp.route('/history', methods=['GET'])
+@spec.validate(
+    query=GetHistoryUserQuery,
+    headers=GetHistoryUserHeader,
+    resp=Response(HTTP_200=GetHistoryUserResponse, HTTP_403=None),
+    tags=[TAG],
+)
+@unpack_models
+@jwt_required()
+@json_response
+@inject
+def get_history(
+    query: GetHistoryUserQuery,
+    headers: GetHistoryUserHeader,
+    token_service: BaseTokenService = Provide[ServiceContainer.access_token_service],
+    history_service: SignInHistoryService = Provide[ServiceContainer.history_service],
+) -> GetHistoryUserResponse:
+    """Просмотр истории входов пользователя
+    ---
+        Просмотр истории входов пользователя
+    """
+
+    user_id = token_service.get_identity()
+    page_history: Page[SignInRecord] = history_service.get_records(user_id=user_id, paginator=query)
+
+    return GetHistoryUserResponse(__root__=page_history)

@@ -17,9 +17,9 @@ class AuthFactory(providers.Factory):
 
 class ServiceContainer(BaseContainer):
 
-    wiring_config = containers.WiringConfiguration(modules=['..endpoint.action'])
+    wiring_config = containers.WiringConfiguration(modules=['..endpoint.v1.action'])
 
     access_token_service = TokenFactory(AccessTokenService, storage_svc=BaseContainer.storage_svc)
     refresh_token_service = TokenFactory(RefreshTokenService, storage_svc=BaseContainer.storage_svc)
     auth_service = AuthFactory(LoginPasswordAuthService)
-    sign_in_history_service = providers.Factory(SignInHistoryService)
+    sign_in_history_service = providers.Factory(SignInHistoryService, storage_svc=BaseContainer.storage_svc)

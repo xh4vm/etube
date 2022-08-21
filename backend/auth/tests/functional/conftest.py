@@ -7,10 +7,12 @@ import aioredis
 import functional.utils.grpc.client as grpc_client_connector
 import psycopg2
 import pytest
+from grpc import aio
 from multidict import CIMultiDictProxy
 from psycopg2.extras import DictCursor, register_uuid
 
 from .settings import CONFIG
+from .utils.data_generators.postgres.history import HistoryDataGenerator
 from .utils.data_generators.postgres.permission import PermissionDataGenerator
 from .utils.data_generators.postgres.role import RoleDataGenerator
 from .utils.data_generators.postgres.role_permission import \
@@ -133,8 +135,18 @@ async def generate_role_permissions(pg_cursor):
 
 
 @pytest.fixture(scope='session')
+async def generate_history(pg_cursor):
+    history_dg = HistoryDataGenerator(conn=pg_cursor)
+
+    yield await history_dg.load()
+
+    await history_dg.clean()
+
+
+@pytest.fixture()
 async def grpc_client():
-    return grpc_client_connector.PermissionClient(f'{CONFIG.GRPC.HOST}:{CONFIG.GRPC.PORT}')
+    async with aio.insecure_channel(target=f'{CONFIG.GRPC.HOST}:{CONFIG.GRPC.PORT}') as channel:
+        yield grpc_client_connector.PermissionClient(channel)
 
 
 @pytest.fixture(autouse=True)
