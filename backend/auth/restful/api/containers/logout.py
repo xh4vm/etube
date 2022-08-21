@@ -8,7 +8,7 @@ from .token import TokenFactory
 
 class ServiceContainer(BaseContainer):
 
-    wiring_config = containers.WiringConfiguration(modules=['..endpoint.action'])
+    wiring_config = containers.WiringConfiguration(modules=['..endpoint.v1.action'])
 
     access_token_service = TokenFactory(AccessTokenService, storage_svc=BaseContainer.storage_svc)
     refresh_token_service = TokenFactory(RefreshTokenService, storage_svc=BaseContainer.storage_svc)

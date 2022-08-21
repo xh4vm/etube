@@ -5,14 +5,14 @@ from flask import Blueprint
 from flask_jwt_extended import jwt_required
 from flask_pydantic_spec import Response
 
-from ..app import spec
-from ..containers.token import ServiceContainer
-from ..schema.base import User
-from ..schema.token.refresh import RefreshTokenHeader, RefreshTokenResponse
-from ..services.token.access import AccessTokenService
-from ..services.token.refresh import RefreshTokenService
-from ..services.user import UserService
-from ..utils.decorators import json_response, unpack_models
+from api.app import spec
+from api.containers.token import ServiceContainer
+from api.schema.base import User
+from api.schema.token.refresh import RefreshTokenHeader, RefreshTokenResponse
+from api.services.token.access import AccessTokenService
+from api.services.token.refresh import RefreshTokenService
+from api.services.user import UserService
+from api.utils.decorators import json_response, unpack_models
 
 bp = Blueprint('token', __name__, url_prefix='/token')
 TAG = 'Token'
