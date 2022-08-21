@@ -1,10 +1,10 @@
-from concurrent import futures
+import asyncio
 import logging
+from concurrent import futures
 
+from core.config import CONFIG, grpc_logger
 from grpc import aio
 from grpc._compression import Gzip
-import asyncio
-from core.config import CONFIG, grpc_logger
 from messages.permission_pb2_grpc import add_PermissionServicer_to_server
 from services.permission import PermissionServer
 
@@ -19,7 +19,7 @@ async def serve(logger: logging.Logger):
             ('grpc.http2.max_pings_without_data', 0),
             ('grpc.http2.min_time_between_pings_ms', 10000),
         ),
-        compression=Gzip
+        compression=Gzip,
     )
     add_PermissionServicer_to_server(PermissionServer(), server)
 

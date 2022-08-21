@@ -1,10 +1,5 @@
 import uuid
 
-from dependency_injector.wiring import Provide, inject
-from flask import Blueprint
-from flask_jwt_extended import jwt_required
-from flask_pydantic_spec import Response
-
 from api.app import spec
 from api.containers.token import ServiceContainer
 from api.schema.base import User
@@ -13,6 +8,10 @@ from api.services.token.access import AccessTokenService
 from api.services.token.refresh import RefreshTokenService
 from api.services.user import UserService
 from api.utils.decorators import json_response, unpack_models
+from dependency_injector.wiring import Provide, inject
+from flask import Blueprint
+from flask_jwt_extended import jwt_required
+from flask_pydantic_spec import Response
 
 bp = Blueprint('token', __name__, url_prefix='/token')
 TAG = 'Token'

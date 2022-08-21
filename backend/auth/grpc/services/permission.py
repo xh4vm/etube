@@ -34,8 +34,10 @@ class PermissionServer(PermissionServicer):
 
         md5_hashed_url = hashlib.md5(request.url.encode(), usedforsecurity=False).hexdigest()
 
-        if isinstance((allowed_methods := permissions.get(md5_hashed_url)), list) \
-                and request.method in allowed_methods:
+        if (
+            isinstance((allowed_methods := permissions.get(md5_hashed_url)), list)
+            and request.method in allowed_methods
+        ):
             grpc_logger.info(PermissionError.ACCESS_SUCCESS)
             return AccessibleResponse(is_accessible=True, message=PermissionError.ACCESS_SUCCESS)
 

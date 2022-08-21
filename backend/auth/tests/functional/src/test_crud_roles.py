@@ -98,7 +98,7 @@ async def test_set_permissions(make_request, generate_roles, generate_permission
     permission_id = '24637592-11a9-403a-8fc0-43363b5c55aa'
 
     select_statement = (
-        f"SELECT id FROM {CONFIG.DB.SCHEMA_NAME}.role_permissions WHERE "
+        f'SELECT id FROM {CONFIG.DB.SCHEMA_NAME}.role_permissions WHERE '
         f" role_id = '{role_id}' AND permission_id = '{permission_id}';"
     )
 
@@ -124,7 +124,7 @@ async def test_retrieve_permissions(make_request, generate_roles, generate_permi
     permission_id = '58f3e1ae-aba4-414f-9d07-eb4375bd0881'
 
     select_statement = (
-        f"SELECT id FROM {CONFIG.DB.SCHEMA_NAME}.role_permissions WHERE "
+        f'SELECT id FROM {CONFIG.DB.SCHEMA_NAME}.role_permissions WHERE '
         f" role_id = '{role_id}' AND permission_id = '{permission_id}';"
     )
 

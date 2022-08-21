@@ -116,3 +116,28 @@ async def test_retrieve_role(make_request, generate_users, generate_roles, pg_cu
 
     pg_cursor.execute(select_statement)
     assert pg_cursor.fetchone() is None
+
+
+async def test_get_history(make_request, generate_users, generate_history, pg_cursor):
+    now = datetime.now().strftime('%d.%m.%Y')
+
+    response = await make_request(
+        method='get',
+        target='auth/manager/user/history',
+        params={'page': 1, 'page_size': 2},
+        headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}'},
+    )
+
+    assert response.status == HTTPStatus.OK
+
+    body = response.body.get('__root__')
+    assert body.get('page') == 1
+    assert body.get('page_size') == 2
+    assert body.get('total') == 2
+    assert body.get('page_next') is None
+    assert body.get('page_prev') is None
+
+    assert {'browser': 'Firefox', 'device': 'MyDevice', 'os': 'BolgenOS', 'created_at': now} in body['items']
+    assert {'browser': 'Test browser name', 'device': 'Test device name', 'os': 'BolgenOS', 'created_at': now} in body[
+        'items'
+    ]

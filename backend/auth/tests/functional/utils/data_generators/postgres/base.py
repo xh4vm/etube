@@ -46,6 +46,7 @@ class BasePostgresDataGenerator(BaseDataGenerator):
             f'({", ".join(into_statement)}) '
             f'VALUES %s ON CONFLICT (id) DO NOTHING'
         )
+
         execute_values(
             self.conn,
             insert_query,
