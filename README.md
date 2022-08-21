@@ -17,12 +17,21 @@ make build-auth
 make test-auth
 ```
 
-## Докуметация
+## Документация
 #### API кинотеатр
 http://localhost:8000/api/openapi
 #### Сервис авторизации
 http://localhost:9090/doc/swagger
-
+#### Cоздание суперпользователя сервиса авторизации (CLI)
+```
+1) make auth_connect
+2) cd api
+3) flask superuser create admin mail@mail.ru 123qwe
+```
+#### Cоздание суперпользователя сервиса авторизации (терминал)
+```
+make db_create_superuser
+```
 
 ## Описание сценариев Makefile
 - `make build-auth` - установить виртуальное окружение; установить необходимые зависимости для запуска контейнеров; пересобрать контейнеры в интерактивном режиме для сервиса авторизации

@@ -62,6 +62,10 @@ def register_blueprints(app):
 
     root_bp.register_blueprint(manager_bp)
 
+    from .utils.superuser_cli import bp as superuser_bp
+
+    app.register_blueprint(superuser_bp)
+
     app.register_blueprint(root_bp)
 
 

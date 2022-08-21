@@ -51,7 +51,7 @@ class SuperUser:
     def create_role(self):
         # Создание роли админа.
         query = """
-            INSERT INTO roles (id,title,description,created_at,updated_at)
+            INSERT INTO auth_etube.roles (id,title,description,created_at,updated_at)
             VALUES %s;
             """
         data = [(self.role_id, 'admin', '', datetime.utcnow(), datetime.utcnow())]
@@ -59,13 +59,13 @@ class SuperUser:
 
     def set_permissions(self):
         # Назначение админу всех разрешений.
-        self.curs.execute("""SELECT id FROM permissions;""")
+        self.curs.execute("""SELECT id FROM auth_etube.permissions;""")
         data = [
             (str(uuid.uuid4()), self.role_id, permission[0], datetime.utcnow(), datetime.utcnow(),)
             for permission in self.curs.fetchall()
         ]
         query = """
-            INSERT INTO role_permissions (id,role_id,permission_id,created_at,updated_at)
+            INSERT INTO auth_etube.role_permissions (id,role_id,permission_id,created_at,updated_at)
             VALUES %s;
             """
         self.executor(query, data)
@@ -73,7 +73,7 @@ class SuperUser:
     def create_user(self):
         # Создание пользователя-админа.
         query = """
-            INSERT INTO users (id,login,email,password,created_at,updated_at)
+            INSERT INTO auth_etube.users (id,login,email,password,created_at,updated_at)
             VALUES %s;
             """
         data = [(self.user_id, self.login, self.email, self.password, datetime.utcnow(), datetime.utcnow())]
@@ -82,7 +82,7 @@ class SuperUser:
     def set_role(self):
         # Назначение пользователю роли админа.
         query = """
-            INSERT INTO user_roles (id,user_id,role_id,created_at,updated_at)
+            INSERT INTO auth_etube.user_roles (id,user_id,role_id,created_at,updated_at)
             VALUES %s;
             """
         data = [(str(uuid.uuid4()), self.user_id, self.role_id, datetime.utcnow(), datetime.utcnow())]
