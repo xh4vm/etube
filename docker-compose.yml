@@ -229,7 +229,7 @@ services:
     build: ./backend/auth/restful
     container_name: auth
     volumes:
-    - ./backend/auth/restful:/opt/app
+    - ./backend/auth/restful:/opt/app:rw
     profiles: 
       - dev_auth
     env_file: .env

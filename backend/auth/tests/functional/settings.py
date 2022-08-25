@@ -9,6 +9,7 @@ class Settings(BaseSettings):
 
 
 class ApiSettings(Settings):
+    HOST: str = Field('localhost', env='AUTH_APP_HOST')
     URL: str = Field('http://localhost', env='AUTH_API_URL')
     PORT: str = Field('9090', env='AUTH_APP_PORT')
     API_PATH: str = Field('/api', env='AUTH_API_PATH')

@@ -28,13 +28,17 @@ from dependency_injector.wiring import Provide, inject
 from flask import Blueprint
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
+from core.config import CONFIG
+from auth_client.src.decorators import access_required
 
 bp = Blueprint('role', __name__, url_prefix='/role')
 TAG = 'Manager'
+URL = f'{CONFIG.APP.AUTH_APP_HOST}:{CONFIG.APP.AUTH_APP_PORT}/api/v1/auth/manager/role'
 
 
 @bp.route('', methods=['GET'])
 @spec.validate(headers=GetRoleHeader, resp=Response(HTTP_200=GetRoleResponse, HTTP_403=None), tags=[TAG])
+@access_required({URL: 'GET'})
 @unpack_models
 @jwt_required()
 @json_response
@@ -57,6 +61,7 @@ def get_roles(
     resp=Response(HTTP_200=CreateRoleResponse, HTTP_403=None),
     tags=[TAG],
 )
+@access_required({URL: 'POST'})
 @unpack_models
 @jwt_required()
 @json_response
@@ -85,6 +90,7 @@ def create_role(
     resp=Response(HTTP_200=UpdateRoleResponse, HTTP_403=None),
     tags=[TAG],
 )
+@access_required({URL: 'PUT'})
 @unpack_models
 @jwt_required()
 @json_response
@@ -113,6 +119,7 @@ def update_role(
     resp=Response(HTTP_200=DeleteRoleResponse, HTTP_403=None),
     tags=[TAG],
 )
+@access_required({URL: 'DELETE'})
 @unpack_models
 @jwt_required()
 @json_response
@@ -142,6 +149,7 @@ def delete_role(
     resp=Response(HTTP_200=RoleSetPermissionResponse, HTTP_403=None),
     tags=[TAG],
 )
+@access_required({URL + '/permission': 'POST'})
 @unpack_models
 @jwt_required()
 @json_response
@@ -174,6 +182,7 @@ def set_permission(
     resp=Response(HTTP_200=RoleRetrievePermissionResponse, HTTP_403=None),
     tags=[TAG],
 )
+@access_required({URL + '/permission': 'DELETE'})
 @unpack_models
 @jwt_required()
 @json_response

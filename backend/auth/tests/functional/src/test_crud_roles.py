@@ -1,5 +1,6 @@
 from datetime import datetime
 from http import HTTPStatus
+import hashlib
 
 import pytest
 from functional.settings import CONFIG
@@ -9,10 +10,15 @@ from ..utils.errors.role import RolesError
 from ..utils.fake_models.role import FakeRole
 
 pytestmark = pytest.mark.asyncio
+url = f'{CONFIG.API.HOST}:{CONFIG.API.PORT}/api/v1/auth/manager/role'
 claims = {
     'sub': '6f2819c9-957b-45b6-8348-853f71bb6adf',
     'login': 'cheburashka',
     'exp': int(datetime.timestamp(datetime.now()) + 100),
+    'permissions': {
+        hashlib.md5(url.encode(), usedforsecurity=False).hexdigest(): ['GET', 'POST', 'PUT', 'DELETE'],
+        hashlib.md5((url + '/permission').encode(), usedforsecurity=False).hexdigest(): ['POST', 'DELETE']
+    },
 }
 
 

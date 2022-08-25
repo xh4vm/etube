@@ -55,3 +55,4 @@ email-validator==1.2.1
 idna==3.3
 orjson==3.6.6
 dependency_injector==4.39.1
+auth @ file:///opt/auth-0.1.0.tar.gz
