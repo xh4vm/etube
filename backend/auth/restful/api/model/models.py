@@ -124,3 +124,14 @@ class SignInHistory(BaseModel):
     browser = Column(String(255))
 
     user = relationship('User')
+
+
+class UserSocial(BaseModel):
+    user_id = Column(
+        UUID(as_uuid=True), ForeignKey(f'{CONFIG.DB.SCHEMA_NAME}.users.id', ondelete='CASCADE'), nullable=False
+    )
+    user_service_id = Column(String(255))
+    email = Column(String(255))
+    service_name = Column(String(255))
+
+    user = relationship('User')

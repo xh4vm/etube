@@ -127,10 +127,18 @@ class User(BaseModel):
 
 
 class UserMap(BaseModel):
-    id: uuid.UUID = Field(title='Идентификатор роли', default_factory=get_new_id)
+    id: uuid.UUID = Field(title='Идентификатор пользователя', default_factory=get_new_id)
     login: str = Field(title='Логин пользователя')
     password: str = Field(title='Пароль пользователя')
     email: EmailStr = Field(title='Email пользователя')
+
+
+class UserSocialMap(BaseModel):
+    id: uuid.UUID = Field(title='Идентификатор пользователя в таблице', default_factory=get_new_id)
+    user_id: uuid.UUID = Field(title='Идентификатор пользователя приложения')
+    user_service_id: str = Field(title='Идентификатор пользователя в стороннем сервисе')
+    email: EmailStr = Field(title='Email пользователя')
+    service_name: str = Field(title='Название сервиса')
 
 
 class SignInRecordMap(BaseModel):

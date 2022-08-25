@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from api.app import spec
 from api.containers.logout import ServiceContainer as LogoutServiceContainer
+from api.containers.oauth import YandexAuthContainer
 from api.containers.sign_in import ServiceContainer as SignInServiceContainer
 from api.containers.sign_up import ServiceContainer as SignUpServiceContainer
 from api.errors.action.sign_in import SignInActionError
@@ -20,7 +21,7 @@ from api.services.user import UserService
 from api.utils.decorators import json_response, unpack_models
 from api.utils.system import json_abort
 from dependency_injector.wiring import Provide, inject
-from flask import Blueprint
+from flask import Blueprint, request, jsonify
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
 
@@ -125,3 +126,60 @@ def logout(
     refresh_token_service.add_to_blocklist(body.refresh_token)
 
     return LogoutResponse()
+
+
+@bp.route('/sign_in/yandex_activate', methods=['GET'])
+@spec.validate(
+    tags=[TAG],
+)
+@inject
+def sign_in_yandex_activate(
+    auth_service: BaseAuthService = Provide[YandexAuthContainer.auth_service],
+):
+    """ Редирект на страницу Яндекса.
+        ---
+        При первом заходе пользователь должен разрешить доступ к его данным в Яндексе.
+        При последующих заходах действий от пользователя не требуется.
+    """
+    return auth_service.get_permission_code()
+
+
+@bp.route('/sign_in/yandex', methods=['GET'])
+@spec.validate(
+    headers=SignInHeader,
+    resp=Response(HTTP_200=SignInResponse, HTTP_403=None),
+    tags=[TAG],
+)
+@unpack_models
+@json_response
+@inject
+def sign_in_yandex(
+    headers: SignInHeader,
+    access_token_service: BaseTokenService = Provide[SignInServiceContainer.access_token_service],
+    refresh_token_service: BaseTokenService = Provide[SignInServiceContainer.refresh_token_service],
+    auth_service: BaseAuthService = Provide[YandexAuthContainer.auth_service],
+    user_service: UserService = Provide[SignUpServiceContainer.user_service],
+    sign_in_history_service: SignInHistoryService = Provide[SignInServiceContainer.sign_in_history_service],
+) -> SignInResponse:
+    """ Авторизация пользователя через Яндекс.
+        ---
+        На эту страницу пользователя перенеаправляет Яндекс с кодом для получения токенов.
+    """
+    service_name = 'yandex'
+
+    api_access_token = auth_service.get_api_tokens(request)
+
+    user_data = auth_service.get_api_data(api_access_token)
+    user: UserSchema = auth_service.authorization(
+        user_service_id=user_data.get('user_service_id'),
+        email=user_data.get('email'),
+        service_name=service_name,
+        user_service=user_service,
+    )
+
+    access_token: str = access_token_service.create(identity=user.id, claims=user.get_claims())
+    refresh_token: str = refresh_token_service.create(identity=user.id)
+
+    sign_in_history_service.create_record(user_id=user.id, user_agent=headers.user_agent)
+
+    return SignInResponse(access_token=access_token, refresh_token=refresh_token)
