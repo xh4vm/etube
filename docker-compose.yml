@@ -57,6 +57,25 @@ x-es-initer: &base_es_initer
   container_name: es-initer
   env_file: .env
 
+x-auth: &base_auth
+  <<: *base_service
+  build: ./backend/auth/restful
+  container_name: auth
+  volumes:
+    - ./backend/auth/restful:/opt/app:rw
+  env_file: .env
+  depends_on:
+    db-auth:
+      condition: service_healthy
+
+x-grpc-auth: &base_grpc_auth
+  <<: *base_service
+  build: ./backend/auth/grpc
+  container_name: grpc_auth
+  volumes:
+    - ./backend/auth/grpc:/opt/grpc
+  env_file: .env
+
 
 services:
 
@@ -110,6 +129,8 @@ services:
     ports:
       - ${ADMIN_APP_PORT}:${ADMIN_APP_PORT}
       - ${CLIENT_APP_PORT}:${CLIENT_APP_PORT}
+      - ${AUTH_APP_PORT}:${AUTH_APP_PORT}
+      - ${AUTH_GRPC_PORT}:${AUTH_GRPC_PORT}
 
   db:
     <<: *base_service
@@ -225,21 +246,18 @@ services:
     env_file: .env
 
   auth:
-    <<: *base_service
-    build: ./backend/auth/restful
-    container_name: auth
-    volumes:
-    - ./backend/auth/restful:/opt/app:rw
+    <<: *base_auth
+    profiles: 
+      - dev
+    expose:
+      - ${AUTH_APP_PORT}
+
+  auth-test:
+    <<: *base_auth
     profiles: 
       - dev_auth
-    env_file: .env
-    depends_on:
-      db-auth:
-        condition: service_healthy
     ports:
       - ${AUTH_APP_PORT}:${AUTH_APP_PORT}
-    # expose:
-    #   - ${AUTH_APP_PORT}
 
   db-auth:
     <<: *base_service
@@ -248,12 +266,13 @@ services:
     env_file: .env
     profiles:
       - dev_auth
+      - dev
     environment:
       - POSTGRES_USER=${AUTH_DB_USER}
       - POSTGRES_PASSWORD=${AUTH_DB_PASSWORD}
       - POSTGRES_DB=${AUTH_DB_NAME}
     ports:
-      - ${AUTH_DB_PORT}:5432
+      - 5433:5432
     restart: unless-stopped
     volumes:
       - etube-postgres-auth:/var/lib/postgresql/data
@@ -264,18 +283,18 @@ services:
       retries: 5
 
   grpc-auth:
-    <<: *base_service
-    build: ./backend/auth/grpc
-    container_name: grpc_auth
-    volumes:
-    - ./backend/auth/grpc:/opt/grpc
+    <<: *base_grpc_auth
+    profiles: 
+      - dev
+    expose:
+      - ${AUTH_GRPC_PORT}
+
+  grpc-auth-test:
+    <<: *base_grpc_auth
     profiles: 
       - dev_auth
-    env_file: .env
     ports:
       - ${AUTH_GRPC_PORT}:${AUTH_GRPC_PORT}
-    # expose:
-    #   - ${AUTH_APP_PORT}
 
 
 networks:

@@ -36,7 +36,7 @@ class DatabaseSettings(BaseSettings):
     USER: str = Field('auth', env='AUTH_DB_USER')
     PASSWORD: str = Field('123qwe', env='AUTH_DB_PASSWORD')
     HOST: str = Field('localhost', env='AUTH_DB_HOST')
-    PORT: int = Field('5432', env='AUTH_DB_PORT')
+    PORT: int = Field('5433', env='AUTH_DB_PORT')
     NAME: str = Field('auth_database', env='AUTH_DB_NAME')
     SCHEMA_NAME: str = Field('auth_etube', env='AUTH_DB_SCHEMA')
     SCHEMA_FILE_NAME: str = Field('schema.sql', env='AUTH_DB_SCHEMA_FILE_PATH')
