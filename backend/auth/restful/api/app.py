@@ -9,6 +9,7 @@ from .containers.logout import ServiceContainer as LogoutServiceContainer
 from .containers.permissions import \
     ServiceContainer as PermissionsServiceContainer
 from .containers.roles import ServiceContainer as RolesServiceContainer
+from .containers.oauth import YandexAuthContainer
 from .containers.sign_in import ServiceContainer as SignInServiceContainer
 from .containers.sign_up import ServiceContainer as SignUpServiceContainer
 from .containers.storage import RedisStorageResource, StorageResource
@@ -34,6 +35,7 @@ def register_di_containers():
     RolesServiceContainer(storage_svc=redis_resource)
     PermissionsServiceContainer(storage_svc=redis_resource)
     LogoutServiceContainer(storage_svc=redis_resource)
+    YandexAuthContainer(storage_svc=redis_resource)
 
 
 def register_jwt_handelers(storage_service: BaseStorage):
