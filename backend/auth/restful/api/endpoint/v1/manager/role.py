@@ -22,7 +22,7 @@ from api.schema.manager.role.update import (UpdateRoleBodyParams,
                                             UpdateRoleResponse)
 from api.services.permissions import PermissionsService
 from api.services.roles import RolesService
-from api.utils.decorators import json_response, unpack_models
+from api.utils.decorators import json_response, unpack_models, token_extractor, access_exception_handler
 from api.utils.system import json_abort
 from dependency_injector.wiring import Provide, inject
 from flask import Blueprint
@@ -37,6 +37,8 @@ URL = f'{CONFIG.APP.AUTH_APP_HOST}:{CONFIG.APP.AUTH_APP_PORT}/api/v1/auth/manage
 
 
 @bp.route('', methods=['GET'])
+@token_extractor
+@access_exception_handler
 @grpc_access_required({URL: 'GET'})
 @spec.validate(headers=GetRoleHeader, resp=Response(HTTP_200=GetRoleResponse, HTTP_403=None), tags=[TAG])
 @unpack_models
@@ -55,6 +57,8 @@ def get_roles(
 
 
 @bp.route('', methods=['POST'])
+@token_extractor
+@access_exception_handler
 @grpc_access_required({URL: 'POST'})
 @spec.validate(
     body=Request(CreateRoleBodyParams),
@@ -84,6 +88,8 @@ def create_role(
 
 
 @bp.route('', methods=['PUT'])
+@token_extractor
+@access_exception_handler
 @grpc_access_required({URL: 'PUT'})
 @spec.validate(
     body=Request(UpdateRoleBodyParams),
@@ -113,6 +119,8 @@ def update_role(
 
 
 @bp.route('', methods=['DELETE'])
+@token_extractor
+@access_exception_handler
 @grpc_access_required({URL: 'DELETE'})
 @spec.validate(
     body=Request(DeleteRoleBodyParams),
@@ -143,6 +151,8 @@ def delete_role(
 
 
 @bp.route('/permission', methods=['POST'])
+@token_extractor
+@access_exception_handler
 @grpc_access_required({URL + '/permission': 'POST'})
 @spec.validate(
     body=Request(RoleSetPermissionBodyParams),
@@ -176,6 +186,8 @@ def set_permission(
 
 
 @bp.route('/permission', methods=['DELETE'])
+@token_extractor
+@access_exception_handler
 @grpc_access_required({URL + '/permission': 'DELETE'})
 @spec.validate(
     body=Request(RoleRetrievePermissionBodyParams),

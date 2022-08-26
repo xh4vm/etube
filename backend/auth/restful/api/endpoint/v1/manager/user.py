@@ -22,7 +22,7 @@ from api.services.roles import RolesService
 from api.services.sign_in_history import SignInHistoryService
 from api.services.token.base import BaseTokenService
 from api.services.user import UserService
-from api.utils.decorators import json_response, unpack_models
+from api.utils.decorators import json_response, unpack_models, token_extractor, access_exception_handler
 from api.utils.system import json_abort
 from dependency_injector.wiring import Provide, inject
 from flask import Blueprint, request
@@ -37,8 +37,10 @@ URL = f'{CONFIG.APP.AUTH_APP_HOST}:{CONFIG.APP.AUTH_APP_PORT}/api/v1/auth/manage
 
 
 @bp.route('', methods=['GET'])
-@spec.validate(headers=GetUserHeader, resp=Response(HTTP_200=GetUserResponse, HTTP_403=None), tags=[TAG])
+@token_extractor
+@access_exception_handler
 @access_required({URL: 'GET'})
+@spec.validate(headers=GetUserHeader, resp=Response(HTTP_200=GetUserResponse, HTTP_403=None), tags=[TAG])
 @unpack_models
 @jwt_required()
 @json_response
@@ -55,13 +57,15 @@ def get_user(
 
 
 @bp.route('', methods=['PUT'])
+@token_extractor
+@access_exception_handler
+@access_required({URL: 'PUT'})
 @spec.validate(
     body=Request(UpdateUserBodyParams),
     headers=UpdateUserHeader,
     resp=Response(HTTP_200=UpdateUserResponse, HTTP_403=None),
     tags=[TAG],
 )
-@access_required({URL: 'PUT'})
 @unpack_models
 @jwt_required()
 @json_response
@@ -84,13 +88,15 @@ def update_user(
 
 
 @bp.route('/role', methods=['POST'])
+@token_extractor
+@access_exception_handler
+@access_required({URL: 'POST'})
 @spec.validate(
     body=Request(UserSetRoleBodyParams),
     headers=UserSetRoleHeader,
     resp=Response(HTTP_200=UserSetRoleResponse, HTTP_403=None),
     tags=[TAG],
 )
-@access_required({URL: 'POST'})
 @unpack_models
 @jwt_required()
 @json_response
@@ -117,13 +123,15 @@ def set_role(
 
 
 @bp.route('/role', methods=['DELETE'])
+@token_extractor
+@access_exception_handler
+@access_required({URL: 'DELETE'})
 @spec.validate(
     body=Request(UserRetriveRoleBodyParams),
     headers=UserRetriveRoleHeader,
     resp=Response(HTTP_200=UserRetriveRoleResponse, HTTP_403=None),
     tags=[TAG],
 )
-@access_required({URL: 'DELETE'})
 @unpack_models
 @jwt_required()
 @json_response
@@ -150,13 +158,15 @@ def retrive_role(
 
 
 @bp.route('/history', methods=['GET'])
+@token_extractor
+@access_exception_handler
+@access_required({URL + '/history': 'GET'})
 @spec.validate(
     query=GetHistoryUserQuery,
     headers=GetHistoryUserHeader,
     resp=Response(HTTP_200=GetHistoryUserResponse, HTTP_403=None),
     tags=[TAG],
 )
-@access_required({URL + '/history': 'GET'})
 @unpack_models
 @jwt_required()
 @json_response

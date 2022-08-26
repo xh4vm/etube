@@ -9,6 +9,7 @@ setup(
       'auth_client',
       'auth_client.core',
       'auth_client.errors',
+      'auth_client.exceptions',
       'auth_client.tests',
       'auth_client.src',
       'auth_client.src.grpc',

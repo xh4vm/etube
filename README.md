@@ -6,6 +6,8 @@
 ``` 
 cp .env.example .env
 cp ./backend/sqlite_to_postgres/.env.example ./backend/sqlite_to_postgres/.env
+cd backend/auth && python3 setup.py sdist && mv dist ../../modules && rm -rf auth.egg-info && cd ../..
+cp -r ./modules backend/auth/restful && cp -r ./modules backend/client
 rm -rf ./backend/nginx/static && cp -r ./backend/nginx/static_defaults/ ./backend/nginx/static
 make build
 ```

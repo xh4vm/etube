@@ -18,7 +18,7 @@ from api.schema.manager.permission.update import (UpdatePermissionError,
                                                   UpdatePermissionParams,
                                                   UpdatePermissionResponse)
 from api.services.permissions import PermissionsService
-from api.utils.decorators import json_response, unpack_models
+from api.utils.decorators import json_response, unpack_models, token_extractor, access_exception_handler
 from api.utils.system import json_abort
 from dependency_injector.wiring import Provide, inject
 from flask import Blueprint
@@ -33,6 +33,8 @@ URL = f'{CONFIG.APP.AUTH_APP_HOST}:{CONFIG.APP.AUTH_APP_PORT}/api/v1/auth/manage
 
 
 @bp.route('', methods=['GET'])
+@token_extractor
+@access_exception_handler
 @grpc_access_required({URL: 'GET'})
 @spec.validate(
     headers=GetPermissionHeader,
@@ -53,6 +55,8 @@ def get_permissions(
 
 
 @bp.route('', methods=['POST'])
+@token_extractor
+@access_exception_handler
 @grpc_access_required({URL: 'POST'})
 @spec.validate(
     body=CreatePermissionParams,
@@ -83,6 +87,8 @@ def create_permission(
 
 
 @bp.route('', methods=['PUT'])
+@token_extractor
+@access_exception_handler
 @grpc_access_required({URL: 'PUT'})
 @spec.validate(
     body=UpdatePermissionParams,
@@ -113,6 +119,8 @@ def update_permission(
 
 
 @bp.route('', methods=['DELETE'])
+@token_extractor
+@access_exception_handler
 @grpc_access_required({URL: 'DELETE'})
 @spec.validate(
     body=DeletePermissionParams,
