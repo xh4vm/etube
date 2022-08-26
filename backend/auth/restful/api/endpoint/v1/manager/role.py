@@ -29,7 +29,7 @@ from flask import Blueprint
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
 from core.config import CONFIG
-from auth_client.src.decorators import access_required
+from auth_client.src.decorators import grpc_access_required
 
 bp = Blueprint('role', __name__, url_prefix='/role')
 TAG = 'Manager'
@@ -37,8 +37,8 @@ URL = f'{CONFIG.APP.AUTH_APP_HOST}:{CONFIG.APP.AUTH_APP_PORT}/api/v1/auth/manage
 
 
 @bp.route('', methods=['GET'])
+@grpc_access_required({URL: 'GET'})
 @spec.validate(headers=GetRoleHeader, resp=Response(HTTP_200=GetRoleResponse, HTTP_403=None), tags=[TAG])
-@access_required({URL: 'GET'})
 @unpack_models
 @jwt_required()
 @json_response
@@ -55,13 +55,13 @@ def get_roles(
 
 
 @bp.route('', methods=['POST'])
+@grpc_access_required({URL: 'POST'})
 @spec.validate(
     body=Request(CreateRoleBodyParams),
     headers=CreateRoleHeader,
     resp=Response(HTTP_200=CreateRoleResponse, HTTP_403=None),
     tags=[TAG],
 )
-@access_required({URL: 'POST'})
 @unpack_models
 @jwt_required()
 @json_response
@@ -84,13 +84,13 @@ def create_role(
 
 
 @bp.route('', methods=['PUT'])
+@grpc_access_required({URL: 'PUT'})
 @spec.validate(
     body=Request(UpdateRoleBodyParams),
     headers=UpdateRoleHeader,
     resp=Response(HTTP_200=UpdateRoleResponse, HTTP_403=None),
     tags=[TAG],
 )
-@access_required({URL: 'PUT'})
 @unpack_models
 @jwt_required()
 @json_response
@@ -113,13 +113,13 @@ def update_role(
 
 
 @bp.route('', methods=['DELETE'])
+@grpc_access_required({URL: 'DELETE'})
 @spec.validate(
     body=Request(DeleteRoleBodyParams),
     headers=DeleteRoleHeader,
     resp=Response(HTTP_200=DeleteRoleResponse, HTTP_403=None),
     tags=[TAG],
 )
-@access_required({URL: 'DELETE'})
 @unpack_models
 @jwt_required()
 @json_response
@@ -143,13 +143,13 @@ def delete_role(
 
 
 @bp.route('/permission', methods=['POST'])
+@grpc_access_required({URL + '/permission': 'POST'})
 @spec.validate(
     body=Request(RoleSetPermissionBodyParams),
     headers=RoleSetPermissionHeader,
     resp=Response(HTTP_200=RoleSetPermissionResponse, HTTP_403=None),
     tags=[TAG],
 )
-@access_required({URL + '/permission': 'POST'})
 @unpack_models
 @jwt_required()
 @json_response
@@ -176,13 +176,13 @@ def set_permission(
 
 
 @bp.route('/permission', methods=['DELETE'])
+@grpc_access_required({URL + '/permission': 'DELETE'})
 @spec.validate(
     body=Request(RoleRetrievePermissionBodyParams),
     headers=RoleRetrievePermissionHeader,
     resp=Response(HTTP_200=RoleRetrievePermissionResponse, HTTP_403=None),
     tags=[TAG],
 )
-@access_required({URL + '/permission': 'DELETE'})
 @unpack_models
 @jwt_required()
 @json_response

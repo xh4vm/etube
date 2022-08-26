@@ -13,7 +13,7 @@ class AuthSettings(BaseSettings):
 
 class GRPCSettings(BaseSettings):
     HOST: str = Field(..., env='AUTH_GRPC_HOST')
-    GRPC_PORT: int = Field(..., env='AUTH_GRPC_PORT') 
+    PORT: int = Field(..., env='AUTH_GRPC_PORT') 
 
 
 class Config(BaseSettings):

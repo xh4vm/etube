@@ -148,7 +148,7 @@ async def generate_history(pg_cursor):
 @pytest.fixture()
 async def grpc_client():
     async with aio.insecure_channel(target=f'{CONFIG.GRPC.HOST}:{CONFIG.GRPC.PORT}') as channel:
-        yield grpc_client_connector.PermissionClient(channel)
+        yield grpc_client_connector.AsyncPermissionClient(channel)
 
 
 @pytest.fixture()
