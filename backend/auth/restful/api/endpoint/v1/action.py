@@ -1,3 +1,6 @@
+import asyncio
+
+from faker import Faker
 from http import HTTPStatus
 
 from api.app import spec
@@ -163,19 +166,35 @@ def sign_in_yandex(
 ) -> SignInResponse:
     """ Авторизация пользователя через Яндекс.
         ---
-        На эту страницу пользователя перенеаправляет Яндекс с кодом для получения токенов.
+        На эту страницу пользователя перенаправляет Яндекс с кодом для получения токенов.
     """
     service_name = 'yandex'
 
     api_access_token = auth_service.get_api_tokens(request)
+    user_data = asyncio.run(auth_service.get_api_data(api_access_token))
 
-    user_data = auth_service.get_api_data(api_access_token)
-    user: UserSchema = auth_service.authorization(
+    user_social = auth_service.get_user_social(
         user_service_id=user_data.get('user_service_id'),
-        email=user_data.get('email'),
         service_name=service_name,
-        user_service=user_service,
     )
+    if user_social is None:
+        if user_service.exists(email=user_data.get('email')):
+            user = user_service.get(email=user_data.get('email'))
+            user_id = user.id
+        else:
+            user_id = user_service.create(
+                login=Faker().user_name(),
+                email=user_data.get('email'),
+                password=Faker().password(length=12),
+            )
+        user_social = auth_service.create_social_user(
+                user_id=user_id,
+                user_service_id=user_data.get('user_service_id'),
+                email=user_data.get('email'),
+                service_name=service_name,
+        )
+
+    user: UserSchema = auth_service.authorization(user_id=user_social.user_id)
 
     access_token: str = access_token_service.create(identity=user.id, claims=user.get_claims())
     refresh_token: str = refresh_token_service.create(identity=user.id)
