@@ -25,16 +25,20 @@ from api.services.user import UserService
 from api.utils.decorators import json_response, unpack_models
 from api.utils.system import json_abort
 from dependency_injector.wiring import Provide, inject
-from flask import Blueprint
+from flask import Blueprint, request
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
+from core.config import CONFIG
+from auth_client.src.decorators import access_required
 
 bp = Blueprint('user', __name__, url_prefix='/user')
 TAG = 'Manager'
+URL = f'{CONFIG.APP.AUTH_APP_HOST}:{CONFIG.APP.AUTH_APP_PORT}/api/v1/auth/manager/user'
 
 
 @bp.route('', methods=['GET'])
 @spec.validate(headers=GetUserHeader, resp=Response(HTTP_200=GetUserResponse, HTTP_403=None), tags=[TAG])
+@access_required({URL: 'GET'})
 @unpack_models
 @jwt_required()
 @json_response
@@ -57,6 +61,7 @@ def get_user(
     resp=Response(HTTP_200=UpdateUserResponse, HTTP_403=None),
     tags=[TAG],
 )
+@access_required({URL: 'PUT'})
 @unpack_models
 @jwt_required()
 @json_response
@@ -85,6 +90,7 @@ def update_user(
     resp=Response(HTTP_200=UserSetRoleResponse, HTTP_403=None),
     tags=[TAG],
 )
+@access_required({URL: 'POST'})
 @unpack_models
 @jwt_required()
 @json_response
@@ -117,6 +123,7 @@ def set_role(
     resp=Response(HTTP_200=UserRetriveRoleResponse, HTTP_403=None),
     tags=[TAG],
 )
+@access_required({URL: 'DELETE'})
 @unpack_models
 @jwt_required()
 @json_response
@@ -149,6 +156,7 @@ def retrive_role(
     resp=Response(HTTP_200=GetHistoryUserResponse, HTTP_403=None),
     tags=[TAG],
 )
+@access_required({URL + '/history': 'GET'})
 @unpack_models
 @jwt_required()
 @json_response

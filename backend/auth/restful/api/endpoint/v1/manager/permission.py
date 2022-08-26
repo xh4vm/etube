@@ -24,12 +24,16 @@ from dependency_injector.wiring import Provide, inject
 from flask import Blueprint
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Response
+from core.config import CONFIG
+from auth_client.src.decorators import grpc_access_required
 
 bp = Blueprint('permission', __name__, url_prefix='/permission')
 TAG = 'Manager'
+URL = f'{CONFIG.APP.AUTH_APP_HOST}:{CONFIG.APP.AUTH_APP_PORT}/api/v1/auth/manager/permission'
 
 
 @bp.route('', methods=['GET'])
+@grpc_access_required({URL: 'GET'})
 @spec.validate(
     headers=GetPermissionHeader,
     resp=Response(HTTP_200=GetPermissionResponse, HTTP_404=GetPermissionError, HTTP_403=None),
@@ -49,6 +53,7 @@ def get_permissions(
 
 
 @bp.route('', methods=['POST'])
+@grpc_access_required({URL: 'POST'})
 @spec.validate(
     body=CreatePermissionParams,
     headers=CreatePermissionHeader,
@@ -78,6 +83,7 @@ def create_permission(
 
 
 @bp.route('', methods=['PUT'])
+@grpc_access_required({URL: 'PUT'})
 @spec.validate(
     body=UpdatePermissionParams,
     headers=UpdatePermissionHeader,
@@ -107,6 +113,7 @@ def update_permission(
 
 
 @bp.route('', methods=['DELETE'])
+@grpc_access_required({URL: 'DELETE'})
 @spec.validate(
     body=DeletePermissionParams,
     headers=DeletePermissionHeader,

@@ -13,6 +13,9 @@ make build
 ## Запуск сервиса авторизации
 ```
 cp .env.example .env
+cd backend/auth && python3 setup.py sdist && mv dist ../../modules && rm -rf auth.egg-info && cd ../..
+cp -r ./modules backend/auth/restful
+echo -e "\nauth @ file://`pwd`/modules/auth-0.1.0.tar.gz" | tee -a requirements-test-auth.txt 
 make build-auth
 make test-auth
 ```
@@ -31,6 +34,11 @@ http://localhost:9090/doc/swagger
 #### Cоздание суперпользователя сервиса авторизации (терминал)
 ```
 make db_create_superuser
+```
+
+#### Миграции сервиса авторизации
+```
+backend/auth/restful/api/migrations
 ```
 
 ## Описание сценариев Makefile

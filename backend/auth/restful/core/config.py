@@ -2,6 +2,7 @@ from pydantic import BaseSettings, Field
 
 
 class AppSettings(BaseSettings):
+    AUTH_APP_HOST: str = Field('localhost', env='AUTH_APP_HOST')
     AUTH_APP_PORT: int = Field(..., env='AUTH_APP_PORT')
     API_URL: str = Field(..., env='AUTH_API_URL')
     API_PATH: str = Field(..., env='AUTH_API_PATH')

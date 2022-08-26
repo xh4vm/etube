@@ -28,12 +28,16 @@ from dependency_injector.wiring import Provide, inject
 from flask import Blueprint
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
+from core.config import CONFIG
+from auth_client.src.decorators import grpc_access_required
 
 bp = Blueprint('role', __name__, url_prefix='/role')
 TAG = 'Manager'
+URL = f'{CONFIG.APP.AUTH_APP_HOST}:{CONFIG.APP.AUTH_APP_PORT}/api/v1/auth/manager/role'
 
 
 @bp.route('', methods=['GET'])
+@grpc_access_required({URL: 'GET'})
 @spec.validate(headers=GetRoleHeader, resp=Response(HTTP_200=GetRoleResponse, HTTP_403=None), tags=[TAG])
 @unpack_models
 @jwt_required()
@@ -51,6 +55,7 @@ def get_roles(
 
 
 @bp.route('', methods=['POST'])
+@grpc_access_required({URL: 'POST'})
 @spec.validate(
     body=Request(CreateRoleBodyParams),
     headers=CreateRoleHeader,
@@ -79,6 +84,7 @@ def create_role(
 
 
 @bp.route('', methods=['PUT'])
+@grpc_access_required({URL: 'PUT'})
 @spec.validate(
     body=Request(UpdateRoleBodyParams),
     headers=UpdateRoleHeader,
@@ -107,6 +113,7 @@ def update_role(
 
 
 @bp.route('', methods=['DELETE'])
+@grpc_access_required({URL: 'DELETE'})
 @spec.validate(
     body=Request(DeleteRoleBodyParams),
     headers=DeleteRoleHeader,
@@ -136,6 +143,7 @@ def delete_role(
 
 
 @bp.route('/permission', methods=['POST'])
+@grpc_access_required({URL + '/permission': 'POST'})
 @spec.validate(
     body=Request(RoleSetPermissionBodyParams),
     headers=RoleSetPermissionHeader,
@@ -168,6 +176,7 @@ def set_permission(
 
 
 @bp.route('/permission', methods=['DELETE'])
+@grpc_access_required({URL + '/permission': 'DELETE'})
 @spec.validate(
     body=Request(RoleRetrievePermissionBodyParams),
     headers=RoleRetrievePermissionHeader,

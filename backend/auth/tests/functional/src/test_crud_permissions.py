@@ -1,18 +1,22 @@
 from datetime import datetime
-from http import HTTPStatus
+from http import HTTPStatus 
+import hashlib
 
 import pytest
-# from ..utils.errors.role import RolesError
 from functional.settings import CONFIG
 
 from ..utils.auth.jwt import create_token
 from ..utils.fake_models.permission import FakePermission
 
 pytestmark = pytest.mark.asyncio
+url = f'{CONFIG.API.HOST}:{CONFIG.API.PORT}/api/v1/auth/manager/permission'
 claims = {
     'sub': '6f2819c9-957b-45b6-8348-853f71bb6adf',
     'login': 'cheburashka',
     'exp': int(datetime.timestamp(datetime.now()) + 100),
+    'permissions': {
+        hashlib.md5(url.encode(), usedforsecurity=False).hexdigest(): ['GET', 'POST', 'PUT', 'DELETE'],
+    },
 }
 
 
