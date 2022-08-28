@@ -64,8 +64,19 @@ class YandexAppConfig(BaseSettings):
     BASEURL: str = Field(..., env='YANDEX_BASEURL')
 
 
+class VKAppConfig(BaseSettings):
+    CLIENT_ID: str = Field(..., env='VK_CLIENT_ID')
+    CLIENT_SECRET: str = Field(..., env='VK_CLIENT_SECRET')
+    BASEURL: str = Field(..., env='VK_BASEURL')
+    REDIRECT: str = Field(..., env='VK_REDIRECT')
+    DISPLAY: str = Field(..., env='VK_DISPLAY')
+    SCOPE: str = Field(..., env='VK_SCOPE')
+    RESPONSE: str = Field(..., env='VK_RESPONSE')
+
+
 class OAuthConfig(BaseSettings):
     YANDEX: YandexAppConfig = YandexAppConfig()
+    VK: VKAppConfig = VKAppConfig()
 
 
 OAUTH_CONFIG = OAuthConfig()

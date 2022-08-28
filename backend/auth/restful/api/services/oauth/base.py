@@ -17,7 +17,7 @@ from api.schema.base import UserMap, UserSocialMap
 from api.services.authorization.base import BaseAuthService
 
 
-class BaseOAuthAuthorization(BaseAuthService):
+class BaseOAuth(BaseAuthService):
 
     def get_user_social(self, user_service_id: str, service_name: str) -> Union[UserSocial, None]:
         return UserSocial.query.filter_by(user_service_id=user_service_id, service_name=service_name).first()
