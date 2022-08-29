@@ -8,6 +8,8 @@
 и в таблице сервисов (со связью с таблицей пользователей).
 
 """
+import hashlib
+import hmac
 import uuid
 from typing import Union
 
@@ -45,3 +47,12 @@ class BaseOAuth(BaseAuthService):
         user_social.insert_and_commit()
 
         return user_social
+
+    def create_secret(self, user_service_id: str, email: str, client_secret: str) -> str:
+        message = '{}{}'.format(user_service_id, email)
+        signature = hmac.new(bytes(client_secret, 'utf-8'), msg=bytes(message, 'utf-8'),
+                             digestmod=hashlib.sha256).hexdigest()
+        return signature
+
+    def check_secret(self, user_service_id: str, email: str, client_secret: str, secret: str) -> bool:
+        return secret == self.create_secret(user_service_id, email, client_secret)

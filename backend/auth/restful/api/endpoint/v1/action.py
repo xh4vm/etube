@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 from faker import Faker
 from http import HTTPStatus
@@ -23,8 +24,9 @@ from api.services.token.base import BaseTokenService
 from api.services.user import UserService
 from api.utils.decorators import json_response, unpack_models
 from api.utils.system import json_abort
+from core.config import OAUTH_CONFIG
 from dependency_injector.wiring import Provide, inject
-from flask import Blueprint, request, redirect
+from flask import Blueprint, request, redirect, url_for
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
 
@@ -131,12 +133,12 @@ def logout(
     return LogoutResponse()
 
 
-@bp.route('/sign_in/yandex_activate', methods=['GET'])
+@bp.route('/sign_in/yandex_permission', methods=['GET'])
 @spec.validate(
     tags=[TAG],
 )
 @inject
-def sign_in_yandex_activate(
+def yandex_permission(
     auth_service: BaseAuthService = Provide[YandexAuthContainer.auth_service],
 ):
     """ Редирект на страницу Яндекса.
@@ -145,6 +147,25 @@ def sign_in_yandex_activate(
         При последующих заходах действий от пользователя не требуется.
     """
     return auth_service.get_permission_code()
+
+
+@bp.route('/sign_in/yandex_user_data', methods=['GET'])
+@spec.validate(
+    tags=[TAG],
+)
+@inject
+def yandex_user_data(
+    auth_service: BaseAuthService = Provide[YandexAuthContainer.auth_service],
+):
+    """ Получение данных от Яндекса.
+        ---
+        Запрос на получение токенов, которые используются
+        для получения данных пользователя в стороннем сервисе.
+    """
+    api_access_token = auth_service.get_api_tokens(request)
+    user_data = asyncio.run(auth_service.get_api_data(api_access_token))
+
+    return redirect(url_for('root.action.sign_in_yandex', user_data=json.dumps(user_data)))
 
 
 @bp.route('/sign_in/yandex', methods=['GET'])
@@ -166,31 +187,36 @@ def sign_in_yandex(
 ) -> SignInResponse:
     """ Авторизация пользователя через Яндекс.
         ---
-        На эту страницу пользователя перенаправляет Яндекс с кодом для получения токенов.
     """
     service_name = 'yandex'
 
-    api_access_token = auth_service.get_api_tokens(request)
-    user_data = asyncio.run(auth_service.get_api_data(api_access_token))
+    user_data = json.loads(request.args.get('user_data'))
+
+    user_service_id = user_data.get('user_service_id')
+    user_email = user_data.get('email')
+    secret = user_data.get('secret')
+
+    if not auth_service.check_secret(user_service_id, user_email, OAUTH_CONFIG.YANDEX.CLIENT_SECRET, secret):
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_OAUTH_DATA)
 
     user_social = auth_service.get_user_social(
-        user_service_id=user_data.get('user_service_id'),
+        user_service_id=user_service_id,
         service_name=service_name,
     )
     if user_social is None:
-        if user_service.exists(email=user_data.get('email')):
-            user = user_service.get(email=user_data.get('email'))
+        if user_service.exists(email=user_email):
+            user = user_service.get(email=user_email)
             user_id = user.id
         else:
             user_id = user_service.create(
                 login=Faker().user_name(),
-                email=user_data.get('email'),
+                email=user_email,
                 password=Faker().password(length=12),
             )
         user_social = auth_service.create_social_user(
                 user_id=user_id,
-                user_service_id=user_data.get('user_service_id'),
-                email=user_data.get('email'),
+                user_service_id=user_service_id,
+                email=user_email,
                 service_name=service_name,
         )
 
@@ -204,12 +230,12 @@ def sign_in_yandex(
     return SignInResponse(access_token=access_token, refresh_token=refresh_token)
 
 
-@bp.route('/sign_in/vk_activate', methods=['GET'])
+@bp.route('/sign_in/vk_permission', methods=['GET'])
 @spec.validate(
     tags=[TAG],
 )
 @inject
-def sign_in_vk_activate(
+def sign_in_vk_permission(
     auth_service: BaseAuthService = Provide[VKAuthContainer.auth_service],
 ):
     """ Редирект на страницу VK.
@@ -218,6 +244,24 @@ def sign_in_vk_activate(
         При последующих заходах действий от пользователя не требуется.
     """
     return auth_service.get_permission_code()
+
+
+@bp.route('/sign_in/vk_user_data', methods=['GET'])
+@spec.validate(
+    tags=[TAG],
+)
+@inject
+def vk_user_data(
+    auth_service: BaseAuthService = Provide[VKAuthContainer.auth_service],
+):
+    """ Получение данных от VK.
+        ---
+        Запрос на получение токенов, которые используются
+        для получения данных пользователя в стороннем сервисе.
+    """
+    user_data = asyncio.run(auth_service.get_api_data(request))
+
+    return redirect(url_for('root.action.sign_in_vk', user_data=json.dumps(user_data)))
 
 
 @bp.route('/sign_in/vk', methods=['GET'])
@@ -239,32 +283,38 @@ def sign_in_vk(
 ) -> SignInResponse:
     """ Авторизация пользователя через VK.
         ---
-        На эту страницу пользователя перенаправляет VK с кодом для получения данных.
     """
     service_name = 'vk'
 
-    user_data = asyncio.run(auth_service.get_api_data(request))
-    if user_data.get('user_service_id') == 'None':
+    user_data = json.loads(request.args.get('user_data'))
+    user_service_id = user_data.get('user_service_id')
+    user_email = user_data.get('email')
+    secret = user_data.get('secret')
+
+    if not auth_service.check_secret(user_service_id, user_email, OAUTH_CONFIG.VK.CLIENT_SECRET, secret):
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_OAUTH_DATA)
+
+    if user_service_id == 'None':
         json_abort(HTTPStatus.OK, SignInActionError.ALREADY_AUTH)
 
     user_social = auth_service.get_user_social(
-        user_service_id=user_data.get('user_service_id'),
+        user_service_id=user_service_id,
         service_name=service_name,
     )
     if user_social is None:
-        if user_service.exists(email=user_data.get('email')):
-            user = user_service.get(email=user_data.get('email'))
+        if user_service.exists(email=user_email):
+            user = user_service.get(email=user_email)
             user_id = user.id
         else:
             user_id = user_service.create(
                 login=Faker().user_name(),
-                email=user_data.get('email'),
+                email=user_email,
                 password=Faker().password(length=12),
             )
         user_social = auth_service.create_social_user(
                 user_id=user_id,
-                user_service_id=user_data.get('user_service_id'),
-                email=user_data.get('email'),
+                user_service_id=user_service_id,
+                email=user_email,
                 service_name=service_name,
         )
 
