@@ -3,12 +3,7 @@ import os
 from pydantic import BaseSettings, Field
 
 
-class Settings(BaseSettings):
-    class Config:
-        env_file = '../../.env'
-
-
-class ApiSettings(Settings):
+class ApiSettings(BaseSettings):
     HOST: str = Field('localhost', env='AUTH_APP_HOST')
     URL: str = Field('http://localhost', env='AUTH_API_URL')
     PORT: str = Field('9090', env='AUTH_APP_PORT')
@@ -21,7 +16,7 @@ class ApiSettings(Settings):
     JWT_TOKEN_LOCATION: str = Field('headers', env='AUTH_JWT_TOKEN_LOCATION')
 
 
-class GRPCSettings(Settings):
+class GRPCSettings(BaseSettings):
     HOST: str = Field('localhost', env='AUTH_GRPC_HOST')
     PORT: str = Field('56567', env='AUTH_GRPC_PORT')
 
@@ -51,22 +46,17 @@ class DatabaseSettings(BaseSettings):
         }
 
 
-class YandexAppConfig(BaseSettings):
-    CLIENT_SECRET: str = Field('5e2dfa28d6bc493f9cb0515a5012f878', env='YANDEX_CLIENT_SECRET')
+class OAuthConfig(BaseSettings):
+    SECRET: str = Field('P2yV0aGyYs6MDEODdbbd6bf17', env='OAUTH_SECRET')
 
 
-class VKAppConfig(BaseSettings):
-    CLIENT_SECRET: str = Field('C3hfBvonfscKs5clgXHX', env='VK_CLIENT_SECRET')
-
-
-class Config(Settings):
+class Config(BaseSettings):
     API: ApiSettings = ApiSettings()
     GRPC: GRPCSettings = GRPCSettings()
     REDIS: RedisSettings = RedisSettings()
     DB: DatabaseSettings = DatabaseSettings()
     BASE_DIR: str = os.path.dirname(os.path.abspath(__file__))
-    YANDEX: YandexAppConfig = YandexAppConfig()
-    VK: VKAppConfig = VKAppConfig()
 
 
 CONFIG = Config()
+OAUTH_CONFIG = OAuthConfig()
