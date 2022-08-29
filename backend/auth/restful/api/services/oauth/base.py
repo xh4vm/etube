@@ -17,7 +17,7 @@ from api.model.models import User, UserSocial
 from api.schema.base import User as UserSchema
 from api.schema.base import UserMap, UserSocialMap
 from api.services.authorization.base import BaseAuthService
-
+from core.config import OAUTH_CONFIG
 
 class BaseOAuth(BaseAuthService):
 
@@ -48,11 +48,12 @@ class BaseOAuth(BaseAuthService):
 
         return user_social
 
-    def create_secret(self, user_service_id: str, email: str, client_secret: str) -> str:
+    def create_hash(self, user_service_id: str, email: str) -> str:
         message = '{}{}'.format(user_service_id, email)
-        signature = hmac.new(bytes(client_secret, 'utf-8'), msg=bytes(message, 'utf-8'),
+        signature = hmac.new(bytes(OAUTH_CONFIG.SECRET, 'utf-8'), msg=bytes(message, 'utf-8'),
                              digestmod=hashlib.sha256).hexdigest()
+
         return signature
 
-    def check_secret(self, user_service_id: str, email: str, client_secret: str, secret: str) -> bool:
-        return secret == self.create_secret(user_service_id, email, client_secret)
+    def check_hash(self, user_service_id: str, email: str, hash: str) -> bool:
+        return hash == self.create_hash(user_service_id, email)

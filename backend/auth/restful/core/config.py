@@ -77,6 +77,7 @@ class VKAppConfig(BaseSettings):
 class OAuthConfig(BaseSettings):
     YANDEX: YandexAppConfig = YandexAppConfig()
     VK: VKAppConfig = VKAppConfig()
+    SECRET: str = Field(..., env='OAUTH_SECRET')
 
 
 OAUTH_CONFIG = OAuthConfig()

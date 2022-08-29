@@ -1,5 +1,4 @@
 import asyncio
-import json
 
 from faker import Faker
 from http import HTTPStatus
@@ -24,11 +23,11 @@ from api.services.token.base import BaseTokenService
 from api.services.user import UserService
 from api.utils.decorators import json_response, unpack_models
 from api.utils.system import json_abort
-from core.config import OAUTH_CONFIG
 from dependency_injector.wiring import Provide, inject
-from flask import Blueprint, request, redirect, url_for
+from flask import Blueprint, request, redirect, url_for, jsonify
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
+
 
 bp = Blueprint('action', __name__, url_prefix='/action')
 TAG = 'Action'
@@ -165,7 +164,14 @@ def yandex_user_data(
     api_access_token = auth_service.get_api_tokens(request)
     user_data = asyncio.run(auth_service.get_api_data(api_access_token))
 
-    return redirect(url_for('root.action.sign_in_yandex', user_data=json.dumps(user_data)))
+    return redirect(
+        url_for(
+            'root.action.sign_in_yandex',
+            user_service_id=user_data.get('user_service_id'),
+            email=user_data.get('email'),
+            hash=user_data.get('hash'),
+        )
+    )
 
 
 @bp.route('/sign_in/yandex', methods=['GET'])
@@ -190,13 +196,11 @@ def sign_in_yandex(
     """
     service_name = 'yandex'
 
-    user_data = json.loads(request.args.get('user_data'))
+    user_service_id = request.args.get('user_service_id')
+    user_email = request.args.get('email')
+    hash = request.args.get('hash')
 
-    user_service_id = user_data.get('user_service_id')
-    user_email = user_data.get('email')
-    secret = user_data.get('secret')
-
-    if not auth_service.check_secret(user_service_id, user_email, OAUTH_CONFIG.YANDEX.CLIENT_SECRET, secret):
+    if not auth_service.check_hash(user_service_id, user_email, hash):
         json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_OAUTH_DATA)
 
     user_social = auth_service.get_user_social(
@@ -261,7 +265,14 @@ def vk_user_data(
     """
     user_data = asyncio.run(auth_service.get_api_data(request))
 
-    return redirect(url_for('root.action.sign_in_vk', user_data=json.dumps(user_data)))
+    return redirect(
+        url_for(
+            'root.action.sign_in_vk',
+            user_service_id=user_data.get('user_service_id'),
+            email=user_data.get('email'),
+            hash=user_data.get('hash'),
+        )
+    )
 
 
 @bp.route('/sign_in/vk', methods=['GET'])
@@ -286,12 +297,11 @@ def sign_in_vk(
     """
     service_name = 'vk'
 
-    user_data = json.loads(request.args.get('user_data'))
-    user_service_id = user_data.get('user_service_id')
-    user_email = user_data.get('email')
-    secret = user_data.get('secret')
+    user_service_id = request.args.get('user_service_id')
+    user_email = request.args.get('email')
+    hash = request.args.get('hash')
 
-    if not auth_service.check_secret(user_service_id, user_email, OAUTH_CONFIG.VK.CLIENT_SECRET, secret):
+    if not auth_service.check_hash(user_service_id, user_email, hash):
         json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_OAUTH_DATA)
 
     if user_service_id == 'None':

@@ -38,5 +38,6 @@ class VKAuth(BaseOAuth):
                 email = data.get('default_email')
                 if email is None:
                     email = Faker().email()
-                secret = self.create_secret(user_service_id, email, OAUTH_CONFIG.VK.CLIENT_SECRET)
-                return {'user_service_id': user_service_id, 'email': email, 'secret': secret}
+                hash = self.create_hash(user_service_id, email)
+
+                return {'user_service_id': user_service_id, 'email': email, 'hash': hash}

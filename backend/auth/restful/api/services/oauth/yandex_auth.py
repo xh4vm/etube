@@ -44,5 +44,6 @@ class YandexAuth(BaseOAuth):
                 data = await response.json()
                 user_service_id = data.get('id')
                 email = data.get('default_email')
-                secret = self.create_secret(user_service_id, email, OAUTH_CONFIG.YANDEX.CLIENT_SECRET)
-                return {'user_service_id': user_service_id, 'email': email, 'secret': secret}
+                hash = self.create_hash(user_service_id, email)
+
+                return {'user_service_id': user_service_id, 'email': email, 'hash': hash}
