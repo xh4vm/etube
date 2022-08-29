@@ -1,4 +1,7 @@
+import backoff
 from pydantic import BaseSettings, Field
+from typing import Any
+import logging
 
 
 class AppSettings(BaseSettings):
@@ -45,6 +48,12 @@ class Config(BaseSettings):
 
 
 CONFIG = Config()
+BACKOFF_CONFIG: dict[str, Any] = {'wait_gen': backoff.expo, 'exception': Exception, 'max_value': 8}
+
+logging.basicConfig(
+    level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S',
+)
+auth_logger = logging.getLogger(name='Auth Restful API')
 
 
 class InteractionConfig:

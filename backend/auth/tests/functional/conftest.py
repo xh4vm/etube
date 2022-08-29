@@ -5,7 +5,7 @@ from typing import Any, Optional
 import aiohttp
 import aioredis
 
-import auth_client.src.grpc.access as grpc_client_connector
+import auth_client.src.services.access.grpc as grpc_client_connector
 
 import psycopg2
 import pytest
@@ -148,7 +148,7 @@ async def generate_history(pg_cursor):
 @pytest.fixture()
 async def grpc_client():
     async with aio.insecure_channel(target=f'{CONFIG.GRPC.HOST}:{CONFIG.GRPC.PORT}') as channel:
-        yield grpc_client_connector.AsyncPermissionClient(channel)
+        yield grpc_client_connector.AsyncAccessService(channel)
 
 
 @pytest.fixture()

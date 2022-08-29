@@ -1,4 +1,5 @@
-from core.config import CONFIG, INTERACTION_CONFIG
+import backoff
+from core.config import CONFIG, INTERACTION_CONFIG, BACKOFF_CONFIG, auth_logger
 from flask import Blueprint, Flask
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
@@ -76,6 +77,7 @@ def create_db_schema(db, schema_name=CONFIG.DB.SCHEMA_NAME):
     db.engine.execute(f'CREATE SCHEMA IF NOT EXISTS {schema_name};')
 
 
+@backoff.on_exception(**BACKOFF_CONFIG, logger=auth_logger)
 def create_app(config_classes=[CONFIG.APP, INTERACTION_CONFIG]):
     app = Flask(__name__)
 

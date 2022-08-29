@@ -4,12 +4,12 @@ import grpc
 from typing import Optional
 from http import HTTPStatus
 
-import auth_client.src.grpc.access as grpc_client_connector
+import auth_client.src.services.access.grpc as grpc_client_connector
 
-from auth_client.core.config import CONFIG
-from auth_client.src.local.access import authorized
-from auth_client.exceptions.access import AccessException
-from auth_client.errors.permission import PermissionError
+from auth_client.core.config import CONFIG, BACKOFF_CONFIG, auth_logger
+from auth_client.src.services.access.local import authorized
+from auth_client.src.exceptions.access import AccessException
+from auth_client.src.errors.permission import PermissionError
 
 
 def access_required(permissions: dict[str, str]):
@@ -34,7 +34,7 @@ def async_grpc_access_required(permissions: dict[str, str]):
         async def decorated_function(token: Optional[str], *args, **kwargs):
             async with aio.insecure_channel(target=f'{CONFIG.GRPC.HOST}:{CONFIG.GRPC.PORT}') as channel:
                 
-                client = grpc_client_connector.AsyncPermissionClient(channel)
+                client = grpc_client_connector.AsyncAccessService(channel)
 
                 for url, method in permissions.items():    
                     
@@ -55,7 +55,7 @@ def grpc_access_required(permissions: dict[str, str]):
         def decorated_function(token: Optional[str], *args, **kwargs):
             with grpc.insecure_channel(target=f'{CONFIG.GRPC.HOST}:{CONFIG.GRPC.PORT}') as channel:
                 
-                client = grpc_client_connector.PermissionClient(channel)
+                client = grpc_client_connector.AccessService(channel)
 
                 for url, method in permissions.items():    
                     response = client.is_accessible(token=token, method=method, url=url)

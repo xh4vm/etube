@@ -1,9 +1,9 @@
 import hashlib
 
 import jwt
-from ...core.config import CONFIG, auth_logger
-from ...errors.permission import PermissionError
-from ...errors.token import TokenError
+from auth_client.core.config import CONFIG, auth_logger
+from auth_client.src.errors.permission import PermissionError
+from auth_client.src.errors.token import TokenError
 
 
 def authorized(token: str, method: str, url: str) -> tuple[bool, str]:
