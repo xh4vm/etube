@@ -51,12 +51,22 @@ class DatabaseSettings(BaseSettings):
         }
 
 
+class YandexAppConfig(BaseSettings):
+    CLIENT_SECRET: str = Field('5e2dfa28d6bc493f9cb0515a5012f878', env='YANDEX_CLIENT_SECRET')
+
+
+class VKAppConfig(BaseSettings):
+    CLIENT_SECRET: str = Field('C3hfBvonfscKs5clgXHX', env='VK_CLIENT_SECRET')
+
+
 class Config(Settings):
     API: ApiSettings = ApiSettings()
     GRPC: GRPCSettings = GRPCSettings()
     REDIS: RedisSettings = RedisSettings()
     DB: DatabaseSettings = DatabaseSettings()
     BASE_DIR: str = os.path.dirname(os.path.abspath(__file__))
+    YANDEX: YandexAppConfig = YandexAppConfig()
+    VK: VKAppConfig = VKAppConfig()
 
 
 CONFIG = Config()
