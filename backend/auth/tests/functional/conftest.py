@@ -5,11 +5,11 @@ from typing import Any, Optional
 import aiohttp
 import aioredis
 
-# import auth_client.src.grpc.access as grpc_client_connector
+import auth_client.src.grpc.access as grpc_client_connector
 
 import psycopg2
 import pytest
-# from grpc import aio
+from grpc import aio
 from multidict import CIMultiDictProxy
 from psycopg2.extras import DictCursor, register_uuid
 
@@ -145,10 +145,10 @@ async def generate_history(pg_cursor):
     await history_dg.clean()
 
 
-# @pytest.fixture()
-# async def grpc_client():
-#     async with aio.insecure_channel(target=f'{CONFIG.GRPC.HOST}:{CONFIG.GRPC.PORT}') as channel:
-#         yield grpc_client_connector.AsyncPermissionClient(channel)
+@pytest.fixture()
+async def grpc_client():
+    async with aio.insecure_channel(target=f'{CONFIG.GRPC.HOST}:{CONFIG.GRPC.PORT}') as channel:
+        yield grpc_client_connector.AsyncPermissionClient(channel)
 
 
 @pytest.fixture()
