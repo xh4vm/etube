@@ -12,8 +12,8 @@ from api.errors.action.sign_in import SignInActionError
 from api.errors.action.sign_up import SignUpActionError
 from api.schema.action.logout import (LogoutBodyRequest, LogoutHeader,
                                       LogoutResponse)
-from api.schema.action.sign_in import (SignInBodyParams, SignInHeader,
-                                       SignInResponse)
+from api.schema.action.sign_in import (SignInBodyParams, OAuthSignInBodyParams, SignInHeader,
+                                       OAuthSignInHeader, SignInResponse)
 from api.schema.action.sign_up import (SignUpBodyParams, SignUpHeader,
                                        SignUpResponse)
 from api.schema.base import User as UserSchema
@@ -24,7 +24,7 @@ from api.services.user import UserService
 from api.utils.decorators import json_response, unpack_models
 from api.utils.system import json_abort
 from dependency_injector.wiring import Provide, inject
-from flask import Blueprint, request, redirect, url_for, jsonify
+from flask import Blueprint, request, redirect, url_for, jsonify, make_response
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
 
@@ -155,7 +155,7 @@ def yandex_permission(
 @inject
 def yandex_user_data(
     auth_service: BaseAuthService = Provide[YandexAuthContainer.auth_service],
-):
+) -> Response:
     """ Получение данных от Яндекса.
         ---
         Запрос на получение токенов, которые используются
@@ -164,27 +164,29 @@ def yandex_user_data(
     api_access_token = auth_service.get_api_tokens(request)
     user_data = asyncio.run(auth_service.get_api_data(api_access_token))
 
-    return redirect(
-        url_for(
-            'root.action.sign_in_yandex',
-            user_service_id=user_data.get('user_service_id'),
-            email=user_data.get('email'),
-            hash=user_data.get('hash'),
-        )
+    return make_response(
+        {
+            'user_service_id': user_data.get('user_service_id'),
+            'email': user_data.get('email')
+        },
+        200,
+        {'user_data_hash': user_data.get('hash')}
     )
 
 
-@bp.route('/sign_in/yandex', methods=['GET'])
+@bp.route('/sign_in/yandex', methods=['POST'])
 @spec.validate(
-    headers=SignInHeader,
-    resp=Response(HTTP_200=SignInResponse, HTTP_403=None),
+    body=Request(OAuthSignInBodyParams),
+    headers=OAuthSignInHeader,
+    resp=Response(HTTP_200=SignInResponse, HTTP_403=None, HTTP_400=None, HTTP_422=None),
     tags=[TAG],
 )
 @unpack_models
 @json_response
 @inject
 def sign_in_yandex(
-    headers: SignInHeader,
+    body: OAuthSignInBodyParams,
+    headers: OAuthSignInHeader,
     access_token_service: BaseTokenService = Provide[SignInServiceContainer.access_token_service],
     refresh_token_service: BaseTokenService = Provide[SignInServiceContainer.refresh_token_service],
     auth_service: BaseAuthService = Provide[YandexAuthContainer.auth_service],
@@ -196,12 +198,15 @@ def sign_in_yandex(
     """
     service_name = 'yandex'
 
-    user_service_id = request.args.get('user_service_id')
-    user_email = request.args.get('email')
-    hash = request.args.get('hash')
+    hash = headers.user_data_hash
+    if hash is None:
+        json_abort(HTTPStatus.BAD_REQUEST, SignInActionError.HASH_DOES_NOT_EXIST)
+
+    user_service_id = body.user_service_id
+    user_email = body.email
 
     if not auth_service.check_hash(user_service_id, user_email, hash):
-        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_OAUTH_DATA)
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_HASH)
 
     user_social = auth_service.get_user_social(
         user_service_id=user_service_id,
@@ -257,7 +262,7 @@ def sign_in_vk_permission(
 @inject
 def vk_user_data(
     auth_service: BaseAuthService = Provide[VKAuthContainer.auth_service],
-):
+) -> Response:
     """ Получение данных от VK.
         ---
         Запрос на получение токенов, которые используются
@@ -265,27 +270,29 @@ def vk_user_data(
     """
     user_data = asyncio.run(auth_service.get_api_data(request))
 
-    return redirect(
-        url_for(
-            'root.action.sign_in_vk',
-            user_service_id=user_data.get('user_service_id'),
-            email=user_data.get('email'),
-            hash=user_data.get('hash'),
-        )
+    return make_response(
+        {
+            'user_service_id': user_data.get('user_service_id'),
+            'email': user_data.get('email')
+        },
+        200,
+        {'hash': user_data.get('hash')}
     )
 
 
-@bp.route('/sign_in/vk', methods=['GET'])
+@bp.route('/sign_in/vk', methods=['POST'])
 @spec.validate(
-    headers=SignInHeader,
-    resp=Response(HTTP_200=SignInResponse, HTTP_403=None),
+    body=Request(OAuthSignInBodyParams),
+    headers=OAuthSignInHeader,
+    resp=Response(HTTP_200=SignInResponse, HTTP_403=None, HTTP_400=None, HTTP_422=None),
     tags=[TAG],
 )
 @unpack_models
 @json_response
 @inject
 def sign_in_vk(
-    headers: SignInHeader,
+    body: OAuthSignInBodyParams,
+    headers: OAuthSignInHeader,
     access_token_service: BaseTokenService = Provide[SignInServiceContainer.access_token_service],
     refresh_token_service: BaseTokenService = Provide[SignInServiceContainer.refresh_token_service],
     auth_service: BaseAuthService = Provide[VKAuthContainer.auth_service],
@@ -297,12 +304,15 @@ def sign_in_vk(
     """
     service_name = 'vk'
 
-    user_service_id = request.args.get('user_service_id')
-    user_email = request.args.get('email')
-    hash = request.args.get('hash')
+    hash = headers.user_data_hash
+    if hash is None:
+        json_abort(HTTPStatus.BAD_REQUEST, SignInActionError.HASH_DOES_NOT_EXIST)
+
+    user_service_id = body.user_service_id
+    user_email = body.email
 
     if not auth_service.check_hash(user_service_id, user_email, hash):
-        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_OAUTH_DATA)
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_HASH)
 
     if user_service_id == 'None':
         json_abort(HTTPStatus.OK, SignInActionError.ALREADY_AUTH)
