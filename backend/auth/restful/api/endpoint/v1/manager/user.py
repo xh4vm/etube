@@ -25,7 +25,7 @@ from api.services.user import UserService
 from api.utils.decorators import json_response, unpack_models, token_extractor, access_exception_handler
 from api.utils.system import json_abort
 from dependency_injector.wiring import Provide, inject
-from flask import Blueprint, request
+from flask import Blueprint
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
 from core.config import CONFIG

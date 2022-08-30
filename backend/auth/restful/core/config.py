@@ -1,4 +1,7 @@
+import backoff
 from pydantic import BaseSettings, Field
+from typing import Any
+import logging
 
 
 class AppSettings(BaseSettings):
@@ -19,6 +22,7 @@ class AppSettings(BaseSettings):
     ACCESS_EXPIRES: int = Field(..., env='AUTH_ACCESS_EXPIRES')
     JWT_DECODE_ALGORITHMS: list[str] = Field(..., env='AUTH_JWT_DECODE_ALGORITHMS')
     JWT_TOKEN_LOCATION: str = Field('headers', env='AUTH_JWT_TOKEN_LOCATION')
+    RATELIMIT_STRATEGY: str = Field('fixed-window', env='AUTH_RATELIMIT_STRATEGY')
     DEBUG: bool = Field(..., env='AUTH_DEBUG')
 
 
@@ -45,6 +49,12 @@ class Config(BaseSettings):
 
 
 CONFIG = Config()
+BACKOFF_CONFIG: dict[str, Any] = {'wait_gen': backoff.expo, 'exception': Exception, 'max_value': 128}
+
+logging.basicConfig(
+    level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S',
+)
+auth_logger = logging.getLogger(name='Auth Restful API')
 
 
 class InteractionConfig:
@@ -53,6 +63,7 @@ class InteractionConfig:
         f'@{CONFIG.DB.HOST}:{CONFIG.DB.PORT}/{CONFIG.DB.NAME}'
     )
     REDIS_URL = f'redis://{CONFIG.REDIS.HOST}:{CONFIG.REDIS.PORT}/0'
+    RATELIMIT_STORAGE_URI = f'redis://{CONFIG.REDIS.HOST}:{CONFIG.REDIS.PORT}/0'
 
 
 INTERACTION_CONFIG = InteractionConfig()

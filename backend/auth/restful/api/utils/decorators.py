@@ -2,7 +2,7 @@ from functools import wraps
 from flask import abort, jsonify, request
 
 from auth_client.src.utils import header_token_extractor
-from auth_client.exceptions.access import AccessException
+from auth_client.src.exceptions.access import AccessException
 
 
 def json_response(f):

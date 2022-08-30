@@ -1,9 +1,12 @@
-from core.config import CONFIG, INTERACTION_CONFIG
+import backoff
+from core.config import CONFIG, INTERACTION_CONFIG, BACKOFF_CONFIG, auth_logger
 from flask import Blueprint, Flask
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask_pydantic_spec import FlaskPydanticSpec
 from flask_redis import FlaskRedis
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 from .containers.logout import ServiceContainer as LogoutServiceContainer
 from .containers.permissions import \
@@ -22,6 +25,7 @@ from .services.token.handler import TokenHandlerService
 migrate = Migrate()
 redis_client = FlaskRedis()
 jwt = JWTManager()
+limiter = Limiter(key_func=get_remote_address)
 spec = FlaskPydanticSpec('flask', title='Auth API', version=CONFIG.APP.API_VERSION, path=CONFIG.APP.SWAGGER_PATH)
 
 
@@ -56,18 +60,22 @@ def register_blueprints(app):
     from .endpoint.v1.action import bp as action_bp
 
     root_bp.register_blueprint(action_bp)
+    limiter.limit('15/minute')(action_bp)
 
     from .endpoint.v1.token import bp as token_bp
 
     root_bp.register_blueprint(token_bp)
+    limiter.exempt(token_bp)
 
     from .endpoint.v1.manager import bp as manager_bp
 
     root_bp.register_blueprint(manager_bp)
+    limiter.exempt(manager_bp)
 
     from .utils.superuser_cli import bp as superuser_bp
 
     app.register_blueprint(superuser_bp)
+    limiter.limit('3/minute')(superuser_bp)
 
     app.register_blueprint(root_bp)
 
@@ -76,6 +84,7 @@ def create_db_schema(db, schema_name=CONFIG.DB.SCHEMA_NAME):
     db.engine.execute(f'CREATE SCHEMA IF NOT EXISTS {schema_name};')
 
 
+@backoff.on_exception(**BACKOFF_CONFIG, logger=auth_logger)
 def create_app(config_classes=[CONFIG.APP, INTERACTION_CONFIG]):
     app = Flask(__name__)
 
@@ -85,6 +94,7 @@ def create_app(config_classes=[CONFIG.APP, INTERACTION_CONFIG]):
     migrate.init_app(app, db)
     redis_client.init_app(app)
     jwt.init_app(app)
+    limiter.init_app(app=app)
 
     register_blueprints(app)
     register_di_containers()

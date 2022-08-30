@@ -1,26 +1,29 @@
+import backoff
 from functools import wraps
 from grpc import aio
 import grpc
 from typing import Optional
 from http import HTTPStatus
 
-import auth_client.src.grpc.access as grpc_client_connector
+import auth_client.src.services.access.grpc as grpc_client_connector
 
-from auth_client.core.config import CONFIG
-from auth_client.src.local.access import authorized
-from auth_client.exceptions.access import AccessException
-from auth_client.errors.permission import PermissionError
+from auth_client.core.config import CONFIG, BACKOFF_CONFIG, auth_logger
+from auth_client.src.services.access.local import AccessService
+from auth_client.src.exceptions.access import AccessException
+from auth_client.src.errors.permission import PermissionError
 
 
 def access_required(permissions: dict[str, str]):
     def decorator(f):
         @wraps(f)
         def decorated_function(token: Optional[str], *args, **kwargs):
+            access_service = AccessService()
+
             for url, method in permissions.items():
-                is_accessible, message = authorized(token=token, method=method, url=url)
+                response = access_service.is_accessible(token=token, method=method, url=url)
             
-                if not is_accessible:        
-                    raise AccessException(status=HTTPStatus.FORBIDDEN, message=message)
+                if not response.get('is_accessible'):        
+                    raise AccessException(status=HTTPStatus.FORBIDDEN, message=response.get('message'))
             
             return f(*args, **kwargs)
 
@@ -30,18 +33,19 @@ def access_required(permissions: dict[str, str]):
 
 def async_grpc_access_required(permissions: dict[str, str]):
     def decorator(f):
+        @backoff.on_exception(**BACKOFF_CONFIG, exception=grpc.RpcError, logger=auth_logger)
         @wraps(f)
         async def decorated_function(token: Optional[str], *args, **kwargs):
             async with aio.insecure_channel(target=f'{CONFIG.GRPC.HOST}:{CONFIG.GRPC.PORT}') as channel:
                 
-                client = grpc_client_connector.AsyncPermissionClient(channel)
+                access_service = grpc_client_connector.AsyncAccessService(channel)
 
                 for url, method in permissions.items():    
                     
-                    response = await client.is_accessible(token=token, method=method, url=url)
+                    response = await access_service.is_accessible(token=token, method=method, url=url)
 
                     if not response.get('is_accessible'):
-                        raise AccessException(status=HTTPStatus.FORBIDDEN, message=PermissionError.ACCESS_ERROR)
+                        raise AccessException(status=HTTPStatus.FORBIDDEN, message=response.get('message'))
                         
             return await f(*args, **kwargs)
             
@@ -51,19 +55,20 @@ def async_grpc_access_required(permissions: dict[str, str]):
 
 def grpc_access_required(permissions: dict[str, str]):
     def decorator(f):
+        @backoff.on_exception(**BACKOFF_CONFIG, exception=grpc.RpcError, logger=auth_logger)
         @wraps(f)
         def decorated_function(token: Optional[str], *args, **kwargs):
             with grpc.insecure_channel(target=f'{CONFIG.GRPC.HOST}:{CONFIG.GRPC.PORT}') as channel:
                 
-                client = grpc_client_connector.PermissionClient(channel)
+                access_service = grpc_client_connector.AccessService(channel)
 
                 for url, method in permissions.items():    
-                    response = client.is_accessible(token=token, method=method, url=url)
+                    response = access_service.is_accessible(token=token, method=method, url=url)
 
                     if not response.get('is_accessible'):
-                        raise AccessException(status=HTTPStatus.FORBIDDEN, message=PermissionError.ACCESS_ERROR)
+                        raise AccessException(status=HTTPStatus.FORBIDDEN, message=response.get('message'))
 
             return f(*args, **kwargs)
-            
+
         return decorated_function
     return decorator
