@@ -19,9 +19,10 @@ async def test_sign_in_yandex(make_request, pg_cursor):
     hash = hmac.new(bytes(secret, 'utf-8'), msg=bytes(message, 'utf-8'),
                          digestmod=hashlib.sha256).hexdigest()
     response = await make_request(
-        method='get',
+        method='post',
         target=f'auth/action/sign_in/yandex',
-        params={'user_service_id': user_service_id, 'email': user_email, 'hash': hash},
+        json={'user_service_id': user_service_id, 'email': user_email},
+        headers={'user_data_hash': hash},
     )
     delete_statement = (
         f"DELETE FROM {CONFIG.DB.SCHEMA_NAME}.users WHERE email = '{user_email}';"
@@ -38,7 +39,8 @@ async def test_sign_in_yandex_error(make_request):
     response = await make_request(
         method='get',
         target=f'auth/action/sign_in/yandex',
-        params={'user_service_id': '12345', 'email': 'test@mail.com', 'hash': hash},
+        json={'user_service_id': '12345', 'email': 'test@mail.com'},
+        headers={'user_data_hash': hash},
     )
 
     assert response.status == HTTPStatus.UNPROCESSABLE_ENTITY
@@ -56,7 +58,8 @@ async def test_sign_in_vk(make_request, pg_cursor):
     response = await make_request(
         method='get',
         target=f'auth/action/sign_in/vk',
-        params={'user_service_id': user_service_id, 'email': user_email, 'hash': hash},
+        json={'user_service_id': user_service_id, 'email': user_email},
+        headers={'user_data_hash': hash},
     )
     delete_statement = (
         f"DELETE FROM {CONFIG.DB.SCHEMA_NAME}.users WHERE email = '{user_email}';"
@@ -73,7 +76,8 @@ async def test_sign_in_vk_error(make_request):
     response = await make_request(
         method='get',
         target=f'auth/action/sign_in/vk',
-        params={'user_service_id': '12345', 'email': 'test@mail.com', 'hash': hash},
+        json={'user_service_id': '12345', 'email': 'test@mail.com'},
+        headers={'user_data_hash': hash},
     )
 
     assert response.status == HTTPStatus.UNPROCESSABLE_ENTITY
