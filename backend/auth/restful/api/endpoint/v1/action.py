@@ -3,7 +3,7 @@ import asyncio
 from faker import Faker
 from http import HTTPStatus
 
-from api.app import spec
+from api.app import spec, limiter
 from api.containers.logout import ServiceContainer as LogoutServiceContainer
 from api.containers.oauth import VKAuthContainer, YandexAuthContainer
 from api.containers.sign_in import ServiceContainer as SignInServiceContainer
@@ -23,8 +23,9 @@ from api.services.token.base import BaseTokenService
 from api.services.user import UserService
 from api.utils.decorators import json_response, unpack_models
 from api.utils.system import json_abort
+from api.utils.rate_limit import check_error_status_response
 from dependency_injector.wiring import Provide, inject
-from flask import Blueprint, request, redirect
+from flask import Blueprint, request
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
 
@@ -42,6 +43,7 @@ TAG = 'Action'
 @unpack_models
 @jwt_required(optional=True)
 @json_response
+@limiter.limit('5/minute', deduct_when=check_error_status_response, override_defaults=False)
 @inject
 def sign_in(
     body: SignInBodyParams,
