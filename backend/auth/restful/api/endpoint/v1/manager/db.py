@@ -7,7 +7,7 @@ from api.schema.manager.db.create import DbBodyParams, DbResponse
 from api.utils.decorators import json_response, unpack_models
 
 
-bp = Blueprint('role', __name__, url_prefix='/db')
+bp = Blueprint('db', __name__, url_prefix='/db')
 TAG = 'DB'
 
 
