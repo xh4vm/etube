@@ -51,10 +51,12 @@ class RolesService(BaseService):
         self.storage_svc.set(key=storage_key, data=[role.dict() for role in roles])
         return roles
 
+    @tracer.start_as_current_span('set-role-permission')
     def set_permission(self, role_id: uuid.UUID, permission_id: uuid.UUID) -> None:
         # Добавление разрешения роли.
         RolePermission(id=uuid.uuid4(), role_id=role_id, permission_id=permission_id).insert_and_commit()
 
+    @tracer.start_as_current_span('retrieve-role-permission')
     def retrieve_permission(self, role_id: uuid.UUID, permission_id: uuid.UUID) -> None:
         # Удаление разрешения роли.
         role_permission = RolePermission.query.filter_by(role_id=role_id, permission_id=permission_id,).first()
