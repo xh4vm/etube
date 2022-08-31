@@ -8,6 +8,7 @@
 и в таблице сервисов (со связью с таблицей пользователей).
 
 """
+
 import uuid
 from typing import Union
 
@@ -15,7 +16,6 @@ from api.model.models import User, UserSocial
 from api.schema.base import User as UserSchema
 from api.schema.base import UserMap, UserSocialMap
 from api.services.authorization.base import BaseAuthService
-
 
 class BaseOAuth(BaseAuthService):
 

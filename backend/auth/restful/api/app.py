@@ -81,6 +81,14 @@ def register_blueprints(app: Flask):
 
     root_bp.register_blueprint(manager_bp)
 
+    from .endpoint.v1.manager.db import bp as db_bp
+
+    root_bp.register_blueprint(db_bp)
+
+    from .endpoint.v1.captcha import bp as captcha_bp
+
+    root_bp.register_blueprint(captcha_bp)
+
     from .utils.superuser_cli import bp as superuser_bp
 
     app.register_blueprint(superuser_bp)

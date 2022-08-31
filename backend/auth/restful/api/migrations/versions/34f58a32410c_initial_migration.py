@@ -1,8 +1,8 @@
 """Initial migration.
 
-Revision ID: d27b9b8d9e51
+Revision ID: 34f58a32410c
 Revises: 
-Create Date: 2022-08-25 08:21:31.879248
+Create Date: 2022-08-30 13:33:22.278364
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'd27b9b8d9e51'
+revision = '34f58a32410c'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -68,17 +68,18 @@ def upgrade():
     schema='auth_etube'
     )
     op.create_table('sign_in_history',
+    sa.Column('updated_at', sa.TIMESTAMP(timezone=True), nullable=False),
     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
     sa.Column('created_at', sa.TIMESTAMP(timezone=True), nullable=False),
-    sa.Column('updated_at', sa.TIMESTAMP(timezone=True), nullable=False),
     sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=False),
     sa.Column('os', sa.String(length=255), nullable=True),
     sa.Column('device', sa.String(length=255), nullable=True),
     sa.Column('browser', sa.String(length=255), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['auth_etube.users.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('id'),
-    schema='auth_etube'
+    sa.PrimaryKeyConstraint('id', 'created_at'),
+    sa.UniqueConstraint('id', 'created_at'),
+    schema='auth_etube',
+    postgresql_partition_by='RANGE (created_at)'
     )
     op.create_table('user_roles',
     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),

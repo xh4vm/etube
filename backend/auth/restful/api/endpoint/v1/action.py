@@ -1,6 +1,4 @@
 import asyncio
-
-from faker import Faker
 from http import HTTPStatus
 
 from api.app import spec, limiter
@@ -12,8 +10,9 @@ from api.errors.action.sign_in import SignInActionError
 from api.errors.action.sign_up import SignUpActionError
 from api.schema.action.logout import (LogoutBodyRequest, LogoutHeader,
                                       LogoutResponse)
-from api.schema.action.sign_in import (SignInBodyParams, SignInHeader,
-                                       SignInResponse)
+from api.schema.action.sign_in import (OAuthSignInBodyParams,
+                                       OAuthSignInHeader, SignInBodyParams,
+                                       SignInHeader, SignInResponse)
 from api.schema.action.sign_up import (SignUpBodyParams, SignUpHeader,
                                        SignUpResponse)
 from api.schema.base import User as UserSchema
@@ -22,10 +21,12 @@ from api.services.sign_in_history import SignInHistoryService
 from api.services.token.base import BaseTokenService
 from api.services.user import UserService
 from api.utils.decorators import json_response, unpack_models
+from api.utils.signature import check_signature
 from api.utils.system import json_abort
 from api.utils.rate_limit import check_error_status_response
 from dependency_injector.wiring import Provide, inject
-from flask import Blueprint, request
+from faker import Faker
+from flask import Blueprint, make_response, request
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
 from api.utils.rate_limit import check_bots
@@ -136,12 +137,12 @@ def logout(
     return LogoutResponse()
 
 
-@bp.route('/sign_in/yandex_activate', methods=['GET'])
+@bp.route('/sign_in/yandex_permission', methods=['GET'])
 @spec.validate(
     tags=[TAG],
 )
 @inject
-def sign_in_yandex_activate(
+def yandex_permission(
     auth_service: BaseAuthService = Provide[YandexAuthContainer.auth_service],
 ):
     """ Редирект на страницу Яндекса.
@@ -152,17 +153,46 @@ def sign_in_yandex_activate(
     return auth_service.get_permission_code()
 
 
-@bp.route('/sign_in/yandex', methods=['GET'])
+@bp.route('/sign_in/yandex_user_data', methods=['GET'])
 @spec.validate(
-    headers=SignInHeader,
-    resp=Response(HTTP_200=SignInResponse, HTTP_403=None),
+    tags=[TAG],
+)
+@unpack_models
+@inject
+def yandex_user_data(
+    auth_service: BaseAuthService = Provide[YandexAuthContainer.auth_service],
+) -> Response:
+    """ Получение данных от Яндекса.
+        ---
+        Запрос на получение токенов, которые используются
+        для получения данных пользователя в стороннем сервисе.
+    """
+    api_access_token = asyncio.run(auth_service.get_api_tokens(request))
+    user_data, signature = asyncio.run(auth_service.get_api_data(api_access_token))
+
+    return make_response(
+        {
+            'user_service_id': user_data.get('user_service_id'),
+            'email': user_data.get('email'),
+        },
+        200,
+        {'user_data_signature': signature}
+    )
+
+
+@bp.route('/sign_in/yandex', methods=['POST'])
+@spec.validate(
+    body=Request(OAuthSignInBodyParams),
+    headers=OAuthSignInHeader,
+    resp=Response(HTTP_200=SignInResponse, HTTP_403=None, HTTP_400=None, HTTP_422=None),
     tags=[TAG],
 )
 @unpack_models
 @json_response
 @inject
 def sign_in_yandex(
-    headers: SignInHeader,
+    body: OAuthSignInBodyParams,
+    headers: OAuthSignInHeader,
     access_token_service: BaseTokenService = Provide[SignInServiceContainer.access_token_service],
     refresh_token_service: BaseTokenService = Provide[SignInServiceContainer.refresh_token_service],
     auth_service: BaseAuthService = Provide[YandexAuthContainer.auth_service],
@@ -171,31 +201,37 @@ def sign_in_yandex(
 ) -> SignInResponse:
     """ Авторизация пользователя через Яндекс.
         ---
-        На эту страницу пользователя перенаправляет Яндекс с кодом для получения токенов.
     """
     service_name = 'yandex'
 
-    api_access_token = auth_service.get_api_tokens(request)
-    user_data = asyncio.run(auth_service.get_api_data(api_access_token))
+    signature = headers.user_data_signature
+    if signature is None:
+        json_abort(HTTPStatus.BAD_REQUEST, SignInActionError.SIGNATURE_DOES_NOT_EXIST)
+
+    if not check_signature(body, signature):
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_SIGNATURE)
+
+    user_service_id = body.user_service_id
+    user_email = body.email
 
     user_social = auth_service.get_user_social(
-        user_service_id=user_data.get('user_service_id'),
+        user_service_id=user_service_id,
         service_name=service_name,
     )
     if user_social is None:
-        if user_service.exists(email=user_data.get('email')):
-            user = user_service.get(email=user_data.get('email'))
+        if user_service.exists(email=user_email):
+            user = user_service.get(email=user_email)
             user_id = user.id
         else:
             user_id = user_service.create(
                 login=Faker().user_name(),
-                email=user_data.get('email'),
+                email=user_email,
                 password=Faker().password(length=12),
             )
         user_social = auth_service.create_social_user(
                 user_id=user_id,
-                user_service_id=user_data.get('user_service_id'),
-                email=user_data.get('email'),
+                user_service_id=user_service_id,
+                email=user_email,
                 service_name=service_name,
         )
 
@@ -209,12 +245,12 @@ def sign_in_yandex(
     return SignInResponse(access_token=access_token, refresh_token=refresh_token)
 
 
-@bp.route('/sign_in/vk_activate', methods=['GET'])
+@bp.route('/sign_in/vk_permission', methods=['GET'])
 @spec.validate(
     tags=[TAG],
 )
 @inject
-def sign_in_vk_activate(
+def sign_in_vk_permission(
     auth_service: BaseAuthService = Provide[VKAuthContainer.auth_service],
 ):
     """ Редирект на страницу VK.
@@ -225,17 +261,45 @@ def sign_in_vk_activate(
     return auth_service.get_permission_code()
 
 
-@bp.route('/sign_in/vk', methods=['GET'])
+@bp.route('/sign_in/vk_user_data', methods=['GET'])
 @spec.validate(
-    headers=SignInHeader,
-    resp=Response(HTTP_200=SignInResponse, HTTP_403=None),
+    tags=[TAG],
+)
+@unpack_models
+@inject
+def vk_user_data(
+    auth_service: BaseAuthService = Provide[VKAuthContainer.auth_service],
+) -> Response:
+    """ Получение данных от VK.
+        ---
+        Запрос на получение токенов, которые используются
+        для получения данных пользователя в стороннем сервисе.
+    """
+    user_data, signature = asyncio.run(auth_service.get_api_data(request))
+
+    return make_response(
+        {
+            'user_service_id': user_data.get('user_service_id'),
+            'email': user_data.get('email'),
+        },
+        200,
+        {'user_data_signature': signature}
+    )
+
+
+@bp.route('/sign_in/vk', methods=['POST'])
+@spec.validate(
+    body=Request(OAuthSignInBodyParams),
+    headers=OAuthSignInHeader,
+    resp=Response(HTTP_200=SignInResponse, HTTP_403=None, HTTP_400=None, HTTP_422=None),
     tags=[TAG],
 )
 @unpack_models
 @json_response
 @inject
 def sign_in_vk(
-    headers: SignInHeader,
+    body: OAuthSignInBodyParams,
+    headers: OAuthSignInHeader,
     access_token_service: BaseTokenService = Provide[SignInServiceContainer.access_token_service],
     refresh_token_service: BaseTokenService = Provide[SignInServiceContainer.refresh_token_service],
     auth_service: BaseAuthService = Provide[VKAuthContainer.auth_service],
@@ -244,32 +308,40 @@ def sign_in_vk(
 ) -> SignInResponse:
     """ Авторизация пользователя через VK.
         ---
-        На эту страницу пользователя перенаправляет VK с кодом для получения данных.
     """
     service_name = 'vk'
 
-    user_data = asyncio.run(auth_service.get_api_data(request))
-    if user_data.get('user_service_id') == 'None':
+    signature = headers.user_data_signature
+    if signature is None:
+        json_abort(HTTPStatus.BAD_REQUEST, SignInActionError.SIGNATURE_DOES_NOT_EXIST)
+
+    if not check_signature(body, signature):
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_SIGNATURE)
+
+    user_service_id = body.user_service_id
+    user_email = body.email
+
+    if user_service_id == 'None':
         json_abort(HTTPStatus.OK, SignInActionError.ALREADY_AUTH)
 
     user_social = auth_service.get_user_social(
-        user_service_id=user_data.get('user_service_id'),
+        user_service_id=user_service_id,
         service_name=service_name,
     )
     if user_social is None:
-        if user_service.exists(email=user_data.get('email')):
-            user = user_service.get(email=user_data.get('email'))
+        if user_service.exists(email=user_email):
+            user = user_service.get(email=user_email)
             user_id = user.id
         else:
             user_id = user_service.create(
                 login=Faker().user_name(),
-                email=user_data.get('email'),
+                email=user_email,
                 password=Faker().password(length=12),
             )
         user_social = auth_service.create_social_user(
                 user_id=user_id,
-                user_service_id=user_data.get('user_service_id'),
-                email=user_data.get('email'),
+                user_service_id=user_service_id,
+                email=user_email,
                 service_name=service_name,
         )
 
