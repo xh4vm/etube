@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from string import Template
 from typing import Any, Optional
+from jaeger_telemetry.tracer import tracer
 
 from flask_jwt_extended import get_jwt, get_jwt_identity, verify_jwt_in_request
 
@@ -15,10 +16,12 @@ class BaseTokenService(ABC):
         self.storage_svc = storage_svc
 
     @abstractmethod
+    @tracer.start_as_current_span('create-token')
     def create(self, identity: Any, claims: Optional[dict[str, Any]] = None) -> str:
         """Метод для генерации токена"""
 
     @abstractmethod
+    @tracer.start_as_current_span('add-token-to-blocklist')
     def add_to_blocklist(self, token: str) -> None:
         """Помечивание токена как протухшего"""
 

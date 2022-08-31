@@ -6,8 +6,10 @@
 ``` 
 cp .env.example .env
 cp ./backend/sqlite_to_postgres/.env.example ./backend/sqlite_to_postgres/.env
-cd backend/auth && python3 setup.py sdist && mv dist ../../modules && rm -rf auth.egg-info && cd ../..
-cp -r ./modules backend/auth/restful && cp -r ./modules backend/client
+rm -rf modules backend/auth/restful/modules backend/client/modules && mkdir modules
+cd backend/auth && python3 setup.py sdist && mv dist/* ../../modules && rm -rf auth.egg-info dist && cd ../..
+cd backend/jaeger && python3 setup.py sdist && mv dist/* ../../modules && rm -rf jaeger_telemetry.egg-info dist && cd ../..
+cp -r ./modules backend/auth/restful && cp -r ./modules backend/client/
 rm -rf ./backend/nginx/static && cp -r ./backend/nginx/static_defaults/ ./backend/nginx/static
 make build
 ```
@@ -15,7 +17,7 @@ make build
 ## Запуск сервиса авторизации
 ```
 cp .env.example .env
-cd backend/auth && python3 setup.py sdist && mv dist ../../modules && rm -rf auth.egg-info && cd ../..
+cd backend/auth && python3 setup.py sdist && mv dist ../../modules && rm -rf auth.egg-info dist && cd ../..
 cp -r ./modules backend/auth/restful
 echo -e "\nauth @ file://`pwd`/modules/auth-0.1.0.tar.gz" | tee -a requirements-test-auth.txt 
 make build-auth
