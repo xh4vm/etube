@@ -1,3 +1,4 @@
+from http import HTTPStatus
 import backoff
 from core.config import CONFIG, INTERACTION_CONFIG, BACKOFF_CONFIG, auth_logger
 from flask import Blueprint, Flask
@@ -21,6 +22,8 @@ from .containers.user import ServiceContainer as UserServiceContainer
 from .model.base import db
 from .services.storage.redis import BaseStorage, RedisStorage
 from .services.token.handler import TokenHandlerService
+from .utils.error_handlers import many_requests
+from .utils.rate_limit import check_bots
 
 migrate = Migrate()
 redis_client = FlaskRedis()
@@ -54,8 +57,14 @@ def register_jwt_handelers(storage_service: BaseStorage):
     jwt.token_verification_failed_loader(token_handelr_service.token_verification_failed_callback)
 
 
-def register_blueprints(app):
+def register_error_handlers(app: Flask):
+    app.register_error_handler(HTTPStatus.TOO_MANY_REQUESTS, many_requests)
+
+
+def register_blueprints(app: Flask):
     root_bp = Blueprint('root', __name__, url_prefix=f'/api/{CONFIG.APP.API_VERSION}/auth')
+    limiter.limit('3/second')(root_bp)
+    limiter.limit('1/hour', exempt_when=lambda: not check_bots(), override_defaults=False)(root_bp)
 
     from .endpoint.v1.action import bp as action_bp
 
@@ -83,7 +92,6 @@ def register_blueprints(app):
     from .utils.superuser_cli import bp as superuser_bp
 
     app.register_blueprint(superuser_bp)
-    limiter.limit('3/minute')(superuser_bp)
 
     app.register_blueprint(root_bp)
 
@@ -102,9 +110,10 @@ def create_app(config_classes=[CONFIG.APP, INTERACTION_CONFIG]):
     migrate.init_app(app, db)
     redis_client.init_app(app)
     jwt.init_app(app)
-    limiter.init_app(app=app)
+    limiter.init_app(app)
 
     register_blueprints(app)
+    register_error_handlers(app)
     register_di_containers()
 
     redis_storage = RedisStorage(redis=redis_client)
