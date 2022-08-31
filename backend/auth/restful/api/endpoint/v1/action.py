@@ -1,6 +1,4 @@
 import asyncio
-
-from faker import Faker
 from http import HTTPStatus
 
 from api.app import spec
@@ -12,8 +10,9 @@ from api.errors.action.sign_in import SignInActionError
 from api.errors.action.sign_up import SignUpActionError
 from api.schema.action.logout import (LogoutBodyRequest, LogoutHeader,
                                       LogoutResponse)
-from api.schema.action.sign_in import (SignInBodyParams, OAuthSignInBodyParams, SignInHeader,
-                                       OAuthSignInHeader, SignInResponse)
+from api.schema.action.sign_in import (OAuthSignInBodyParams,
+                                       OAuthSignInHeader, SignInBodyParams,
+                                       SignInHeader, SignInResponse)
 from api.schema.action.sign_up import (SignUpBodyParams, SignUpHeader,
                                        SignUpResponse)
 from api.schema.base import User as UserSchema
@@ -25,10 +24,10 @@ from api.utils.decorators import json_response, unpack_models
 from api.utils.signature import check_signature
 from api.utils.system import json_abort
 from dependency_injector.wiring import Provide, inject
-from flask import Blueprint, request, make_response
+from faker import Faker
+from flask import Blueprint, make_response, request
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
-
 
 bp = Blueprint('action', __name__, url_prefix='/action')
 TAG = 'Action'
@@ -153,6 +152,7 @@ def yandex_permission(
 @spec.validate(
     tags=[TAG],
 )
+@unpack_models
 @inject
 def yandex_user_data(
     auth_service: BaseAuthService = Provide[YandexAuthContainer.auth_service],
@@ -260,6 +260,7 @@ def sign_in_vk_permission(
 @spec.validate(
     tags=[TAG],
 )
+@unpack_models
 @inject
 def vk_user_data(
     auth_service: BaseAuthService = Provide[VKAuthContainer.auth_service],
