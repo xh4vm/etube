@@ -48,12 +48,12 @@ class BaseOAuth(BaseAuthService):
 
         return user_social
 
-    def create_hash(self, user_service_id: str, email: str) -> str:
+    def create_signature(self, user_service_id: str, email: str) -> str:
         message = '{}{}'.format(user_service_id, email)
         signature = hmac.new(bytes(OAUTH_CONFIG.SECRET, 'utf-8'), msg=bytes(message, 'utf-8'),
                              digestmod=hashlib.sha256).hexdigest()
 
         return signature
 
-    def check_hash(self, user_service_id: str, email: str, hash: str) -> bool:
-        return hash == self.create_hash(user_service_id, email)
+    def check_signature(self, user_service_id: str, email: str, signature: str) -> bool:
+        return signature == self.create_signature(user_service_id, email)

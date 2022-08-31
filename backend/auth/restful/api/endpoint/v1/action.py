@@ -24,7 +24,7 @@ from api.services.user import UserService
 from api.utils.decorators import json_response, unpack_models
 from api.utils.system import json_abort
 from dependency_injector.wiring import Provide, inject
-from flask import Blueprint, request, redirect, url_for, jsonify, make_response
+from flask import Blueprint, request, make_response
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
 
@@ -170,7 +170,7 @@ def yandex_user_data(
             'email': user_data.get('email')
         },
         200,
-        {'user_data_hash': user_data.get('hash')}
+        {'user_data_signature': user_data.get('signature')}
     )
 
 
@@ -198,15 +198,15 @@ def sign_in_yandex(
     """
     service_name = 'yandex'
 
-    hash = headers.user_data_hash
-    if hash is None:
-        json_abort(HTTPStatus.BAD_REQUEST, SignInActionError.HASH_DOES_NOT_EXIST)
+    signature = headers.user_data_signature
+    if signature is None:
+        json_abort(HTTPStatus.BAD_REQUEST, SignInActionError.SIGNATURE_DOES_NOT_EXIST)
 
     user_service_id = body.user_service_id
     user_email = body.email
 
-    if not auth_service.check_hash(user_service_id, user_email, hash):
-        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_HASH)
+    if not auth_service.check_signature(user_service_id, user_email, signature):
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_SIGNATURE)
 
     user_social = auth_service.get_user_social(
         user_service_id=user_service_id,
@@ -276,7 +276,7 @@ def vk_user_data(
             'email': user_data.get('email')
         },
         200,
-        {'hash': user_data.get('hash')}
+        {'signature': user_data.get('signature')}
     )
 
 
@@ -304,15 +304,15 @@ def sign_in_vk(
     """
     service_name = 'vk'
 
-    hash = headers.user_data_hash
-    if hash is None:
-        json_abort(HTTPStatus.BAD_REQUEST, SignInActionError.HASH_DOES_NOT_EXIST)
+    signature = headers.user_data_signature
+    if signature is None:
+        json_abort(HTTPStatus.BAD_REQUEST, SignInActionError.SIGNATURE_DOES_NOT_EXIST)
 
     user_service_id = body.user_service_id
     user_email = body.email
 
-    if not auth_service.check_hash(user_service_id, user_email, hash):
-        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_HASH)
+    if not auth_service.check_signature(user_service_id, user_email, signature):
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_SIGNATURE)
 
     if user_service_id == 'None':
         json_abort(HTTPStatus.OK, SignInActionError.ALREADY_AUTH)

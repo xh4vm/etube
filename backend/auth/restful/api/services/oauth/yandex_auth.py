@@ -44,6 +44,6 @@ class YandexAuth(BaseOAuth):
                 data = await response.json()
                 user_service_id = data.get('id')
                 email = data.get('default_email')
-                hash = self.create_hash(user_service_id, email)
+                signature = self.create_signature(user_service_id, email)
 
-                return {'user_service_id': user_service_id, 'email': email, 'hash': hash}
+                return {'user_service_id': user_service_id, 'email': email, 'signature': signature}

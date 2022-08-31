@@ -38,6 +38,6 @@ class VKAuth(BaseOAuth):
                 email = data.get('default_email')
                 if email is None:
                     email = Faker().email()
-                hash = self.create_hash(user_service_id, email)
+                signature = self.create_signature(user_service_id, email)
 
-                return {'user_service_id': user_service_id, 'email': email, 'hash': hash}
+                return {'user_service_id': user_service_id, 'email': email, 'signature': signature}

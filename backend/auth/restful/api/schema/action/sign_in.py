@@ -42,4 +42,4 @@ class OAuthSignInHeader(UserAgentHeader):
     ---
     """
 
-    user_data_hash: str = Field(title='Подпись данных пользователя', alias='User-Data-Hash')
+    user_data_signature: str = Field(title='Подпись данных пользователя', alias='User-Data-Signature')
