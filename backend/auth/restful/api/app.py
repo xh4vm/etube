@@ -64,7 +64,6 @@ def register_error_handlers(app: Flask):
 def register_blueprints(app: Flask):
     root_bp = Blueprint('root', __name__, url_prefix=f'/api/{CONFIG.APP.API_VERSION}/auth')
     limiter.limit('3/second')(root_bp)
-    limiter.limit('1/hour', exempt_when=lambda: not check_bots(), override_defaults=False)(root_bp)
 
     from .endpoint.v1.action import bp as action_bp
 
@@ -74,12 +73,10 @@ def register_blueprints(app: Flask):
     from .endpoint.v1.token import bp as token_bp
 
     root_bp.register_blueprint(token_bp)
-    limiter.exempt(token_bp)
 
     from .endpoint.v1.manager import bp as manager_bp
 
     root_bp.register_blueprint(manager_bp)
-    limiter.exempt(manager_bp)
 
     from .utils.superuser_cli import bp as superuser_bp
 

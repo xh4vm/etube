@@ -28,6 +28,7 @@ from dependency_injector.wiring import Provide, inject
 from flask import Blueprint, request
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
+from api.utils.rate_limit import check_bots
 
 bp = Blueprint('action', __name__, url_prefix='/action')
 TAG = 'Action'
@@ -44,6 +45,7 @@ TAG = 'Action'
 @jwt_required(optional=True)
 @json_response
 @limiter.limit('5/minute', deduct_when=check_error_status_response, override_defaults=False)
+@limiter.limit('1/hour', exempt_when=lambda: not check_bots(), override_defaults=False)
 @inject
 def sign_in(
     body: SignInBodyParams,
@@ -82,6 +84,7 @@ def sign_in(
 @unpack_models
 @jwt_required(optional=True)
 @json_response
+@limiter.limit('1/hour', exempt_when=lambda: not check_bots(), override_defaults=False)
 @inject
 def sign_up(
     body: SignUpBodyParams,
