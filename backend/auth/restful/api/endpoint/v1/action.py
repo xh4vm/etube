@@ -168,10 +168,10 @@ def yandex_user_data(
     return make_response(
         {
             'user_service_id': user_data.get('user_service_id'),
-            'email': user_data.get('email')
+            'email': user_data.get('email'),
         },
         200,
-        {'signature': signature}
+        {'user_data_signature': signature}
     )
 
 
@@ -274,10 +274,10 @@ def vk_user_data(
     return make_response(
         {
             'user_service_id': user_data.get('user_service_id'),
-            'email': user_data.get('email')
+            'email': user_data.get('email'),
         },
         200,
-        {'signature': signature}
+        {'user_data_signature': signature}
     )
 
 
