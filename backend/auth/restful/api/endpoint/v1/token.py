@@ -1,6 +1,6 @@
 import uuid
 
-from api.app import spec, limiter
+from api.app import spec
 from api.containers.token import ServiceContainer
 from api.schema.base import User
 from api.schema.token.refresh import RefreshTokenHeader, RefreshTokenResponse
@@ -18,7 +18,6 @@ TAG = 'Token'
 
 
 @bp.route('/refresh', methods=['POST'])
-# @limiter.exempt
 @spec.validate(headers=RefreshTokenHeader, resp=Response(HTTP_200=RefreshTokenResponse, HTTP_422=None), tags=[TAG])
 @unpack_models
 @jwt_required(refresh=True)

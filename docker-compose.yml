@@ -296,6 +296,18 @@ services:
     ports:
       - ${AUTH_GRPC_PORT}:${AUTH_GRPC_PORT}
 
+  jaeger-all-in-one:
+    <<: *base_service
+    image: jaegertracing/all-in-one:1.37
+    container_name: jaeger
+    env_file: .env
+    profiles: 
+      - dev
+      - dev_auth
+    ports:
+      - ${JAEGER_UI_PORT}:16686
+      - ${JAEGER_AGENT_PORT}:6381/udp
+
 
 networks:
   etube:

@@ -4,6 +4,7 @@
 """
 import uuid
 from http import HTTPStatus
+from jaeger_telemetry.tracer import tracer
 
 from api.errors.manager.roles import RolesError
 from api.model.base import db
@@ -37,6 +38,7 @@ class RolesService(BaseService):
         self.storage_svc.set(key=storage_key, data=role.dict())
         return role
 
+    @tracer.start_as_current_span('get-all-roles')
     def all(self) -> schema:
         storage_key: str = f'{self.model.__tablename__}::all'
         roles = self.storage_svc.get(key=storage_key)

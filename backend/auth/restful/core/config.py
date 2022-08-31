@@ -32,6 +32,15 @@ class RedisSettings(BaseSettings):
     EXPIRE: int = Field(..., env='CACHE_EXPIRE')
 
 
+class JaegerAgentSettings(BaseSettings):
+    HOST: str = Field(..., env='JAEGER_AGENT_HOST')
+    PORT: int = Field(..., env='JAEGER_AGENT_PORT')
+
+
+class JaegerSettings(BaseSettings):
+    AGENT: JaegerAgentSettings = JaegerAgentSettings()
+
+
 class DatabaseSettings(BaseSettings):
     SCHEMA_NAME: str = Field('auth_etube', env='AUTH_DB_SCHEMA')
     DRIVER: str = Field(..., env='AUTH_DB_DRIVER')
@@ -46,6 +55,7 @@ class Config(BaseSettings):
     APP: AppSettings = AppSettings()
     REDIS: RedisSettings = RedisSettings()
     DB: DatabaseSettings = DatabaseSettings()
+    JAEGER: JaegerSettings = JaegerSettings()
 
 
 CONFIG = Config()

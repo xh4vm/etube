@@ -9,6 +9,9 @@ from flask_redis import FlaskRedis
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
+from jaeger_telemetry.configurations.thrift import configure_tracer
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
+
 from .containers.logout import ServiceContainer as LogoutServiceContainer
 from .containers.permissions import \
     ServiceContainer as PermissionsServiceContainer
@@ -23,7 +26,7 @@ from .model.base import db
 from .services.storage.redis import BaseStorage, RedisStorage
 from .services.token.handler import TokenHandlerService
 from .utils.error_handlers import many_requests
-from .utils.rate_limit import check_bots
+
 
 migrate = Migrate()
 redis_client = FlaskRedis()
@@ -104,6 +107,9 @@ def create_app(config_classes=[CONFIG.APP, INTERACTION_CONFIG]):
     register_blueprints(app)
     register_error_handlers(app)
     register_di_containers()
+    
+    configure_tracer(service_name='auth-restful', host=CONFIG.JAEGER.AGENT.HOST, port=CONFIG.JAEGER.AGENT.PORT)
+    FlaskInstrumentor().instrument_app(app)
 
     redis_storage = RedisStorage(redis=redis_client)
     register_jwt_handelers(storage_service=redis_storage)
