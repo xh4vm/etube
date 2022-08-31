@@ -14,15 +14,15 @@ async def test_sign_in_yandex(make_request, pg_cursor):
     # Авторизация через Яндекс.
     user_service_id = '12345'
     user_email = 'test@mail.com'
-    secret = OAUTH_CONFIG.SECRET
-    message = '{}{}'.format(user_service_id, user_email)
-    hash = hmac.new(bytes(secret, 'utf-8'), msg=bytes(message, 'utf-8'),
-                         digestmod=hashlib.sha256).hexdigest()
+    data_string = f"user_service_id='{user_service_id}' email='{user_email}'"
+    message = '{}'.format(data_string)
+    signature = hmac.new(bytes(OAUTH_CONFIG.SECRET, 'utf-8'), msg=bytes(message, 'utf-8'),
+                    digestmod=hashlib.sha256).hexdigest()
     response = await make_request(
         method='post',
         target=f'auth/action/sign_in/yandex',
         json={'user_service_id': user_service_id, 'email': user_email},
-        headers={'user_data_hash': hash},
+        headers={'user_data_signature': signature},
     )
     delete_statement = (
         f"DELETE FROM {CONFIG.DB.SCHEMA_NAME}.users WHERE email = '{user_email}';"
@@ -35,12 +35,12 @@ async def test_sign_in_yandex(make_request, pg_cursor):
 
 async def test_sign_in_yandex_error(make_request):
     # Попытка авторизации с неверным хэш-кодом
-    hash = '59a4ccae59ed72416109e17d659c949049f584e2c4d24229f54a60883fb6e277'
+    signature = '59a4ccae59ed72416109e17d659c949049f584e2c4d24229f54a60883fb6e277'
     response = await make_request(
         method='post',
         target=f'auth/action/sign_in/yandex',
         json={'user_service_id': '12345', 'email': 'test@mail.com'},
-        headers={'user_data_hash': hash},
+        headers={'user_data_signature': signature},
     )
 
     assert response.status == HTTPStatus.UNPROCESSABLE_ENTITY
@@ -51,15 +51,15 @@ async def test_sign_in_vk(make_request, pg_cursor):
     # Авторизация через VK.
     user_service_id = '12345'
     user_email = 'test@mail.com'
-    secret = OAUTH_CONFIG.SECRET
-    message = '{}{}'.format(user_service_id, user_email)
-    hash = hmac.new(bytes(secret, 'utf-8'), msg=bytes(message, 'utf-8'),
-                         digestmod=hashlib.sha256).hexdigest()
+    data_string = f"user_service_id='{user_service_id}' email='{user_email}'"
+    message = '{}'.format(data_string)
+    signature = hmac.new(bytes(OAUTH_CONFIG.SECRET, 'utf-8'), msg=bytes(message, 'utf-8'),
+                    digestmod=hashlib.sha256).hexdigest()
     response = await make_request(
         method='post',
         target=f'auth/action/sign_in/vk',
         json={'user_service_id': user_service_id, 'email': user_email},
-        headers={'user_data_hash': hash},
+        headers={'user_data_signature': signature},
     )
     delete_statement = (
         f"DELETE FROM {CONFIG.DB.SCHEMA_NAME}.users WHERE email = '{user_email}';"
@@ -72,12 +72,12 @@ async def test_sign_in_vk(make_request, pg_cursor):
 
 async def test_sign_in_vk_error(make_request):
     # Попытка авторизации с неверным хэш-кодом
-    hash = '59a4ccae59ed72416109e17d659c949049f584e2c4d24229f54a60883fb6e277'
+    signature = '59a4ccae59ed72416109e17d659c949049f584e2c4d24229f54a60883fb6e277'
     response = await make_request(
         method='post',
         target=f'auth/action/sign_in/vk',
         json={'user_service_id': '12345', 'email': 'test@mail.com'},
-        headers={'user_data_hash': hash},
+        headers={'user_data_signature': signature},
     )
 
     assert response.status == HTTPStatus.UNPROCESSABLE_ENTITY
