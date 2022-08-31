@@ -164,7 +164,7 @@ def yandex_user_data(
         Запрос на получение токенов, которые используются
         для получения данных пользователя в стороннем сервисе.
     """
-    api_access_token = auth_service.get_api_tokens(request)
+    api_access_token = asyncio.run(auth_service.get_api_tokens(request))
     user_data, signature = asyncio.run(auth_service.get_api_data(api_access_token))
 
     return make_response(

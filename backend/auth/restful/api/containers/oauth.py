@@ -2,9 +2,9 @@ from typing import Optional, Type
 
 from dependency_injector import containers, providers
 
-from ..services.oauth.base import BaseOAuth
-from ..services.oauth.vk_auth import VKAuth
-from ..services.oauth.yandex_auth import YandexAuth
+from api.services.authorization.oauth.base import BaseOAuth
+from api.services.authorization.oauth.vk_auth import VKAuth
+from api.services.authorization.oauth.yandex_auth import YandexAuth
 from ..services.sign_in_history import SignInHistoryService
 from ..services.token.access import AccessTokenService
 from ..services.token.refresh import RefreshTokenService

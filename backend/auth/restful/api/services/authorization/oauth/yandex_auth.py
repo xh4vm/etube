@@ -2,7 +2,7 @@ from urllib.parse import urlencode
 
 import aiohttp
 from flask import redirect, Response
-from requests import post, request
+from requests import request
 
 from .base import BaseOAuth
 
@@ -21,21 +21,24 @@ class YandexAuth(BaseOAuth):
             )
         )
 
-    def get_api_tokens(self, request: request) -> str:
+    async def get_api_tokens(self, request: request) -> str:
         # Получение токенов от стороннего сервиса.
         # Токены используются для запроса к API.
         code = request.args.get('code')
-        params = {
-            'grant_type': 'authorization_code',
-            'code': code,
-            'client_id': OAUTH_CONFIG.YANDEX.CLIENT_ID,
-            'client_secret': OAUTH_CONFIG.YANDEX.CLIENT_SECRET,
-        }
-        params = urlencode(params)
-        response = post(OAUTH_CONFIG.YANDEX.BASEURL + 'token', params).json()
-        api_access_token = response.get('access_token')
+        async with aiohttp.ClientSession() as session:
+            params = {
+                'grant_type': 'authorization_code',
+                'code': code,
+                'client_id': OAUTH_CONFIG.YANDEX.CLIENT_ID,
+                'client_secret': OAUTH_CONFIG.YANDEX.CLIENT_SECRET,
+            }
+            params = urlencode(params)
+            url = OAUTH_CONFIG.YANDEX.BASEURL + 'token'
+            async with session.post(url, data=params) as response:
+                data = await response.json()
+                api_access_token = data.get('access_token')
 
-        return api_access_token
+                return api_access_token
 
     async def get_api_data(self, access_token: str) -> tuple[dict, str]:
         # Получение данных пользователя от API.
