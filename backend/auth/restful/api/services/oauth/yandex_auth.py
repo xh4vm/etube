@@ -5,6 +5,8 @@ from flask import redirect, Response
 from requests import post, request
 
 from .base import BaseOAuth
+
+from api.utils.signature import create_signature
 from core.config import OAUTH_CONFIG
 
 
@@ -35,7 +37,7 @@ class YandexAuth(BaseOAuth):
 
         return api_access_token
 
-    async def get_api_data(self, access_token: str) -> dict:
+    async def get_api_data(self, access_token: str) -> tuple[dict, str]:
         # Получение данных пользователя от API.
         async with aiohttp.ClientSession() as session:
             url = 'https://login.yandex.ru/info'
@@ -44,6 +46,8 @@ class YandexAuth(BaseOAuth):
                 data = await response.json()
                 user_service_id = data.get('id')
                 email = data.get('default_email')
-                signature = self.create_signature(user_service_id, email)
+                user_data = {'user_service_id': user_service_id, 'email': email}
+                user_data_as_str = ' '.join([f"{k}='{v}'" for k, v in user_data.items()])
+                signature = create_signature(user_data_as_str)
 
-                return {'user_service_id': user_service_id, 'email': email, 'signature': signature}
+                return user_data, signature

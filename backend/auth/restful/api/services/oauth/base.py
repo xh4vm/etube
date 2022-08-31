@@ -8,8 +8,7 @@
 и в таблице сервисов (со связью с таблицей пользователей).
 
 """
-import hashlib
-import hmac
+
 import uuid
 from typing import Union
 
@@ -17,7 +16,6 @@ from api.model.models import User, UserSocial
 from api.schema.base import User as UserSchema
 from api.schema.base import UserMap, UserSocialMap
 from api.services.authorization.base import BaseAuthService
-from core.config import OAUTH_CONFIG
 
 class BaseOAuth(BaseAuthService):
 
@@ -47,13 +45,3 @@ class BaseOAuth(BaseAuthService):
         user_social.insert_and_commit()
 
         return user_social
-
-    def create_signature(self, user_service_id: str, email: str) -> str:
-        message = '{}{}'.format(user_service_id, email)
-        signature = hmac.new(bytes(OAUTH_CONFIG.SECRET, 'utf-8'), msg=bytes(message, 'utf-8'),
-                             digestmod=hashlib.sha256).hexdigest()
-
-        return signature
-
-    def check_signature(self, user_service_id: str, email: str, signature: str) -> bool:
-        return signature == self.create_signature(user_service_id, email)

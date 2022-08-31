@@ -22,6 +22,7 @@ from api.services.sign_in_history import SignInHistoryService
 from api.services.token.base import BaseTokenService
 from api.services.user import UserService
 from api.utils.decorators import json_response, unpack_models
+from api.utils.signature import check_signature
 from api.utils.system import json_abort
 from dependency_injector.wiring import Provide, inject
 from flask import Blueprint, request, make_response
@@ -162,7 +163,7 @@ def yandex_user_data(
         для получения данных пользователя в стороннем сервисе.
     """
     api_access_token = auth_service.get_api_tokens(request)
-    user_data = asyncio.run(auth_service.get_api_data(api_access_token))
+    user_data, signature = asyncio.run(auth_service.get_api_data(api_access_token))
 
     return make_response(
         {
@@ -170,7 +171,7 @@ def yandex_user_data(
             'email': user_data.get('email')
         },
         200,
-        {'user_data_signature': user_data.get('signature')}
+        {'signature': signature}
     )
 
 
@@ -202,11 +203,11 @@ def sign_in_yandex(
     if signature is None:
         json_abort(HTTPStatus.BAD_REQUEST, SignInActionError.SIGNATURE_DOES_NOT_EXIST)
 
+    if not check_signature(body, signature):
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_SIGNATURE)
+
     user_service_id = body.user_service_id
     user_email = body.email
-
-    if not auth_service.check_signature(user_service_id, user_email, signature):
-        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_SIGNATURE)
 
     user_social = auth_service.get_user_social(
         user_service_id=user_service_id,
@@ -268,7 +269,7 @@ def vk_user_data(
         Запрос на получение токенов, которые используются
         для получения данных пользователя в стороннем сервисе.
     """
-    user_data = asyncio.run(auth_service.get_api_data(request))
+    user_data, signature = asyncio.run(auth_service.get_api_data(request))
 
     return make_response(
         {
@@ -276,7 +277,7 @@ def vk_user_data(
             'email': user_data.get('email')
         },
         200,
-        {'signature': user_data.get('signature')}
+        {'signature': signature}
     )
 
 
@@ -308,11 +309,11 @@ def sign_in_vk(
     if signature is None:
         json_abort(HTTPStatus.BAD_REQUEST, SignInActionError.SIGNATURE_DOES_NOT_EXIST)
 
+    if not check_signature(body, signature):
+        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_SIGNATURE)
+
     user_service_id = body.user_service_id
     user_email = body.email
-
-    if not auth_service.check_signature(user_service_id, user_email, signature):
-        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_SIGNATURE)
 
     if user_service_id == 'None':
         json_abort(HTTPStatus.OK, SignInActionError.ALREADY_AUTH)
