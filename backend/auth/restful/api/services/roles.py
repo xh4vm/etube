@@ -4,14 +4,13 @@
 """
 import uuid
 from http import HTTPStatus
-from jaeger_telemetry.tracer import tracer
-
 from api.errors.manager.roles import RolesError
 from api.model.base import db
 from api.model.models import Role, RolePermission
 from api.schema.base import Role as RoleSchema
 from api.schema.base import RoleMap
 from api.utils.system import json_abort
+from api.utils.decorators import traced
 
 from .base import BaseService
 
@@ -38,7 +37,7 @@ class RolesService(BaseService):
         self.storage_svc.set(key=storage_key, data=role.dict())
         return role
 
-    @tracer.start_as_current_span('role::all')
+    @traced('role::all')
     def all(self) -> schema:
         storage_key: str = f'{self.model.__tablename__}::all'
         roles = self.storage_svc.get(key=storage_key)
@@ -51,12 +50,12 @@ class RolesService(BaseService):
         self.storage_svc.set(key=storage_key, data=[role.dict() for role in roles])
         return roles
 
-    @tracer.start_as_current_span('role::set_permission')
+    @traced('role::set_permission')
     def set_permission(self, role_id: uuid.UUID, permission_id: uuid.UUID) -> None:
         # Добавление разрешения роли.
         RolePermission(id=uuid.uuid4(), role_id=role_id, permission_id=permission_id).insert_and_commit()
 
-    @tracer.start_as_current_span('role::retrieve_permission')
+    @traced('role::retrieve_permission')
     def retrieve_permission(self, role_id: uuid.UUID, permission_id: uuid.UUID) -> None:
         # Удаление разрешения роли.
         role_permission = RolePermission.query.filter_by(role_id=role_id, permission_id=permission_id,).first()

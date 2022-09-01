@@ -1,9 +1,11 @@
 from functools import wraps
 from flask import abort, jsonify, request
 from jaeger_telemetry.tracer import tracer
+from jaeger_telemetry.decorator import traced as _traced
 
 from auth_client.src.utils import header_token_extractor
 from auth_client.src.exceptions.access import AccessException
+from jaeger_telemetry.utils import header_extractor
 
 
 def json_response(f):
@@ -38,7 +40,7 @@ def unpack_models(f):
 
 
 def token_extractor(f):
-    @tracer.start_as_current_span('decorator::token::extractor')
+    @traced('decorator::token::extractor')
     @wraps(f)
     def decorated_function(*args, **kwargs):
         kwargs['token'] = header_token_extractor(request)
@@ -48,8 +50,19 @@ def token_extractor(f):
     return decorated_function
 
 
+def traced(span: str):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            request_id = header_extractor(request=request, key='X-Request-ID')
+            
+            return _traced(span, request_id=request_id)(f)(*args, **kwargs)
+        return decorated_function
+    return decorator
+
+
 def access_exception_handler(f):
-    @tracer.start_as_current_span('decorator::token::exception')
+    @traced('decorator::token::exception')
     @wraps(f)
     def decorated_function(*args, **kwargs):
         try:

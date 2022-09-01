@@ -4,7 +4,7 @@ from http import HTTPStatus
 
 from pydantic.main import ModelMetaclass
 
-from jaeger_telemetry.tracer import tracer
+from api.utils.decorators import traced
 
 from ..errors.base import BaseError
 from ..model.base import BaseModel, db
@@ -33,11 +33,11 @@ class BaseService(ABC):
         self.storage_svc = storage_svc
 
     @abstractmethod
-    @tracer.start_as_current_span('service::get')
+    @traced('service::get')
     def get(self, **kwargs) -> ModelMetaclass:
         """Получение экземпляра"""
 
-    @tracer.start_as_current_span('service::check_exists')
+    @traced('service::check_exists')
     def exists(self, **kwargs) -> bool:
         storage_key = f'{self.model.__tablename__}::exists::{"::".join(kwargs.keys())}'
         is_exists = self.storage_svc.get(key=storage_key)
@@ -56,7 +56,7 @@ class BaseService(ABC):
         self.storage_svc.set(key=storage_key, data=result)
         return result
 
-    @tracer.start_as_current_span('service::create')
+    @traced('service::create')
     def create(self, **kwargs) -> str:
         map_data = self.map(**kwargs)
 
@@ -65,7 +65,7 @@ class BaseService(ABC):
 
         return elem.id
 
-    @tracer.start_as_current_span('service::update')
+    @traced('service::update')
     def update(self, id: str, **kwargs) -> ModelMetaclass:
         map_data = self.map(id=id, **kwargs)
         self.model.query.filter_by(id=id).update(map_data.dict())
@@ -73,7 +73,7 @@ class BaseService(ABC):
 
         return map_data
 
-    @tracer.start_as_current_span('service::delete')
+    @traced('service::delete')
     def delete(self, id: uuid) -> None:
         elem = self.model.query.get(id)
         if not elem:

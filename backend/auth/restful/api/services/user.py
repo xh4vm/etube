@@ -1,6 +1,6 @@
 import uuid
 from http import HTTPStatus
-from jaeger_telemetry.tracer import tracer
+from api.utils.decorators import traced
 
 from api.model.base import db
 from api.model.models import User, UserRole
@@ -42,7 +42,7 @@ class UserService(BaseService):
         self.storage_svc.set(key=storage_key, data=user.dict())
         return user
 
-    @tracer.start_as_current_span('user::all')
+    @traced('user::all')
     def all(self) -> schema:
         storage_key: str = f'{self.model.__tablename__}::all'
         users = self.storage_svc.get(key=storage_key)
@@ -67,16 +67,16 @@ class UserService(BaseService):
         self.storage_svc.set(key=storage_key, data=[user.dict() for user in users])
         return users
 
-    @tracer.start_as_current_span('user::update')
+    @traced('user::update')
     def update(self, id: str, login: str, email: str, password: str) -> UserMap:
         map_data = UserMap(id=id, login=login, email=email, password=User.encrypt_password(password))
         return super().update(**map_data.dict())
 
-    @tracer.start_as_current_span('user::set_role')
+    @traced('user::set_role')
     def set_role(self, user_id: uuid.UUID, role_id: uuid.UUID) -> None:
         UserRole(id=uuid.uuid4(), user_id=user_id, role_id=role_id).insert_and_commit()
 
-    @tracer.start_as_current_span('user::retrieve_role')
+    @traced('user::retrieve_role')
     def retrieve_role(self, user_id: uuid.UUID, role_id: uuid.UUID) -> None:
         user_role = UserRole.query.filter_by(user_id=user_id, role_id=role_id,).first()
 
