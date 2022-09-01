@@ -38,10 +38,20 @@ class ElasticsearchSettings(Settings):
     port: int = Field(..., env='ES_PORT')
 
 
+class JaegerAgentSettings(BaseSettings):
+    host: str = Field(..., env='JAEGER_AGENT_HOST')
+    port: int = Field(..., env='JAEGER_AGENT_PORT')
+
+
+class JaegerSettings(BaseSettings):
+    agent: JaegerAgentSettings = JaegerAgentSettings()
+
+
 class Config(Settings):
     APP: AppSettings = AppSettings()
     REDIS: RedisSettings = RedisSettings()
     ELASTIC: ElasticsearchSettings = ElasticsearchSettings()
+    JAEGER: JaegerSettings = JaegerSettings()
 
 
 CONFIG = Config()

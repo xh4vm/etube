@@ -1,14 +1,16 @@
 from typing import Any, Optional
-
+from jaeger_telemetry.tracer import tracer
 from flask_jwt_extended import create_access_token, decode_token
 
 from .base import BaseTokenService, revoke_key
 
 
 class AccessTokenService(BaseTokenService):
+    @tracer.start_as_current_span('token::access::create')
     def create(self, identity: Any, claims: Optional[dict[str, Any]] = None) -> str:
         return create_access_token(identity=identity, additional_claims=claims)
 
+    @tracer.start_as_current_span('token::access::to_blocklost')
     def add_to_blocklist(self, token: str) -> None:
         payload = decode_token(token)
         jti = payload.get('jti')

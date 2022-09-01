@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from string import Template
 from typing import Any, Optional
+from jaeger_telemetry.tracer import tracer
 
 from flask_jwt_extended import get_jwt, get_jwt_identity, verify_jwt_in_request
 
@@ -15,19 +16,24 @@ class BaseTokenService(ABC):
         self.storage_svc = storage_svc
 
     @abstractmethod
+    @tracer.start_as_current_span('token::create')
     def create(self, identity: Any, claims: Optional[dict[str, Any]] = None) -> str:
         """Метод для генерации токена"""
 
     @abstractmethod
+    @tracer.start_as_current_span('token::to_blocklist')
     def add_to_blocklist(self, token: str) -> None:
         """Помечивание токена как протухшего"""
 
+    @tracer.start_as_current_span('token::get_identity')
     def get_identity(self) -> Any:
         return get_jwt_identity()
 
+    @tracer.start_as_current_span('token::get_claims')
     def get_claims(self) -> dict[str, Any]:
         return get_jwt()
 
+    @tracer.start_as_current_span('token::is_valid')
     def is_valid_into_request(self) -> bool:
         try:
             if verify_jwt_in_request() is not None:

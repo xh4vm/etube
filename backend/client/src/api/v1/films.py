@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from jaeger_telemetry.tracer import tracer
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, HTTPException, Request
