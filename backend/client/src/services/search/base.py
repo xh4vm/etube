@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Generic, Optional, TypeVar
+from jaeger_telemetry.tracer import tracer
 
 from pydantic import BaseModel
 from pydantic.main import ModelMetaclass
@@ -30,9 +31,11 @@ class SearchResult(BaseModel):
 
 class BaseSearch(ABC):
     @abstractmethod
+    @tracer.start_as_current_span('search::get_by_id')
     def get_by_id(self, index: str, id: str) -> Optional[ModelMetaclass]:
         """Получить результат по ид"""
 
     @abstractmethod
+    @tracer.start_as_current_span('search::search')
     def search(self, index: str, params: SearchParams) -> SearchResult:
         """Поиск по search_filds внутри индекса"""
