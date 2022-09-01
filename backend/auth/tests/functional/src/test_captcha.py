@@ -11,7 +11,7 @@ pytestmark = pytest.mark.asyncio
 
 
 async def test_captcha(make_request):
-    # Проверка каптчи. Правильный ответ
+    # Проверка капчи. Правильный ответ
     x = randrange(-1000, 1000)
     answer = round(tan(x), 3)
     data_string = f"x='{x}' answer='{answer}'"
@@ -21,7 +21,7 @@ async def test_captcha(make_request):
         method='post',
         target=f'auth/captcha',
         json={'x': x, 'answer': answer},
-        headers={'data_signature': signature, 'redirect_url': 'some url'},
+        headers={'data_signature': signature, 'redirect_url': 'some url', 'redirect_data': 'some data'},
     )
 
     assert response.status == HTTPStatus.OK
@@ -29,7 +29,7 @@ async def test_captcha(make_request):
 
 
 async def test_captcha_error(make_request):
-    # Проверка каптчи. Неправильный ответ
+    # Проверка капчи. Неправильный ответ
     x = randrange(-1000, 1000)
     answer = round(tan(x), 3)
     data_string = f"x='{x}' answer='{answer+1}'"
@@ -39,7 +39,7 @@ async def test_captcha_error(make_request):
         method='post',
         target=f'auth/captcha',
         json={'x': x, 'answer': answer},
-        headers={'data_signature': signature, 'redirect_url': 'some url'},
+        headers={'data_signature': signature, 'redirect_url': 'some url', 'redirect_data': 'some data'},
     )
 
     assert response.status == HTTPStatus.UNPROCESSABLE_ENTITY

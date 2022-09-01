@@ -1,8 +1,11 @@
 from functools import wraps
+from http import HTTPStatus
+
 from flask import abort, jsonify, request
 
 from auth_client.src.utils import header_token_extractor
 from auth_client.src.exceptions.access import AccessException
+from .system import json_abort
 
 
 def json_response(f):
@@ -53,4 +56,19 @@ def access_exception_handler(f):
             return f(*args, **kwargs)
         except AccessException as access_exception:
             abort(access_exception.status, access_exception.message)
+    return decorated_function
+
+
+def captcha_needed(f):
+    # Декоратор, определяющий необходимость перенаправления
+    # пользователя на страницу капчи.
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # TODO Требуется встроенный алгоритм определения необходимости демонстрации капчи пользователю.
+        suspicious_user = kwargs['body'].user_service_id == 'string'
+        if suspicious_user:
+            json_abort(HTTPStatus.FORBIDDEN, 'Требуется прохождение капчи')
+
+        return f(*args, **kwargs)
+
     return decorated_function
