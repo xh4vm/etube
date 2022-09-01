@@ -10,7 +10,7 @@ from .base import BaseAuthService
 
 
 class LoginPasswordAuthService(BaseAuthService):
-    @tracer.start_as_current_span('authorization-by-login-password')
+    @tracer.start_as_current_span('authorization::login_password')
     def authorization(self, login: str, password: str) -> User:
         user = User.query.filter_by(login=login).first()
 

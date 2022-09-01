@@ -36,7 +36,7 @@ class PermissionsService(BaseService):
         self.storage_svc.set(key=storage_key, data=perm.dict())
         return perm
 
-    @tracer.start_as_current_span('get-all-permissions')
+    @tracer.start_as_current_span('permission::all')
     def all(self) -> schema:
         storage_key: str = f'{self.model.__tablename__}::all'
         perms = self.storage_svc.get(key=storage_key)

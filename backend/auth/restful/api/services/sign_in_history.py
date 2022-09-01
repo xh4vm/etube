@@ -14,14 +14,14 @@ class SignInHistoryService:
     def __init__(self, storage_svc: BaseStorage) -> None:
         self.storage_svc = storage_svc
 
-    @tracer.start_as_current_span('create-sign-in-record')
+    @tracer.start_as_current_span('sign_in_history::create')
     def create_record(self, user_id: uuid.UUID, user_agent: UserAgent) -> None:
         record = SignInRecordMap(
             user_id=user_id, os=user_agent.get_os(), browser=user_agent.get_browser(), device=user_agent.get_device()
         )
         SignInHistory(**record.dict()).insert_and_commit()
 
-    @tracer.start_as_current_span('get-all-sign-in-records')
+    @tracer.start_as_current_span('sign_in_history::all')
     def get_records(self, paginator: Paginator, user_id: uuid.UUID) -> Page[SignInRecord]:
         keys_values = [f'{key}::{value}' for key, value in paginator.dict().items()]
         storage_key: str = f'sign_in_history::get_records::{"::".join(keys_values)}'

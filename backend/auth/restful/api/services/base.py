@@ -33,11 +33,11 @@ class BaseService(ABC):
         self.storage_svc = storage_svc
 
     @abstractmethod
-    @tracer.start_as_current_span('service-getter')
+    @tracer.start_as_current_span('service::get')
     def get(self, **kwargs) -> ModelMetaclass:
         """Получение экземпляра"""
 
-    @tracer.start_as_current_span('service-exist-checker')
+    @tracer.start_as_current_span('service::check_exists')
     def exists(self, **kwargs) -> bool:
         storage_key = f'{self.model.__tablename__}::exists::{"::".join(kwargs.keys())}'
         is_exists = self.storage_svc.get(key=storage_key)
@@ -56,7 +56,7 @@ class BaseService(ABC):
         self.storage_svc.set(key=storage_key, data=result)
         return result
 
-    @tracer.start_as_current_span('service-creator')
+    @tracer.start_as_current_span('service::create')
     def create(self, **kwargs) -> str:
         map_data = self.map(**kwargs)
 
@@ -65,7 +65,7 @@ class BaseService(ABC):
 
         return elem.id
 
-    @tracer.start_as_current_span('service-updater')
+    @tracer.start_as_current_span('service::update')
     def update(self, id: str, **kwargs) -> ModelMetaclass:
         map_data = self.map(id=id, **kwargs)
         self.model.query.filter_by(id=id).update(map_data.dict())
@@ -73,7 +73,7 @@ class BaseService(ABC):
 
         return map_data
 
-    @tracer.start_as_current_span('service-deleter')
+    @tracer.start_as_current_span('service::delete')
     def delete(self, id: uuid) -> None:
         elem = self.model.query.get(id)
         if not elem:
