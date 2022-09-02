@@ -54,7 +54,7 @@ def traced(span: str):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            request_id = header_extractor(request=request, key='X-Request-ID')
+            request_id = header_extractor(context=request.headers, key='X-Request-ID')
             
             return _traced(span, request_id=request_id)(f)(*args, **kwargs)
         return decorated_function

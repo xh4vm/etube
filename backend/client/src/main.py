@@ -4,6 +4,10 @@ from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from jaeger_telemetry.configurations.thrift import configure_tracer
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from starlette.middleware import Middleware
+from starlette_context import context, plugins
+from starlette_context.middleware import RawContextMiddleware
+
 
 from .api.v1.films import router as film_router
 from .api.v1.genres import router as genre_router
@@ -35,11 +39,22 @@ def register_routers(app: FastAPI):
 
 
 def create_app():
+    middleware = [
+        Middleware(
+            RawContextMiddleware,
+            plugins=(
+                plugins.RequestIdPlugin(),
+                plugins.CorrelationIdPlugin()
+            )
+        )
+    ]
+
     app = FastAPI(
         title=CONFIG.APP.project_name,
         docs_url=f'{CONFIG.APP.api_path}{CONFIG.APP.swagger_path}',
         openapi_url=f'{CONFIG.APP.api_path}{CONFIG.APP.json_swagger_path}',
         default_response_class=ORJSONResponse,
+        middleware=middleware,
     )
 
     register_routers(app=app)
