@@ -1,16 +1,16 @@
 from http import HTTPStatus
-from jaeger_telemetry.tracer import tracer
 
 from api.errors.action.sign_in import SignInActionError
 from api.model.models import User
 from api.schema.base import User as UserSchema
+from api.utils.decorators import traced
 from api.utils.system import json_abort
 
 from .base import BaseAuthService
 
 
 class LoginPasswordAuthService(BaseAuthService):
-    @tracer.start_as_current_span('authorization::login_password')
+    @traced('authorization::login_password')
     def authorization(self, login: str, password: str) -> User:
         user = User.query.filter_by(login=login).first()
 

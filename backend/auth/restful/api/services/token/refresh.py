@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from typing import Any, Optional
-from jaeger_telemetry.tracer import tracer
+from api.utils.decorators import traced
 
 from flask_jwt_extended import create_refresh_token, decode_token
 
@@ -8,7 +8,7 @@ from .base import BaseTokenService, revoke_key, user_refresh_key
 
 
 class RefreshTokenService(BaseTokenService):
-    @tracer.start_as_current_span('token::refresh::create')
+    @traced('token::refresh::create')
     def create(self, identity: Any, claims: Optional[dict[str, Any]] = None) -> str:
         token = create_refresh_token(identity=identity, additional_claims=claims)
 
@@ -24,7 +24,7 @@ class RefreshTokenService(BaseTokenService):
 
         return token
 
-    @tracer.start_as_current_span('token::refresh::to_blocklist')
+    @traced('token::refresh::to_blocklist')
     def add_to_blocklist(self, token: str) -> None:
         payload = decode_token(token)
 

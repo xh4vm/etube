@@ -8,9 +8,7 @@ from api.errors.manager.permissions import PermissionsError
 from api.model.models import Permission
 from api.schema.base import Permission as PermissionSchema
 from api.utils.system import json_abort
-
-from jaeger_telemetry.tracer import tracer
-
+from api.utils.decorators import traced
 from .base import BaseService
 
 
@@ -36,7 +34,7 @@ class PermissionsService(BaseService):
         self.storage_svc.set(key=storage_key, data=perm.dict())
         return perm
 
-    @tracer.start_as_current_span('permission::all')
+    @traced('permission::all')
     def all(self) -> schema:
         storage_key: str = f'{self.model.__tablename__}::all'
         perms = self.storage_svc.get(key=storage_key)
