@@ -25,7 +25,7 @@ TAG = 'Captcha'
 def create_captcha(
     headers: CaptchaCreateHeader,
 ) -> Response:
-    """ Страница каптчи
+    """ Страница капчи
     ---
     """
 
@@ -34,9 +34,13 @@ def create_captcha(
     data_string = f"x='{x}' answer='{answer}'"
     signature = create_signature(data_string)
     return make_response(
-        {'x': x},
+        {'x': x, 'message': 'Вычислите тангенс числа'},
         200,
-        {'data_signature': signature, 'redirect_url': headers.redirect_url},
+        {
+            'data_signature': signature,
+            'redirect_url': headers.redirect_url,
+            'redirect_data': headers.redirect_data,
+        },
     )
 
 
@@ -52,7 +56,7 @@ def check_captcha(
     body: CaptchaCheckBodyParams,
     headers: CaptchaCheckHeader,
 ) -> CaptchaCheckResponse:
-    """ Страница ответа на задачу каптчи
+    """ Страница ответа на задачу капчи
     ---
     """
 
@@ -66,4 +70,5 @@ def check_captcha(
     return CaptchaCheckResponse(
         message='Вы решили слишком сложную для человека задачу. Вы робот, но мы Вам доверяем.',
         redirect_url=headers.redirect_url,
+        redirect_data=headers.redirect_data,
     )

@@ -20,7 +20,7 @@ from api.services.authorization.base import BaseAuthService
 from api.services.sign_in_history import SignInHistoryService
 from api.services.token.base import BaseTokenService
 from api.services.user import UserService
-from api.utils.decorators import json_response, unpack_models
+from api.utils.decorators import captcha_needed, json_response, unpack_models
 from api.utils.signature import check_signature
 from api.utils.system import json_abort
 from api.utils.rate_limit import check_error_status_response
@@ -43,6 +43,7 @@ TAG = 'Action'
     tags=[TAG],
 )
 @unpack_models
+@captcha_needed
 @jwt_required(optional=True)
 @json_response
 @limiter.limit('5/minute', deduct_when=check_error_status_response, override_defaults=False)
@@ -83,6 +84,7 @@ def sign_in(
     tags=[TAG],
 )
 @unpack_models
+@captcha_needed
 @jwt_required(optional=True)
 @json_response
 @limiter.limit('1/hour', exempt_when=lambda: not check_bots(), override_defaults=False)
@@ -188,6 +190,7 @@ def yandex_user_data(
     tags=[TAG],
 )
 @unpack_models
+@captcha_needed
 @json_response
 @inject
 def sign_in_yandex(
@@ -295,6 +298,7 @@ def vk_user_data(
     tags=[TAG],
 )
 @unpack_models
+@captcha_needed
 @json_response
 @inject
 def sign_in_vk(
