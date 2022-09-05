@@ -13,9 +13,8 @@ import uuid
 from faker import Faker
 from typing import Union
 
-from api.model.models import User, UserSocial
+from api.model.models import User
 from api.schema.base import User as UserSchema
-from api.schema.base import UserSocialMap
 from api.services.authorization.base import BaseAuthService
 
 class BaseOAuth(BaseAuthService):
@@ -23,7 +22,7 @@ class BaseOAuth(BaseAuthService):
     def __init__(self):
         self.faker = Faker()
 
-    def authorization(self, user_id: str) -> User:
+    def authorization(self, user_id: str) -> UserSchema:
         user = User.query.get(user_id)
 
         return UserSchema(

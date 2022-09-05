@@ -212,10 +212,7 @@ def sign_oauth(
     )
 
     if user_social is None:
-        if user_service.exists(email=user_data.email):
-            user = user_service.get(email=user_data.email)
-        else:
-            user = user_service.create(email=user_data.email)
+        user = user_service.get(email=user_data.email) or user_service.create(email=user_data.email)
 
         user_social = user_social_service.create(
                 user_id=user.id,

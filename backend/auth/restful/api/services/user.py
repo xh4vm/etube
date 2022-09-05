@@ -21,7 +21,7 @@ class UserService(BaseService):
     map = UserMap
 
     def get(self, **kwargs) -> schema:
-        keys_values = [f'{key}::{value}' for key, value in kwargs]
+        keys_values = [f'{key}::{value}' for key, value in kwargs.items()]
         storage_key: str = f'{self.model.__tablename__}::get::{"::".join(keys_values)}'
         user = self.storage_svc.get(key=storage_key)
 
