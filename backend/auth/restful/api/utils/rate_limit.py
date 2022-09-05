@@ -1,8 +1,9 @@
-from flask import request, Response
 from http import HTTPStatus
+
+from flask import Response, request
+from jaeger_telemetry.tracer import tracer
 from user_agents import parse
 from user_agents.parsers import UserAgent
-from jaeger_telemetry.tracer import tracer
 
 
 @tracer.start_as_current_span('rate_limit::status_response')

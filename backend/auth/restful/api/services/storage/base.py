@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any, Optional
+
 from api.utils.decorators import traced
+
 
 class BaseStorage(ABC):
     @abstractmethod

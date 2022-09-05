@@ -1,7 +1,7 @@
 import logging
 from typing import Any
-import backoff
 
+import backoff
 from pydantic import BaseSettings, Field
 
 
@@ -15,12 +15,13 @@ class AuthSettings(BaseSettings):
 
 class GRPCSettings(BaseSettings):
     HOST: str = Field(..., env='AUTH_GRPC_HOST')
-    PORT: int = Field(..., env='AUTH_GRPC_PORT') 
+    PORT: int = Field(..., env='AUTH_GRPC_PORT')
 
 
 class Config(BaseSettings):
     APP: AuthSettings = AuthSettings()
     GRPC: GRPCSettings = GRPCSettings()
+
 
 CONFIG = Config()
 BACKOFF_CONFIG: dict[str, Any] = {'wait_gen': backoff.expo, 'max_value': 128}

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Optional
-from jaeger_telemetry.tracer import tracer
+
 from src.utils.decorators import traced
 
 

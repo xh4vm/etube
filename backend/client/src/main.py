@@ -5,9 +5,8 @@ from fastapi.responses import ORJSONResponse
 from jaeger_telemetry.configurations.thrift import configure_tracer
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from starlette.middleware import Middleware
-from starlette_context import context, plugins
+from starlette_context import plugins
 from starlette_context.middleware import RawContextMiddleware
-
 
 from .api.v1.films import router as film_router
 from .api.v1.genres import router as genre_router

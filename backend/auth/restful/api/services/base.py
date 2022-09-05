@@ -2,9 +2,8 @@ import uuid
 from abc import ABC, abstractmethod, abstractproperty
 from http import HTTPStatus
 
-from pydantic.main import ModelMetaclass
-
 from api.utils.decorators import traced
+from pydantic.main import ModelMetaclass
 
 from ..errors.base import BaseError
 from ..model.base import BaseModel, db

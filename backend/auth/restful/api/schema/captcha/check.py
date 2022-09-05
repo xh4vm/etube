@@ -19,8 +19,7 @@ class CaptchaCheckHeader(BaseModel):
     data_signature: str = Field(title='Подпись данных пользователя', alias='Data-Signature')
     redirect_url: str = Field(title='Адрес для редиректа после прохождения капчи', alias='Redirect-Url')
     redirect_data: str = Field(
-        title='Зашифрованная информация, которую нужно отправить на следующую страницу',
-        alias='Redirect-Data',
+        title='Зашифрованная информация, которую нужно отправить на следующую страницу', alias='Redirect-Data',
     )
 
 

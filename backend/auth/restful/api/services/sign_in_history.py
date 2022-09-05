@@ -1,9 +1,10 @@
 import uuid
 from typing import Any
 
+from api.utils.decorators import traced
 from flask_sqlalchemy import Pagination
 from user_agents.parsers import UserAgent
-from api.utils.decorators import traced
+
 from ..model.models import SignInHistory
 from ..schema.base import Page, Paginator, SignInRecord, SignInRecordMap
 from .storage.base import BaseStorage

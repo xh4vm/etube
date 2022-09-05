@@ -4,13 +4,14 @@
 """
 import uuid
 from http import HTTPStatus
+
 from api.errors.manager.roles import RolesError
 from api.model.base import db
 from api.model.models import Role, RolePermission
 from api.schema.base import Role as RoleSchema
 from api.schema.base import RoleMap
-from api.utils.system import json_abort
 from api.utils.decorators import traced
+from api.utils.system import json_abort
 
 from .base import BaseService
 

@@ -1,9 +1,8 @@
-from http import HTTPStatus
 from api.model.models import UserSocial
-from api.schema.base import UserSocial as UserSocialSchema, UserSocialMap
+from api.schema.base import UserSocial as UserSocialSchema
+from api.schema.base import UserSocialMap
 
 from ..errors.user_social import UserSocialError
-from ..utils.system import json_abort
 from .base import BaseService
 
 

@@ -23,14 +23,15 @@ from api.schema.manager.role.update import (UpdateRoleBodyParams,
                                             UpdateRoleResponse)
 from api.services.permissions import PermissionsService
 from api.services.roles import RolesService
-from api.utils.decorators import json_response, unpack_models, token_extractor, access_exception_handler
+from api.utils.decorators import (access_exception_handler, json_response,
+                                  token_extractor, unpack_models)
 from api.utils.system import json_abort
+from auth_client.src.decorators import grpc_access_required
+from core.config import CONFIG
 from dependency_injector.wiring import Provide, inject
 from flask import Blueprint
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
-from core.config import CONFIG
-from auth_client.src.decorators import grpc_access_required
 
 bp = Blueprint('role', __name__, url_prefix='/role')
 TAG = 'Manager'

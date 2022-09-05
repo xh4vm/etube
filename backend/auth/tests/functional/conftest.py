@@ -4,9 +4,7 @@ from typing import Any, Optional
 
 import aiohttp
 import aioredis
-
 import auth_client.src.services.access.grpc as grpc_client_connector
-
 import psycopg2
 import pytest
 from grpc import aio

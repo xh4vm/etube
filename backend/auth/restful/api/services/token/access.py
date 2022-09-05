@@ -1,6 +1,7 @@
 from typing import Any, Optional
-from flask_jwt_extended import create_access_token, decode_token
+
 from api.utils.decorators import traced
+from flask_jwt_extended import create_access_token, decode_token
 
 from .base import BaseTokenService, revoke_key
 

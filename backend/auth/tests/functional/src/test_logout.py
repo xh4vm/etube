@@ -35,10 +35,7 @@ async def test_logout_success(make_request, redis_client, generate_users):
     response = await make_request(
         method='delete',
         target='auth/action/logout',
-        headers={
-            'X-Authorization-Token': f'Bearer {access_token}',
-            'User-Agent': fake.chrome()
-        },
+        headers={'X-Authorization-Token': f'Bearer {access_token}', 'User-Agent': fake.chrome()},
         json={'refresh_token': refresh_token},
     )
 
@@ -71,10 +68,7 @@ async def test_logout_error_double_logoute(make_request, redis_client, generate_
     response = await make_request(
         method='delete',
         target='auth/action/logout',
-        headers={
-            'X-Authorization-Token': f'Bearer {access_token}',
-            'User-Agent': fake.chrome()
-        },
+        headers={'X-Authorization-Token': f'Bearer {access_token}', 'User-Agent': fake.chrome()},
         json={'refresh_token': refresh_token},
     )
 

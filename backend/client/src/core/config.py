@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
 class AppSettings(Settings):
     host: str = Field('localhost', env='CLIENT_APP_HOST')
-    port: int = Field(..., env='CLIENT_APP_PORT') 
+    port: int = Field(..., env='CLIENT_APP_PORT')
     project_name: str = Field(..., env='PROJECT_NAME')
     api_path: str = Field(..., env='API_PATH')
     page: int = Field(..., env='PAGE_DEFAULT')

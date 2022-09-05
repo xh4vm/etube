@@ -1,10 +1,9 @@
 from typing import Any, Optional
-from jaeger_telemetry.tracer import tracer
-from src.utils.decorators import traced
 
 import orjson
 from aioredis import Redis
 from src.core.config import CONFIG
+from src.utils.decorators import traced
 
 from .base import BaseCache
 

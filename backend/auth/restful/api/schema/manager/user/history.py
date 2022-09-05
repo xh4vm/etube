@@ -1,7 +1,5 @@
-from api.schema.base import AuthorizationHeader, SignInRecord
+from api.schema.base import AuthorizationHeader, Page, Paginator, SignInRecord
 from pydantic import BaseModel, Field
-
-from api.schema.base import Page, Paginator
 
 
 class GetHistoryUserQuery(Paginator):

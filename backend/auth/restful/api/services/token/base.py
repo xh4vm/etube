@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from string import Template
 from typing import Any, Optional
-from api.utils.decorators import traced
 
+from api.utils.decorators import traced
 from flask_jwt_extended import get_jwt, get_jwt_identity, verify_jwt_in_request
 
 from ..storage.base import BaseStorage

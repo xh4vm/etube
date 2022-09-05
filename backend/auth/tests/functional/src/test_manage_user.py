@@ -1,6 +1,6 @@
+import hashlib
 from datetime import datetime
 from http import HTTPStatus
-import hashlib
 
 import pytest
 from functional.settings import CONFIG
@@ -17,7 +17,7 @@ claims = {
     'exp': int(datetime.timestamp(datetime.now()) + 100),
     'permissions': {
         hashlib.md5(url.encode(), usedforsecurity=False).hexdigest(): ['GET', 'POST', 'PUT', 'DELETE'],
-        hashlib.md5((url + '/history').encode(), usedforsecurity=False).hexdigest(): ['GET']
+        hashlib.md5((url + '/history').encode(), usedforsecurity=False).hexdigest(): ['GET'],
     },
 }
 
@@ -29,10 +29,7 @@ async def test_get_user_roles(
     response = await make_request(
         method='get',
         target='auth/manager/user',
-        headers={
-            CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}',
-            'User-Agent': fake.chrome()
-        },
+        headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}', 'User-Agent': fake.chrome()},
     )
 
     assert response.status == HTTPStatus.OK
@@ -50,20 +47,14 @@ async def test_update_user(make_request, generate_users, pg_cursor):
         method='put',
         target='auth/manager/user',
         json={'id': user.id, 'login': user.login, 'email': user.email, 'password': password, },
-        headers={
-            CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}',
-            'User-Agent': fake.chrome()
-        },
+        headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}', 'User-Agent': fake.chrome()},
     )
 
     response = await make_request(
         method='put',
         target='auth/manager/user',
         json={'id': user.id, 'login': 'cheburashka', 'email': 'chebu@rash.ka', 'password': '123qwe', },
-        headers={
-            CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}',
-            'User-Agent': fake.chrome()
-        },
+        headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}', 'User-Agent': fake.chrome()},
     )
 
     assert response.status == HTTPStatus.OK
@@ -78,10 +69,7 @@ async def test_update_not_found_user(make_request, generate_users):
         method='put',
         target='auth/manager/user',
         json={'id': user.id, 'login': user.login, 'email': user.email, 'password': password, },
-        headers={
-            CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}',
-            'User-Agent': fake.chrome()
-        },
+        headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}', 'User-Agent': fake.chrome()},
     )
 
     assert response.status == HTTPStatus.UNPROCESSABLE_ENTITY
@@ -103,10 +91,7 @@ async def test_set_role(make_request, generate_roles, generate_users, pg_cursor)
         method='post',
         target='auth/manager/user/role',
         json={'role_id': role_id, 'user_id': user_id},
-        headers={
-            CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}',
-            'User-Agent': fake.chrome()
-        },
+        headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}', 'User-Agent': fake.chrome()},
     )
 
     assert response.status == HTTPStatus.OK
@@ -130,10 +115,7 @@ async def test_retrieve_role(make_request, generate_users, generate_roles, pg_cu
         method='delete',
         target='auth/manager/user/role',
         json={'role_id': role_id, 'user_id': user_id},
-        headers={
-            CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}',
-            'User-Agent': fake.chrome()
-        },
+        headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}', 'User-Agent': fake.chrome()},
     )
 
     assert response.status == HTTPStatus.OK
@@ -149,10 +131,7 @@ async def test_get_history(make_request, generate_users, generate_history, pg_cu
         method='get',
         target='auth/manager/user/history',
         params={'page': 1, 'page_size': 2},
-        headers={
-            CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}',
-            'User-Agent': fake.chrome()
-        },
+        headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}', 'User-Agent': fake.chrome()},
     )
 
     assert response.status == HTTPStatus.OK

@@ -1,6 +1,7 @@
 from typing import Any, Optional
-from jaeger_telemetry.tracer import tracer
+
 from elasticsearch import AsyncElasticsearch, NotFoundError
+from jaeger_telemetry.tracer import tracer
 
 from .base import BaseSearch, SearchParams, SearchResult
 

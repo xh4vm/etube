@@ -1,19 +1,19 @@
-from math import tan
-import uuid
-from http import HTTPStatus
-from typing import Any, Generic, Optional, TypeVar
-from faker import Faker
-import orjson
 import hashlib
 import hmac
+import uuid
+from http import HTTPStatus
+from math import tan
+from typing import Any, Generic, Optional, TypeVar
 
+import orjson
+from api.utils.system import json_abort
+from faker import Faker
 from pydantic import BaseModel, EmailStr, Field, validator
 from pydantic.generics import GenericModel
 from user_agents import parse
 
-from api.utils.system import json_abort
-
 fake = Faker()
+
 
 def get_new_id() -> str:
     return str(uuid.uuid4())
@@ -56,7 +56,7 @@ class UserAgentHeader(BaseModel):
     def load_user_agent(cls, user_agent: str):
         return parse(user_agent)
 
-    
+
 class IntegrityTokenHeader(UserAgentHeader):
     """Схема заголовков с подписью данных
     ---
@@ -169,8 +169,7 @@ class UserSocial(BaseModel):
 
     def sig(self, secret: str) -> str:
         packed_data = str(orjson.dumps(self.dict()))
-        return hmac.new(bytes(secret, 'utf-8'), msg=bytes(packed_data, 'utf-8'),
-                    digestmod=hashlib.sha256).hexdigest()
+        return hmac.new(bytes(secret, 'utf-8'), msg=bytes(packed_data, 'utf-8'), digestmod=hashlib.sha256).hexdigest()
 
     def sig_check(self, secret: str, signature: str) -> bool:
         return signature == self.sig(secret)
@@ -210,8 +209,7 @@ class CaptchaTask(BaseModel):
 
     def sig(self, secret: str) -> str:
         packed_data = str(orjson.dumps(self.dict()))
-        return hmac.new(bytes(secret, 'utf-8'), msg=bytes(packed_data, 'utf-8'),
-                    digestmod=hashlib.sha256).hexdigest()
+        return hmac.new(bytes(secret, 'utf-8'), msg=bytes(packed_data, 'utf-8'), digestmod=hashlib.sha256).hexdigest()
 
     def sig_check(self, secret: str, signature: str) -> bool:
         return signature == self.sig(secret)

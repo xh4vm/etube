@@ -1,22 +1,23 @@
 from http import HTTPStatus
+
 import backoff
-from core.config import CONFIG, INTERACTION_CONFIG, BACKOFF_CONFIG, auth_logger
+from core.config import BACKOFF_CONFIG, CONFIG, INTERACTION_CONFIG, auth_logger
 from flask import Blueprint, Flask
 from flask_jwt_extended import JWTManager
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_migrate import Migrate
 from flask_pydantic_spec import FlaskPydanticSpec
 from flask_redis import FlaskRedis
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-
 from jaeger_telemetry.configurations.thrift import configure_tracer
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 
 from .containers.logout import ServiceContainer as LogoutServiceContainer
+from .containers.oauth import (OAuthContainer, VKAuthContainer,
+                               YandexAuthContainer)
 from .containers.permissions import \
     ServiceContainer as PermissionsServiceContainer
 from .containers.roles import ServiceContainer as RolesServiceContainer
-from .containers.oauth import YandexAuthContainer, VKAuthContainer, OAuthContainer
 from .containers.sign_in import ServiceContainer as SignInServiceContainer
 from .containers.sign_up import ServiceContainer as SignUpServiceContainer
 from .containers.storage import RedisStorageResource, StorageResource
@@ -26,7 +27,6 @@ from .model.base import db
 from .services.storage.redis import BaseStorage, RedisStorage
 from .services.token.handler import TokenHandlerService
 from .utils.error_handlers import many_requests
-
 
 migrate = Migrate()
 redis_client = FlaskRedis()
@@ -116,7 +116,7 @@ def create_app(config_classes=[CONFIG.APP, INTERACTION_CONFIG]):
     register_blueprints(app)
     register_error_handlers(app)
     register_di_containers()
-    
+
     configure_tracer(service_name='auth-restful', host=CONFIG.JAEGER.AGENT.HOST, port=CONFIG.JAEGER.AGENT.PORT)
     FlaskInstrumentor().instrument_app(app)
 

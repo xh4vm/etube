@@ -9,16 +9,13 @@
 
 """
 
-import uuid
-from faker import Faker
-from typing import Union
-
 from api.model.models import User
 from api.schema.base import User as UserSchema
 from api.services.authorization.base import BaseAuthService
+from faker import Faker
+
 
 class BaseOAuth(BaseAuthService):
-
     def __init__(self):
         self.faker = Faker()
 

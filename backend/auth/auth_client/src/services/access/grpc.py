@@ -1,6 +1,8 @@
-from grpc import aio
-from auth_client.src.messages.permission_pb2 import AccessibleRequest, AccessibleResponse
+from auth_client.src.messages.permission_pb2 import (AccessibleRequest,
+                                                     AccessibleResponse)
 from auth_client.src.messages.permission_pb2_grpc import PermissionStub
+from grpc import aio
+
 from .base import BaseAccessService
 
 

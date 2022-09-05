@@ -1,6 +1,6 @@
-from datetime import datetime
-from http import HTTPStatus 
 import hashlib
+from datetime import datetime
+from http import HTTPStatus
 
 import pytest
 from functional.settings import CONFIG
@@ -15,9 +15,7 @@ claims = {
     'sub': '6f2819c9-957b-45b6-8348-853f71bb6adf',
     'login': 'cheburashka',
     'exp': int(datetime.timestamp(datetime.now()) + 100),
-    'permissions': {
-        hashlib.md5(url.encode(), usedforsecurity=False).hexdigest(): ['GET', 'POST', 'PUT', 'DELETE'],
-    },
+    'permissions': {hashlib.md5(url.encode(), usedforsecurity=False).hexdigest(): ['GET', 'POST', 'PUT', 'DELETE'], },
 }
 
 
@@ -28,10 +26,7 @@ async def test_get_user_permissions(
     response = await make_request(
         method='get',
         target='auth/manager/permission',
-        headers={
-            CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}',
-            'User-Agent': fake.chrome()
-        },
+        headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}', 'User-Agent': fake.chrome()},
     )
 
     assert response.status == HTTPStatus.OK
@@ -53,10 +48,7 @@ async def test_create_permission(make_request, pg_cursor):
             'http_method': perm.http_method,
             'url': perm.url,
         },
-        headers={
-            CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}',
-            'User-Agent': fake.chrome()
-        },
+        headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}', 'User-Agent': fake.chrome()},
     )
 
     delete_statement = f"DELETE FROM {CONFIG.DB.SCHEMA_NAME}.permissions WHERE title = '{perm.title}';"
@@ -80,10 +72,7 @@ async def test_create_existing_permission(
             'http_method': perm.http_method,
             'url': perm.url,
         },
-        headers={
-            CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}',
-            'User-Agent': fake.chrome()
-        },
+        headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}', 'User-Agent': fake.chrome()},
     )
 
     assert response.status == HTTPStatus.UNPROCESSABLE_ENTITY
@@ -104,10 +93,7 @@ async def test_update_permission(make_request, generate_permissions):
         method='put',
         target='auth/manager/permission',
         json=json,
-        headers={
-            CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}',
-            'User-Agent': fake.chrome()
-        },
+        headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}', 'User-Agent': fake.chrome()},
     )
 
     assert response.status == HTTPStatus.OK
@@ -120,10 +106,7 @@ async def test_remove_permission(make_request, generate_permissions):
         method='delete',
         target='auth/manager/permission',
         json={'id': 'b8ac6615-012f-4469-ad03-cc87a42db5e0', },
-        headers={
-            CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}',
-            'User-Agent': fake.chrome()
-        },
+        headers={CONFIG.API.JWT_HEADER_NAME: f'Bearer {create_token(claims=claims)}', 'User-Agent': fake.chrome()},
     )
 
     assert response.status == HTTPStatus.OK

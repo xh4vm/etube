@@ -2,13 +2,11 @@
 Сервис получения списка разрешений пользователя.
 
 """
-from http import HTTPStatus
-
 from api.errors.manager.permissions import PermissionsError
 from api.model.models import Permission
 from api.schema.base import Permission as PermissionSchema
-from api.utils.system import json_abort
 from api.utils.decorators import traced
+
 from .base import BaseService
 
 
@@ -28,7 +26,9 @@ class PermissionsService(BaseService):
 
         result = None
         if (perm := self.model.query.filter_by(**kwargs).first()) is not None:
-            perm = self.schema(title=perm.title, description=perm.description, http_method=perm.http_method, url=perm.url,)
+            perm = self.schema(
+                title=perm.title, description=perm.description, http_method=perm.http_method, url=perm.url,
+            )
             result = perm.dict()
 
         self.storage_svc.set(key=storage_key, data=result)

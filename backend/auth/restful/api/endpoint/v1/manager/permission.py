@@ -4,7 +4,7 @@ from typing import Union
 from api.app import spec
 from api.containers.permissions import ServiceContainer
 from api.errors.manager.permissions import PermissionsError
-from api.schema.base import Permission as PermissionSchema 
+from api.schema.base import Permission as PermissionSchema
 from api.schema.manager.permission.create import (CreatePermissionHeader,
                                                   CreatePermissionParams,
                                                   CreatePermissionResponse)
@@ -19,14 +19,15 @@ from api.schema.manager.permission.update import (UpdatePermissionError,
                                                   UpdatePermissionParams,
                                                   UpdatePermissionResponse)
 from api.services.permissions import PermissionsService
-from api.utils.decorators import json_response, unpack_models, token_extractor, access_exception_handler
+from api.utils.decorators import (access_exception_handler, json_response,
+                                  token_extractor, unpack_models)
 from api.utils.system import json_abort
+from auth_client.src.decorators import grpc_access_required
+from core.config import CONFIG
 from dependency_injector.wiring import Provide, inject
 from flask import Blueprint
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Response
-from core.config import CONFIG
-from auth_client.src.decorators import grpc_access_required
 
 bp = Blueprint('permission', __name__, url_prefix='/permission')
 TAG = 'Manager'

@@ -1,11 +1,9 @@
-from flask import Blueprint
-from flask_pydantic_spec import Response
-
 from api.app import spec
 from api.model.models import SignInHistory
 from api.schema.manager.db.create import DbBodyParams, DbResponse
 from api.utils.decorators import json_response, unpack_models
-
+from flask import Blueprint
+from flask_pydantic_spec import Response
 
 bp = Blueprint('db', __name__, url_prefix='/db')
 TAG = 'DB'
@@ -13,15 +11,11 @@ TAG = 'DB'
 
 @bp.route('', methods=['POST'])
 @spec.validate(
-    body=DbBodyParams,
-    resp=Response(HTTP_200=DbResponse),
-    tags=[TAG],
+    body=DbBodyParams, resp=Response(HTTP_200=DbResponse), tags=[TAG],
 )
 @unpack_models
 @json_response
-def create_table(
-    body: DbBodyParams,
-):
+def create_table(body: DbBodyParams,):
     """ Создании партиции
     ---
     """

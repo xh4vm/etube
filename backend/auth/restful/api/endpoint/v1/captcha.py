@@ -1,16 +1,15 @@
 from http import HTTPStatus
-from math import tan
 from random import randrange
 
 from api.app import spec
-from core.config import CAPTCHA_CONFIG
 from api.errors.captcha import CaptchaError
+from api.schema.base import CaptchaTask
 from api.schema.captcha.check import (CaptchaCheckBodyParams,
                                       CaptchaCheckHeader, CaptchaCheckResponse)
-from api.schema.base import CaptchaTask
 from api.schema.captcha.create import CaptchaCreateHeader
 from api.utils.decorators import json_response, unpack_models
 from api.utils.system import json_abort
+from core.config import CAPTCHA_CONFIG
 from flask import Blueprint, Response, make_response
 
 bp = Blueprint('captcha', __name__, url_prefix='/captcha')
@@ -19,13 +18,10 @@ TAG = 'Captcha'
 
 @bp.route('', methods=['GET'])
 @spec.validate(
-    headers=CaptchaCreateHeader,
-    tags=[TAG],
+    headers=CaptchaCreateHeader, tags=[TAG],
 )
 @unpack_models
-def create_captcha(
-    headers: CaptchaCreateHeader,
-) -> Response:
+def create_captcha(headers: CaptchaCreateHeader,) -> Response:
     """ Страница капчи
     ---
     """
@@ -44,16 +40,11 @@ def create_captcha(
 
 @bp.route('', methods=['POST'])
 @spec.validate(
-    body=CaptchaCheckBodyParams,
-    headers=CaptchaCheckHeader,
-    tags=[TAG],
+    body=CaptchaCheckBodyParams, headers=CaptchaCheckHeader, tags=[TAG],
 )
 @unpack_models
 @json_response
-def check_captcha(
-    body: CaptchaCheckBodyParams,
-    headers: CaptchaCheckHeader,
-) -> CaptchaCheckResponse:
+def check_captcha(body: CaptchaCheckBodyParams, headers: CaptchaCheckHeader,) -> CaptchaCheckResponse:
     """ Страница ответа на задачу капчи
     ---
     """

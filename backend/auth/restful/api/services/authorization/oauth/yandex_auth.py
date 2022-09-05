@@ -1,30 +1,27 @@
 from urllib.parse import urlencode
 
 import aiohttp
-from flask import redirect, Response
+from api.schema.base import UserSocial
+from core.config import OAUTH_CONFIG
+from flask import Response, redirect
 from requests import request
 
 from .base import BaseOAuth
 
-from api.schema.base import UserSocial
-from core.config import OAUTH_CONFIG
-
 
 class YandexAuth(BaseOAuth):
-
     def get_permission_code(self) -> Response:
         # Получение от яндекса кода, который используется для
         # получение токенов, которые нужны для доступа к API.
         return redirect(
-            OAUTH_CONFIG.YANDEX.BASEURL + 'authorize?response_type=code&client_id={}'.format(
-                OAUTH_CONFIG.YANDEX.CLIENT_ID
-            )
+            OAUTH_CONFIG.YANDEX.BASEURL
+            + 'authorize?response_type=code&client_id={}'.format(OAUTH_CONFIG.YANDEX.CLIENT_ID)
         )
 
     async def get_api_tokens(self, request: request) -> str:
         # Получение токенов от стороннего сервиса.
         # Токены используются для запроса к API.
-        #TODO: Как-то обрабатывать этот код, а не просто пересылать
+        # TODO: Как-то обрабатывать этот код, а не просто пересылать
         code = request.args.get('code')
         async with aiohttp.ClientSession() as session:
             params = {

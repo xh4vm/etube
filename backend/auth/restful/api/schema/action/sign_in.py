@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from ..base import JWT, UserAgentHeader, IntegrityTokenHeader
+from ..base import JWT, IntegrityTokenHeader, UserAgentHeader
 
 
 class SignInBodyParams(BaseModel):

@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from concurrent import futures
 
 from core.config import CONFIG, grpc_logger
 from grpc import aio

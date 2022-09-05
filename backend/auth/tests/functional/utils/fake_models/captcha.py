@@ -1,6 +1,7 @@
-from math import tan
 import hashlib
 import hmac
+from math import tan
+
 import orjson
 from pydantic import BaseModel, Field
 
@@ -18,8 +19,7 @@ class FakeCaptchaTask(BaseModel):
 
     def sig(self, secret: str) -> str:
         packed_data = str(orjson.dumps(self.dict()))
-        return hmac.new(bytes(secret, 'utf-8'), msg=bytes(packed_data, 'utf-8'),
-                    digestmod=hashlib.sha256).hexdigest()
+        return hmac.new(bytes(secret, 'utf-8'), msg=bytes(packed_data, 'utf-8'), digestmod=hashlib.sha256).hexdigest()
 
     def sig_check(self, secret: str, signature: str) -> bool:
         return signature == self.sig(secret)

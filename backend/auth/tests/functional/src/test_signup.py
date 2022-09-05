@@ -15,10 +15,7 @@ async def test_sign_up_not_full_data(make_request):
     user = FakeUser()
 
     response = await make_request(
-        method='post', 
-        target='auth/action/sign_up', 
-        json={'login': user.login},
-        headers={'User-Agent': fake.chrome()}
+        method='post', target='auth/action/sign_up', json={'login': user.login}, headers={'User-Agent': fake.chrome()}
     )
     assert response.status == HTTPStatus.UNPROCESSABLE_ENTITY
 
@@ -32,7 +29,7 @@ async def test_sign_up(make_request, pg_cursor):
         method='post',
         target='auth/action/sign_up',
         json={'login': user.login, 'email': user.email, 'password': password, },
-        headers={'User-Agent': fake.chrome()}
+        headers={'User-Agent': fake.chrome()},
     )
 
     delete_statement = (
@@ -53,7 +50,7 @@ async def test_sign_up_login_error(make_request, generate_users):
         method='post',
         target='auth/action/sign_up',
         json={'login': user.login, 'email': user.email, 'password': fake.password(), },
-        headers={'User-Agent': fake.chrome()}
+        headers={'User-Agent': fake.chrome()},
     )
 
     assert response.status == HTTPStatus.UNPROCESSABLE_ENTITY

@@ -1,13 +1,11 @@
-from typing import Optional
 import uuid
 from http import HTTPStatus
 
-from api.utils.decorators import traced
-
 from api.model.base import db
 from api.model.models import User, UserRole
-from api.schema.base import User as UserSchema, fake
+from api.schema.base import User as UserSchema
 from api.schema.base import UserMap
+from api.utils.decorators import traced
 
 from ..errors.user import UserError
 from ..utils.system import json_abort

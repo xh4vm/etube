@@ -1,12 +1,11 @@
 import hashlib
 from abc import ABC, abstractmethod
 from typing import Any, Optional
-from jaeger_telemetry.tracer import tracer
-from src.utils.decorators import traced
 
 from elastic_transport import ObjectApiResponse
 from pydantic.main import ModelMetaclass
 from src.core.config import CONFIG, service_logger
+from src.utils.decorators import traced
 
 from ..models.base import PageModel
 from .cache.base import BaseCache

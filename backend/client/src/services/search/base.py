@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Generic, Optional, TypeVar
-from jaeger_telemetry.tracer import tracer
 
+from jaeger_telemetry.tracer import tracer
 from pydantic import BaseModel
 from pydantic.main import ModelMetaclass
 from src.core.config import CONFIG

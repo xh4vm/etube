@@ -1,10 +1,10 @@
 import asyncio
 from http import HTTPStatus
-import orjson
 
-from api.app import spec, limiter
+from api.app import limiter, spec
 from api.containers.logout import ServiceContainer as LogoutServiceContainer
-from api.containers.oauth import VKAuthContainer, YandexAuthContainer, OAuthContainer
+from api.containers.oauth import (OAuthContainer, VKAuthContainer,
+                                  YandexAuthContainer)
 from api.containers.sign_in import ServiceContainer as SignInServiceContainer
 from api.containers.sign_up import ServiceContainer as SignUpServiceContainer
 from api.errors.action.sign_in import SignInActionError
@@ -16,22 +16,20 @@ from api.schema.action.sign_in import (OAuthSignInBodyParams,
                                        SignInHeader, SignInResponse)
 from api.schema.action.sign_up import (SignUpBodyParams, SignUpHeader,
                                        SignUpResponse)
-from api.schema.base import User as UserSchema, UserSocial as UserSocialSchema
+from api.schema.base import User as UserSchema
+from api.schema.base import UserSocial as UserSocialSchema
 from api.services.authorization.base import BaseAuthService
-from api.services.user_social import UserSocialService
 from api.services.sign_in_history import SignInHistoryService
 from api.services.token.base import BaseTokenService
 from api.services.user import UserService
 from api.utils.decorators import json_response, unpack_models
+from api.utils.rate_limit import check_bots, check_error_status_response
 from api.utils.system import json_abort
-from api.utils.rate_limit import check_error_status_response
-from dependency_injector.wiring import Provide, inject
-from faker import Faker
-from flask import Blueprint, make_response, request
-from flask_jwt_extended.view_decorators import jwt_required
 from core.config import OAUTH_CONFIG
+from dependency_injector.wiring import Provide, inject
+from flask import Blueprint, request
+from flask_jwt_extended.view_decorators import jwt_required
 from flask_pydantic_spec import Request, Response
-from api.utils.rate_limit import check_bots
 
 bp = Blueprint('action', __name__, url_prefix='/action')
 TAG = 'Action'
@@ -140,13 +138,9 @@ def logout(
 
 
 @bp.route('/sign_in/yandex_permission', methods=['GET'])
-@spec.validate(
-    tags=[TAG],
-)
+@spec.validate(tags=[TAG],)
 @inject
-def yandex_permission(
-    auth_service: BaseAuthService = Provide[YandexAuthContainer.auth_service],
-):
+def yandex_permission(auth_service: BaseAuthService = Provide[YandexAuthContainer.auth_service],):
     """ Редирект на страницу Яндекса.
         ---
         При первом заходе пользователь должен разрешить доступ к его данным в Яндексе.
@@ -156,14 +150,10 @@ def yandex_permission(
 
 
 @bp.route('/sign_in/yandex_user_data', methods=['GET'])
-@spec.validate(
-    tags=[TAG],
-)
+@spec.validate(tags=[TAG],)
 @unpack_models
 @inject
-def yandex_user_data(
-    auth_service: BaseAuthService = Provide[YandexAuthContainer.auth_service],
-) -> Response:
+def yandex_user_data(auth_service: BaseAuthService = Provide[YandexAuthContainer.auth_service],) -> Response:
     """ Получение данных от Яндекса.
         ---
         Запрос на получение токенов, которые используются
@@ -207,18 +197,17 @@ def sign_oauth(
         json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_SIGNATURE)
 
     user_social = user_social_service.get(
-        user_service_id=user_data.user_service_id,
-        service_name=user_data.service_name,
+        user_service_id=user_data.user_service_id, service_name=user_data.service_name,
     )
 
     if user_social is None:
         user = user_service.get(email=user_data.email) or user_service.create(email=user_data.email)
 
         user_social = user_social_service.create(
-                user_id=user.id,
-                user_service_id=user_data.user_service_id,
-                email=user_data.email,
-                service_name=user_data.service_name,
+            user_id=user.id,
+            user_service_id=user_data.user_service_id,
+            email=user_data.email,
+            service_name=user_data.service_name,
         )
 
     user: UserSchema = auth_service.authorization(user_id=user_social.user_id)
@@ -232,13 +221,9 @@ def sign_oauth(
 
 
 @bp.route('/sign_in/vk_permission', methods=['GET'])
-@spec.validate(
-    tags=[TAG],
-)
+@spec.validate(tags=[TAG],)
 @inject
-def sign_in_vk_permission(
-    auth_service: BaseAuthService = Provide[VKAuthContainer.auth_service],
-):
+def sign_in_vk_permission(auth_service: BaseAuthService = Provide[VKAuthContainer.auth_service],):
     """ Редирект на страницу VK.
         ---
         При первом заходе пользователь должен разрешить доступ к его данным в VK.
@@ -248,14 +233,10 @@ def sign_in_vk_permission(
 
 
 @bp.route('/sign_in/vk_user_data', methods=['GET'])
-@spec.validate(
-    tags=[TAG],
-)
+@spec.validate(tags=[TAG],)
 @unpack_models
 @inject
-def vk_user_data(
-    auth_service: BaseAuthService = Provide[VKAuthContainer.auth_service],
-) -> Response:
+def vk_user_data(auth_service: BaseAuthService = Provide[VKAuthContainer.auth_service],) -> Response:
     """ Получение данных от VK.
         ---
         Запрос на получение токенов, которые используются

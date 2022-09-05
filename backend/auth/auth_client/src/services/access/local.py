@@ -10,8 +10,9 @@ from .base import BaseAccessService
 
 
 class AccessService(BaseAccessService):
-
-    def is_accessible(self, token: str, method: str, url: str) -> dict[Literal['is_accessible', 'message'], Union[bool, str]]:
+    def is_accessible(
+        self, token: str, method: str, url: str
+    ) -> dict[Literal['is_accessible', 'message'], Union[bool, str]]:
 
         try:
             payload = jwt.decode(jwt=token, key=CONFIG.APP.JWT_SECRET_KEY, algorithms=CONFIG.APP.JWT_DECODE_ALGORITHMS)
@@ -36,10 +37,7 @@ class AccessService(BaseAccessService):
 
         md5_hashed_url = hashlib.md5(url.encode(), usedforsecurity=False).hexdigest()
 
-        if (
-            isinstance((allowed_methods := permissions.get(md5_hashed_url)), list)
-            and method in allowed_methods
-        ):
+        if isinstance((allowed_methods := permissions.get(md5_hashed_url)), list) and method in allowed_methods:
             auth_logger.info(PermissionError.ACCESS_SUCCESS)
             return self._wrapper(status=True, message=PermissionError.ACCESS_SUCCESS)
 

@@ -1,7 +1,8 @@
+import logging
+from typing import Any
+
 import backoff
 from pydantic import BaseSettings, Field
-from typing import Any
-import logging
 
 
 class AppSettings(BaseSettings):

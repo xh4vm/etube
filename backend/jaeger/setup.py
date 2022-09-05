@@ -1,6 +1,5 @@
 from setuptools import setup
 
-
 setup(
    name='jaeger_telemetry',
    version='0.1.0',
