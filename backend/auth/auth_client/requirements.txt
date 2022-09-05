@@ -1,0 +1,7 @@
+backoff==2.1.2
+grpcio==1.47.0
+grpcio-tools==1.47.0
+protobuf==3.20.1
+pydantic==1.9.1
+six==1.16.0
+PyJWT==2.4.0

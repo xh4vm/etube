@@ -2,6 +2,7 @@ import uuid
 from abc import ABC, abstractmethod, abstractproperty
 from http import HTTPStatus
 
+from api.utils.decorators import traced
 from pydantic.main import ModelMetaclass
 
 from ..errors.base import BaseError
@@ -31,9 +32,11 @@ class BaseService(ABC):
         self.storage_svc = storage_svc
 
     @abstractmethod
+    @traced('service::get')
     def get(self, **kwargs) -> ModelMetaclass:
         """Получение экземпляра"""
 
+    @traced('service::check_exists')
     def exists(self, **kwargs) -> bool:
         storage_key = f'{self.model.__tablename__}::exists::{"::".join(kwargs.keys())}'
         is_exists = self.storage_svc.get(key=storage_key)
@@ -52,14 +55,16 @@ class BaseService(ABC):
         self.storage_svc.set(key=storage_key, data=result)
         return result
 
+    @traced('service::create')
     def create(self, **kwargs) -> str:
         map_data = self.map(**kwargs)
 
         elem = self.model(**map_data.dict())
         elem.insert_and_commit()
 
-        return elem.id
+        return elem
 
+    @traced('service::update')
     def update(self, id: str, **kwargs) -> ModelMetaclass:
         map_data = self.map(id=id, **kwargs)
         self.model.query.filter_by(id=id).update(map_data.dict())
@@ -67,6 +72,7 @@ class BaseService(ABC):
 
         return map_data
 
+    @traced('service::delete')
     def delete(self, id: uuid) -> None:
         elem = self.model.query.get(id)
         if not elem:

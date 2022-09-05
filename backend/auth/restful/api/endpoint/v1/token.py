@@ -1,13 +1,16 @@
 import uuid
+from http import HTTPStatus
 
 from api.app import spec
 from api.containers.token import ServiceContainer
-from api.schema.base import User
+from api.errors.user import UserError
+from api.schema.base import User as UserSchema
 from api.schema.token.refresh import RefreshTokenHeader, RefreshTokenResponse
 from api.services.token.access import AccessTokenService
 from api.services.token.refresh import RefreshTokenService
 from api.services.user import UserService
 from api.utils.decorators import json_response, unpack_models
+from api.utils.system import json_abort
 from dependency_injector.wiring import Provide, inject
 from flask import Blueprint
 from flask_jwt_extended import jwt_required
@@ -36,7 +39,10 @@ def refresh(
 
     user_id: uuid.UUID = refresh_token_service.get_identity()
 
-    user: User = user_service.get(id=user_id)
+    user: UserSchema = user_service.get(id=user_id)
+
+    if user is None:
+        json_abort(HTTPStatus.NOT_FOUND, UserError.NOT_EXISTS)
 
     access_token: str = access_token_service.create(identity=user.id, claims=user.get_claims())
     refresh_token: str = refresh_token_service.create(identity=user.id)

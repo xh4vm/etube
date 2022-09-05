@@ -1,12 +1,13 @@
 import hashlib
 import uuid
+from datetime import date, datetime, timedelta
 
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import TIMESTAMP, Column, ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from .base import CONFIG, BaseModel
+from .base import CONFIG, BaseModel, db
 
 
 class UserRole(BaseModel):
@@ -115,12 +116,58 @@ class Permission(BaseModel):
 
 class SignInHistory(BaseModel):
     __tablename__ = 'sign_in_history'
+    __table_args__ = (
+        UniqueConstraint('id', 'created_at'),
+        {'schema': CONFIG.DB.SCHEMA_NAME, 'postgresql_partition_by': 'RANGE (created_at)', },
+    )
 
+    id: int = Column(UUID(as_uuid=True), nullable=False, primary_key=True)
+    created_at: datetime = Column(TIMESTAMP(timezone=True), nullable=False, default=datetime.utcnow, primary_key=True)
     user_id = Column(
         UUID(as_uuid=True), ForeignKey(f'{CONFIG.DB.SCHEMA_NAME}.users.id', ondelete='CASCADE'), nullable=False
     )
     os = Column(String(255))
     device = Column(String(255))
     browser = Column(String(255))
+
+    user = relationship('User')
+
+    @classmethod
+    def create_partition(self, target_date: date) -> None:
+        # Создание партиции таблицы входов пользователей.
+        name = f'{CONFIG.DB.SCHEMA_NAME}.user_sign_in_{target_date.strftime("%m_%Y")}'
+
+        start = datetime.strptime(
+            f'{target_date.replace(day=1)}T{datetime.min.time()}', '%Y-%m-%dT%H:%M:%S'
+        ).astimezone()
+
+        end = datetime.strptime(
+            f'{(target_date.replace(day=28) + timedelta(days=4)).replace(day=1)}T{datetime.min.time()}',
+            '%Y-%m-%dT%H:%M:%S',
+        ).astimezone()
+
+        query = (
+            'CREATE TABLE IF NOT EXISTS %(name)s '
+            'PARTITION OF %(schema)s.sign_in_history '
+            'FOR VALUES FROM ("%(start)s") TO ("%(end)s");'
+        )
+
+        params = {
+            'name': name,
+            'schema': CONFIG.DB.SCHEMA_NAME,
+            'start': start,
+            'end': end,
+        }
+        db.session.execute(query % params)
+        db.session.commit()
+
+
+class UserSocial(BaseModel):
+    user_id = Column(
+        UUID(as_uuid=True), ForeignKey(f'{CONFIG.DB.SCHEMA_NAME}.users.id', ondelete='CASCADE'), nullable=False
+    )
+    user_service_id = Column(String(255))
+    email = Column(String(255))
+    service_name = Column(String(255))
 
     user = relationship('User')

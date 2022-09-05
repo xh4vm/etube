@@ -1,9 +1,18 @@
+import hashlib
+import hmac
 import uuid
+from http import HTTPStatus
+from math import tan
 from typing import Any, Generic, Optional, TypeVar
 
+import orjson
+from api.utils.system import json_abort
+from faker import Faker
 from pydantic import BaseModel, EmailStr, Field, validator
 from pydantic.generics import GenericModel
 from user_agents import parse
+
+fake = Faker()
 
 
 def get_new_id() -> str:
@@ -46,6 +55,26 @@ class UserAgentHeader(BaseModel):
     @validator('user_agent')
     def load_user_agent(cls, user_agent: str):
         return parse(user_agent)
+
+
+class IntegrityTokenHeader(UserAgentHeader):
+    """Схема заголовков с подписью данных
+    ---
+    """
+
+    integrety_token: str = Field(
+        title='Заголовок токена целостности',
+        alias='X-Integrity-Token',
+        example='adcb671e8e24572464c31e8f9ffc5f638ab302a0b673f72554d3cff96a692740',
+    )
+
+    # TODO: plz smarter checker
+    @validator('integrety_token')
+    def load_integrety_token(cls, integrety_token: str):
+        if len(integrety_token) == 64:
+            return integrety_token
+
+        json_abort(HTTPStatus.BAD_REQUEST, 'Сигнатура не найдена')
 
 
 class JWT(BaseModel):
@@ -109,7 +138,7 @@ class RoleMap(BaseModel):
 
 
 class User(BaseModel):
-    id: uuid.UUID = Field(title='Идентификатор роли', default_factory=get_new_id)
+    id: uuid.UUID = Field(title='Идентификатор пользователя', default_factory=get_new_id)
     login: str = Field(title='Логин пользователя')
     email: EmailStr = Field(title='Email пользователя')
     roles: list[str] = Field(title='Список ролей', default=[])
@@ -127,10 +156,31 @@ class User(BaseModel):
 
 
 class UserMap(BaseModel):
-    id: uuid.UUID = Field(title='Идентификатор роли', default_factory=get_new_id)
-    login: str = Field(title='Логин пользователя')
-    password: str = Field(title='Пароль пользователя')
+    id: uuid.UUID = Field(title='Идентификатор пользователя', default_factory=get_new_id)
+    login: str = Field(title='Логин пользователя', default_factory=fake.user_name)
+    password: str = Field(title='Пароль пользователя', default_factory=fake.password)
+    email: EmailStr = Field(title='Email пользователя', default_factory=fake.email)
+
+
+class UserSocial(BaseModel):
+    user_service_id: str = Field(title='Идентификатор пользователя в соц сервисе')
     email: EmailStr = Field(title='Email пользователя')
+    service_name: str = Field(title='Название сервиса')
+
+    def sig(self, secret: str) -> str:
+        packed_data = str(orjson.dumps(self.dict()))
+        return hmac.new(bytes(secret, 'utf-8'), msg=bytes(packed_data, 'utf-8'), digestmod=hashlib.sha256).hexdigest()
+
+    def sig_check(self, secret: str, signature: str) -> bool:
+        return signature == self.sig(secret)
+
+
+class UserSocialMap(BaseModel):
+    id: uuid.UUID = Field(title='Идентификатор пользователя в таблице', default_factory=get_new_id)
+    user_id: uuid.UUID = Field(title='Идентификатор пользователя приложения')
+    user_service_id: str = Field(title='Идентификатор пользователя в стороннем сервисе')
+    email: EmailStr = Field(title='Email пользователя')
+    service_name: str = Field(title='Название сервиса')
 
 
 class SignInRecordMap(BaseModel):
@@ -146,3 +196,20 @@ class SignInRecord(BaseModel):
     device: str = Field(title='Устройство пользователя')
     browser: str = Field(title='Браузер пользователя')
     created_at: str = Field(title='Дата успешной авторизации')
+
+
+class CaptchaTask(BaseModel):
+    message: str = Field(title='Текст задания', default='Вычислите тангенс угла')
+    parameter: int = Field(title='Параметр задачи', default_factory=fake.random_int)
+    answer: float = Field(title='Ответ задачи')
+
+    def __init__(self, *args, **kwargs) -> None:
+        kwargs['answer'] = kwargs.get('answer') or round(tan(int(kwargs['parameter']) + 1), 3)
+        super().__init__(*args, **kwargs)
+
+    def sig(self, secret: str) -> str:
+        packed_data = str(orjson.dumps(self.dict()))
+        return hmac.new(bytes(secret, 'utf-8'), msg=bytes(packed_data, 'utf-8'), digestmod=hashlib.sha256).hexdigest()
+
+    def sig_check(self, secret: str, signature: str) -> bool:
+        return signature == self.sig(secret)

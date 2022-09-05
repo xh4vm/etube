@@ -6,6 +6,7 @@ from functional.settings import CONFIG
 from ..utils.auth.jwt import (create_token, get_jti, get_jwt_claims,
                               get_jwt_identity, verify_exp_jwt)
 from ..utils.errors.action.sign_in import SignInActionError
+from ..utils.fake_models.base import fake
 
 pytestmark = pytest.mark.asyncio
 
@@ -13,7 +14,10 @@ pytestmark = pytest.mark.asyncio
 async def test_sign_in_password_error(make_request, generate_users):
     # Попытка входа с ошибкой в пароле.
     response = await make_request(
-        method='post', target='auth/action/sign_in', json={'login': 'cheburashka', 'password': 'FailPassword'}
+        method='post',
+        target='auth/action/sign_in',
+        json={'login': 'cheburashka', 'password': 'FailPassword'},
+        headers={'User-Agent': fake.chrome()},
     )
 
     assert response.status == HTTPStatus.UNPROCESSABLE_ENTITY
@@ -23,7 +27,10 @@ async def test_sign_in_password_error(make_request, generate_users):
 async def test_sign_in_login_error(make_request, generate_users):
     # Попытка входа с ошибкой в логине.
     response = await make_request(
-        method='post', target='auth/action/sign_in', json={'login': 'asd', 'password': '123qwe'}
+        method='post',
+        target='auth/action/sign_in',
+        json={'login': 'asd', 'password': '123qwe'},
+        headers={'User-Agent': fake.chrome()},
     )
 
     assert response.status == HTTPStatus.UNPROCESSABLE_ENTITY
@@ -33,7 +40,10 @@ async def test_sign_in_login_error(make_request, generate_users):
 async def test_sign_in_login_success(make_request, generate_users, redis_client):
     # Попытка входа.
     response = await make_request(
-        method='post', target='auth/action/sign_in', json={'login': 'cheburashka', 'password': '123qwe'}
+        method='post',
+        target='auth/action/sign_in',
+        json={'login': 'cheburashka', 'password': '123qwe'},
+        headers={'User-Agent': fake.chrome()},
     )
 
     assert response.status == HTTPStatus.OK
@@ -67,7 +77,7 @@ async def test_sign_in_alredy_auth(make_request, generate_users):
         method='post',
         target='auth/action/sign_in',
         json={'login': 'cheburashka', 'password': '123qwe'},
-        headers={'X-Authorization-Token': f'Bearer {access_token}'},
+        headers={'X-Authorization-Token': f'Bearer {access_token}', 'User-Agent': fake.chrome()},
     )
 
     assert response.status == HTTPStatus.OK
@@ -85,7 +95,10 @@ async def test_sign_in_history_record(make_request, generate_users, pg_cursor):
     count = pg_cursor.fetchone()[0]
 
     response = await make_request(
-        method='post', target='auth/action/sign_in', json={'login': 'cheburashka', 'password': '123qwe'}
+        method='post',
+        target='auth/action/sign_in',
+        json={'login': 'cheburashka', 'password': '123qwe'},
+        headers={'User-Agent': fake.chrome()},
     )
 
     assert response.status == HTTPStatus.OK

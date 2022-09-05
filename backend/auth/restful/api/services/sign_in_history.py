@@ -1,6 +1,7 @@
 import uuid
 from typing import Any
 
+from api.utils.decorators import traced
 from flask_sqlalchemy import Pagination
 from user_agents.parsers import UserAgent
 
@@ -13,12 +14,14 @@ class SignInHistoryService:
     def __init__(self, storage_svc: BaseStorage) -> None:
         self.storage_svc = storage_svc
 
+    @traced('sign_in_history::create')
     def create_record(self, user_id: uuid.UUID, user_agent: UserAgent) -> None:
         record = SignInRecordMap(
             user_id=user_id, os=user_agent.get_os(), browser=user_agent.get_browser(), device=user_agent.get_device()
         )
         SignInHistory(**record.dict()).insert_and_commit()
 
+    @traced('sign_in_history::all')
     def get_records(self, paginator: Paginator, user_id: uuid.UUID) -> Page[SignInRecord]:
         keys_values = [f'{key}::{value}' for key, value in paginator.dict().items()]
         storage_key: str = f'sign_in_history::get_records::{"::".join(keys_values)}'

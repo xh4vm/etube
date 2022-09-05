@@ -13,6 +13,8 @@ class Settings(BaseSettings):
 
 
 class AppSettings(Settings):
+    host: str = Field('localhost', env='CLIENT_APP_HOST')
+    port: int = Field(..., env='CLIENT_APP_PORT')
     project_name: str = Field(..., env='PROJECT_NAME')
     api_path: str = Field(..., env='API_PATH')
     page: int = Field(..., env='PAGE_DEFAULT')
@@ -36,10 +38,20 @@ class ElasticsearchSettings(Settings):
     port: int = Field(..., env='ES_PORT')
 
 
+class JaegerAgentSettings(BaseSettings):
+    host: str = Field(..., env='JAEGER_AGENT_HOST')
+    port: int = Field(..., env='JAEGER_AGENT_PORT')
+
+
+class JaegerSettings(BaseSettings):
+    agent: JaegerAgentSettings = JaegerAgentSettings()
+
+
 class Config(Settings):
     APP: AppSettings = AppSettings()
     REDIS: RedisSettings = RedisSettings()
     ELASTIC: ElasticsearchSettings = ElasticsearchSettings()
+    JAEGER: JaegerSettings = JaegerSettings()
 
 
 CONFIG = Config()

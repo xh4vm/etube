@@ -4,6 +4,7 @@ from api.app import spec
 from api.containers.roles import ServiceContainer
 from api.errors.manager.permissions import PermissionsError
 from api.errors.manager.roles import RolesError
+from api.schema.base import RoleMap
 from api.schema.manager.role.create import (CreateRoleBodyParams,
                                             CreateRoleHeader,
                                             CreateRoleResponse)
@@ -22,8 +23,11 @@ from api.schema.manager.role.update import (UpdateRoleBodyParams,
                                             UpdateRoleResponse)
 from api.services.permissions import PermissionsService
 from api.services.roles import RolesService
-from api.utils.decorators import json_response, unpack_models
+from api.utils.decorators import (access_exception_handler, json_response,
+                                  token_extractor, unpack_models)
 from api.utils.system import json_abort
+from auth_client.src.decorators import grpc_access_required
+from core.config import CONFIG
 from dependency_injector.wiring import Provide, inject
 from flask import Blueprint
 from flask_jwt_extended.view_decorators import jwt_required
@@ -31,9 +35,13 @@ from flask_pydantic_spec import Request, Response
 
 bp = Blueprint('role', __name__, url_prefix='/role')
 TAG = 'Manager'
+URL = f'{CONFIG.APP.AUTH_APP_HOST}:{CONFIG.APP.AUTH_APP_PORT}/api/v1/auth/manager/role'
 
 
 @bp.route('', methods=['GET'])
+@token_extractor
+@access_exception_handler
+@grpc_access_required({URL: 'GET'})
 @spec.validate(headers=GetRoleHeader, resp=Response(HTTP_200=GetRoleResponse, HTTP_403=None), tags=[TAG])
 @unpack_models
 @jwt_required()
@@ -51,6 +59,9 @@ def get_roles(
 
 
 @bp.route('', methods=['POST'])
+@token_extractor
+@access_exception_handler
+@grpc_access_required({URL: 'POST'})
 @spec.validate(
     body=Request(CreateRoleBodyParams),
     headers=CreateRoleHeader,
@@ -73,12 +84,15 @@ def create_role(
     if roles_service.exists(title=body.title):
         json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, RolesError.ALREADY_EXISTS)
 
-    role_id = roles_service.create(title=body.title, description=body.description)
+    role: RoleMap = roles_service.create(title=body.title, description=body.description)
 
-    return CreateRoleResponse(id=role_id, message=f'Роль {body.title} создана.')
+    return CreateRoleResponse(id=role.id, message=f'Роль {body.title} создана.')
 
 
 @bp.route('', methods=['PUT'])
+@token_extractor
+@access_exception_handler
+@grpc_access_required({URL: 'PUT'})
 @spec.validate(
     body=Request(UpdateRoleBodyParams),
     headers=UpdateRoleHeader,
@@ -107,6 +121,9 @@ def update_role(
 
 
 @bp.route('', methods=['DELETE'])
+@token_extractor
+@access_exception_handler
+@grpc_access_required({URL: 'DELETE'})
 @spec.validate(
     body=Request(DeleteRoleBodyParams),
     headers=DeleteRoleHeader,
@@ -136,6 +153,9 @@ def delete_role(
 
 
 @bp.route('/permission', methods=['POST'])
+@token_extractor
+@access_exception_handler
+@grpc_access_required({URL + '/permission': 'POST'})
 @spec.validate(
     body=Request(RoleSetPermissionBodyParams),
     headers=RoleSetPermissionHeader,
@@ -168,6 +188,9 @@ def set_permission(
 
 
 @bp.route('/permission', methods=['DELETE'])
+@token_extractor
+@access_exception_handler
+@grpc_access_required({URL + '/permission': 'DELETE'})
 @spec.validate(
     body=Request(RoleRetrievePermissionBodyParams),
     headers=RoleRetrievePermissionHeader,

@@ -3,6 +3,7 @@ from typing import Any, Optional
 import orjson
 from aioredis import Redis
 from src.core.config import CONFIG
+from src.utils.decorators import traced
 
 from .base import BaseCache
 
@@ -12,6 +13,7 @@ class RedisCache(BaseCache):
         self.redis = redis
         self.expire = expire
 
+    @traced('redis::get')
     async def get(self, key: str, default_value: Optional[str] = None) -> Optional[str]:
         data = await self.redis.get(key)
 
@@ -20,5 +22,6 @@ class RedisCache(BaseCache):
 
         return orjson.loads(data)
 
+    @traced('redis::set')
     async def set(self, key: str, data: Any) -> None:
         await self.redis.set(key=key, value=orjson.dumps(data), expire=self.expire)

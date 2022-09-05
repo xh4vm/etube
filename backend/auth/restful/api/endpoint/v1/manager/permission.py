@@ -4,6 +4,7 @@ from typing import Union
 from api.app import spec
 from api.containers.permissions import ServiceContainer
 from api.errors.manager.permissions import PermissionsError
+from api.schema.base import Permission as PermissionSchema
 from api.schema.manager.permission.create import (CreatePermissionHeader,
                                                   CreatePermissionParams,
                                                   CreatePermissionResponse)
@@ -18,8 +19,11 @@ from api.schema.manager.permission.update import (UpdatePermissionError,
                                                   UpdatePermissionParams,
                                                   UpdatePermissionResponse)
 from api.services.permissions import PermissionsService
-from api.utils.decorators import json_response, unpack_models
+from api.utils.decorators import (access_exception_handler, json_response,
+                                  token_extractor, unpack_models)
 from api.utils.system import json_abort
+from auth_client.src.decorators import grpc_access_required
+from core.config import CONFIG
 from dependency_injector.wiring import Provide, inject
 from flask import Blueprint
 from flask_jwt_extended.view_decorators import jwt_required
@@ -27,9 +31,13 @@ from flask_pydantic_spec import Response
 
 bp = Blueprint('permission', __name__, url_prefix='/permission')
 TAG = 'Manager'
+URL = f'{CONFIG.APP.AUTH_APP_HOST}:{CONFIG.APP.AUTH_APP_PORT}/api/v1/auth/manager/permission'
 
 
 @bp.route('', methods=['GET'])
+@token_extractor
+@access_exception_handler
+@grpc_access_required({URL: 'GET'})
 @spec.validate(
     headers=GetPermissionHeader,
     resp=Response(HTTP_200=GetPermissionResponse, HTTP_404=GetPermissionError, HTTP_403=None),
@@ -49,6 +57,9 @@ def get_permissions(
 
 
 @bp.route('', methods=['POST'])
+@token_extractor
+@access_exception_handler
+@grpc_access_required({URL: 'POST'})
 @spec.validate(
     body=CreatePermissionParams,
     headers=CreatePermissionHeader,
@@ -70,14 +81,17 @@ def create_permission(
     if permissions_service.exists(title=body.title):
         json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, PermissionsError.ALREADY_EXISTS)
 
-    permission = permissions_service.create(
+    permission: PermissionSchema = permissions_service.create(
         title=body.title, description=body.description, http_method=body.http_method, url=body.url,
     )
 
-    return CreatePermissionResponse(id=permission, message=f'Разрешение {body.title} создано.',)
+    return CreatePermissionResponse(id=permission.id, message=f'Разрешение {body.title} создано.',)
 
 
 @bp.route('', methods=['PUT'])
+@token_extractor
+@access_exception_handler
+@grpc_access_required({URL: 'PUT'})
 @spec.validate(
     body=UpdatePermissionParams,
     headers=UpdatePermissionHeader,
@@ -107,6 +121,9 @@ def update_permission(
 
 
 @bp.route('', methods=['DELETE'])
+@token_extractor
+@access_exception_handler
+@grpc_access_required({URL: 'DELETE'})
 @spec.validate(
     body=DeletePermissionParams,
     headers=DeletePermissionHeader,

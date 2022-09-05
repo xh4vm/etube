@@ -5,6 +5,7 @@ from typing import Any, Optional
 from elastic_transport import ObjectApiResponse
 from pydantic.main import ModelMetaclass
 from src.core.config import CONFIG, service_logger
+from src.utils.decorators import traced
 
 from ..models.base import PageModel
 from .cache.base import BaseCache
@@ -46,6 +47,7 @@ class BaseService(ABC):
     def model_filter(self) -> ModelMetaclass:
         """Название pydantic модели для вариантов фильтрации"""
 
+    @traced('service::get_by_id')
     async def get_by_id(self, id: str) -> Optional[ModelMetaclass]:
         cache_key = f'{self.index}::detail::{id}'
         data = await self.cache_svc.get(cache_key)
@@ -60,6 +62,7 @@ class BaseService(ABC):
 
         return self.full_model.parse_obj(data['_source']) if data is not None else None
 
+    @traced('service::search')
     async def search(
         self,
         page: int = CONFIG.APP.page,

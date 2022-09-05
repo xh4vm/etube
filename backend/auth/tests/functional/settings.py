@@ -3,12 +3,8 @@ import os
 from pydantic import BaseSettings, Field
 
 
-class Settings(BaseSettings):
-    class Config:
-        env_file = '../../.env'
-
-
-class ApiSettings(Settings):
+class ApiSettings(BaseSettings):
+    HOST: str = Field('localhost', env='AUTH_APP_HOST')
     URL: str = Field('http://localhost', env='AUTH_API_URL')
     PORT: str = Field('9090', env='AUTH_APP_PORT')
     API_PATH: str = Field('/api', env='AUTH_API_PATH')
@@ -20,7 +16,7 @@ class ApiSettings(Settings):
     JWT_TOKEN_LOCATION: str = Field('headers', env='AUTH_JWT_TOKEN_LOCATION')
 
 
-class GRPCSettings(Settings):
+class GRPCSettings(BaseSettings):
     HOST: str = Field('localhost', env='AUTH_GRPC_HOST')
     PORT: str = Field('56567', env='AUTH_GRPC_PORT')
 
@@ -35,7 +31,7 @@ class DatabaseSettings(BaseSettings):
     USER: str = Field('auth', env='AUTH_DB_USER')
     PASSWORD: str = Field('123qwe', env='AUTH_DB_PASSWORD')
     HOST: str = Field('localhost', env='AUTH_DB_HOST')
-    PORT: int = Field('5432', env='AUTH_DB_PORT')
+    PORT: int = Field('5433', env='AUTH_DB_PORT')
     NAME: str = Field('auth_database', env='AUTH_DB_NAME')
     SCHEMA_NAME: str = Field('auth_etube', env='AUTH_DB_SCHEMA')
     SCHEMA_FILE_NAME: str = Field('schema.sql', env='AUTH_DB_SCHEMA_FILE_PATH')
@@ -50,7 +46,11 @@ class DatabaseSettings(BaseSettings):
         }
 
 
-class Config(Settings):
+class OAuthConfig(BaseSettings):
+    SECRET: str = Field('P2yV0aGyYs6MDEODdbbd6bf17', env='OAUTH_SECRET')
+
+
+class Config(BaseSettings):
     API: ApiSettings = ApiSettings()
     GRPC: GRPCSettings = GRPCSettings()
     REDIS: RedisSettings = RedisSettings()
@@ -58,4 +58,10 @@ class Config(Settings):
     BASE_DIR: str = os.path.dirname(os.path.abspath(__file__))
 
 
+class CaptchaSettings(BaseSettings):
+    SECRET: str = Field('2nc@hyy$4y(m+5c52ahsg_#&aet6_rm=9g1d^h1ge1$uy^@r7a', env='CAPTCHA_SECRET')
+
+
 CONFIG = Config()
+OAUTH_CONFIG = OAuthConfig()
+CAPTCHA_CONFIG = CaptchaSettings()

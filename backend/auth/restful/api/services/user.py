@@ -5,6 +5,7 @@ from api.model.base import db
 from api.model.models import User, UserRole
 from api.schema.base import User as UserSchema
 from api.schema.base import UserMap
+from api.utils.decorators import traced
 
 from ..errors.user import UserError
 from ..utils.system import json_abort
@@ -18,29 +19,30 @@ class UserService(BaseService):
     map = UserMap
 
     def get(self, **kwargs) -> schema:
-        keys_values = [f'{key}::{value}' for key, value in kwargs]
+        keys_values = [f'{key}::{value}' for key, value in kwargs.items()]
         storage_key: str = f'{self.model.__tablename__}::get::{"::".join(keys_values)}'
         user = self.storage_svc.get(key=storage_key)
 
         if user is not None:
             return self.schema(**user)
 
-        if (user := self.model.query.filter_by(**kwargs).first()) is None:
-            json_abort(HTTPStatus.NOT_FOUND, self.error.NOT_EXISTS)
+        result = None
+        if (user := self.model.query.filter_by(**kwargs).first()) is not None:
+            roles_with_permissions = user.roles_with_permissions
 
-        roles_with_permissions = user.roles_with_permissions
+            user = self.schema(
+                id=user.id,
+                login=user.login,
+                email=user.email,
+                roles=roles_with_permissions.get('roles'),
+                permissions=roles_with_permissions.get('permissions'),
+            )
+            result = user.dict()
 
-        user = self.schema(
-            id=user.id,
-            login=user.login,
-            email=user.email,
-            roles=roles_with_permissions.get('roles'),
-            permissions=roles_with_permissions.get('permissions'),
-        )
-
-        self.storage_svc.set(key=storage_key, data=user.dict())
+        self.storage_svc.set(key=storage_key, data=result)
         return user
 
+    @traced('user::all')
     def all(self) -> schema:
         storage_key: str = f'{self.model.__tablename__}::all'
         users = self.storage_svc.get(key=storage_key)
@@ -65,13 +67,16 @@ class UserService(BaseService):
         self.storage_svc.set(key=storage_key, data=[user.dict() for user in users])
         return users
 
+    @traced('user::update')
     def update(self, id: str, login: str, email: str, password: str) -> UserMap:
         map_data = UserMap(id=id, login=login, email=email, password=User.encrypt_password(password))
         return super().update(**map_data.dict())
 
+    @traced('user::set_role')
     def set_role(self, user_id: uuid.UUID, role_id: uuid.UUID) -> None:
         UserRole(id=uuid.uuid4(), user_id=user_id, role_id=role_id).insert_and_commit()
 
+    @traced('user::retrieve_role')
     def retrieve_role(self, user_id: uuid.UUID, role_id: uuid.UUID) -> None:
         user_role = UserRole.query.filter_by(user_id=user_id, role_id=role_id,).first()
 

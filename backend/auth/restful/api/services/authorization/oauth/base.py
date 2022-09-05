@@ -1,0 +1,31 @@
+"""
+Базовый сервис авторизации через сторонние сервисы.
+
+Переопределяет метод авторизации:
+сначала ведется поиск пользователя в таблице сервисов.
+Если пользователь не найден, ведется поиск в таблице пользователей.
+При необходимости создаются записи в таблице пользователей (с фейковыми логином и паролем)
+и в таблице сервисов (со связью с таблицей пользователей).
+
+"""
+
+from api.model.models import User
+from api.schema.base import User as UserSchema
+from api.services.authorization.base import BaseAuthService
+from faker import Faker
+
+
+class BaseOAuth(BaseAuthService):
+    def __init__(self):
+        self.faker = Faker()
+
+    def authorization(self, user_id: str) -> UserSchema:
+        user = User.query.get(user_id)
+
+        return UserSchema(
+            id=user.id,
+            login=user.login,
+            email=user.email,
+            roles=user.roles_with_permissions.get('roles'),
+            permissions=user.roles_with_permissions.get('permissions'),
+        )

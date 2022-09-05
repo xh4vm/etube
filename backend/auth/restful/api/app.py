@@ -1,11 +1,20 @@
-from core.config import CONFIG, INTERACTION_CONFIG
+from http import HTTPStatus
+
+import backoff
+from core.config import BACKOFF_CONFIG, CONFIG, INTERACTION_CONFIG, auth_logger
 from flask import Blueprint, Flask
 from flask_jwt_extended import JWTManager
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_migrate import Migrate
 from flask_pydantic_spec import FlaskPydanticSpec
 from flask_redis import FlaskRedis
+from jaeger_telemetry.configurations.thrift import configure_tracer
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
 
 from .containers.logout import ServiceContainer as LogoutServiceContainer
+from .containers.oauth import (OAuthContainer, VKAuthContainer,
+                               YandexAuthContainer)
 from .containers.permissions import \
     ServiceContainer as PermissionsServiceContainer
 from .containers.roles import ServiceContainer as RolesServiceContainer
@@ -17,10 +26,12 @@ from .containers.user import ServiceContainer as UserServiceContainer
 from .model.base import db
 from .services.storage.redis import BaseStorage, RedisStorage
 from .services.token.handler import TokenHandlerService
+from .utils.error_handlers import many_requests
 
 migrate = Migrate()
 redis_client = FlaskRedis()
 jwt = JWTManager()
+limiter = Limiter(key_func=get_remote_address)
 spec = FlaskPydanticSpec('flask', title='Auth API', version=CONFIG.APP.API_VERSION, path=CONFIG.APP.SWAGGER_PATH)
 
 
@@ -34,6 +45,9 @@ def register_di_containers():
     RolesServiceContainer(storage_svc=redis_resource)
     PermissionsServiceContainer(storage_svc=redis_resource)
     LogoutServiceContainer(storage_svc=redis_resource)
+    OAuthContainer(storage_svc=redis_resource)
+    YandexAuthContainer(storage_svc=redis_resource)
+    VKAuthContainer(storage_svc=redis_resource)
 
 
 def register_jwt_handelers(storage_service: BaseStorage):
@@ -47,12 +61,18 @@ def register_jwt_handelers(storage_service: BaseStorage):
     jwt.token_verification_failed_loader(token_handelr_service.token_verification_failed_callback)
 
 
-def register_blueprints(app):
+def register_error_handlers(app: Flask):
+    app.register_error_handler(HTTPStatus.TOO_MANY_REQUESTS, many_requests)
+
+
+def register_blueprints(app: Flask):
     root_bp = Blueprint('root', __name__, url_prefix=f'/api/{CONFIG.APP.API_VERSION}/auth')
+    limiter.limit('3/second')(root_bp)
 
     from .endpoint.v1.action import bp as action_bp
 
     root_bp.register_blueprint(action_bp)
+    limiter.limit('15/minute')(action_bp)
 
     from .endpoint.v1.token import bp as token_bp
 
@@ -61,6 +81,14 @@ def register_blueprints(app):
     from .endpoint.v1.manager import bp as manager_bp
 
     root_bp.register_blueprint(manager_bp)
+
+    from .endpoint.v1.manager.db import bp as db_bp
+
+    root_bp.register_blueprint(db_bp)
+
+    from .endpoint.v1.captcha import bp as captcha_bp
+
+    root_bp.register_blueprint(captcha_bp)
 
     from .utils.superuser_cli import bp as superuser_bp
 
@@ -73,6 +101,7 @@ def create_db_schema(db, schema_name=CONFIG.DB.SCHEMA_NAME):
     db.engine.execute(f'CREATE SCHEMA IF NOT EXISTS {schema_name};')
 
 
+@backoff.on_exception(**BACKOFF_CONFIG, logger=auth_logger)
 def create_app(config_classes=[CONFIG.APP, INTERACTION_CONFIG]):
     app = Flask(__name__)
 
@@ -82,9 +111,14 @@ def create_app(config_classes=[CONFIG.APP, INTERACTION_CONFIG]):
     migrate.init_app(app, db)
     redis_client.init_app(app)
     jwt.init_app(app)
+    limiter.init_app(app)
 
     register_blueprints(app)
+    register_error_handlers(app)
     register_di_containers()
+
+    configure_tracer(service_name='auth-restful', host=CONFIG.JAEGER.AGENT.HOST, port=CONFIG.JAEGER.AGENT.PORT)
+    FlaskInstrumentor().instrument_app(app)
 
     redis_storage = RedisStorage(redis=redis_client)
     register_jwt_handelers(storage_service=redis_storage)

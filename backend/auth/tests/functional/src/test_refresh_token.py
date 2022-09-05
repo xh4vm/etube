@@ -6,6 +6,7 @@ import pytest
 from ..utils.auth.jwt import (create_token, get_jwt_claims, get_jwt_identity,
                               verify_exp_jwt)
 from ..utils.errors.token import TokenError
+from ..utils.fake_models.base import fake
 
 pytestmark = pytest.mark.asyncio
 
@@ -15,7 +16,9 @@ async def test_refresh_token_success(make_request, generate_users, redis_client)
     refresh_token = create_token(claims={'sub': '6f2819c9-957b-45b6-8348-853f71bb6adf', 'type': 'refresh', })
 
     response = await make_request(
-        method='post', target='auth/token/refresh', headers={'X-Authorization-Token': f'Bearer {refresh_token}'}
+        method='post',
+        target='auth/token/refresh',
+        headers={'X-Authorization-Token': f'Bearer {refresh_token}', 'User-Agent': fake.chrome()},
     )
 
     assert response.status == HTTPStatus.OK
@@ -50,7 +53,9 @@ async def test_refresh_token_expired_error(make_request, generate_users):
         }
     )
     response = await make_request(
-        method='post', target='auth/token/refresh', headers={'X-Authorization-Token': f'Bearer {refresh_token}'}
+        method='post',
+        target='auth/token/refresh',
+        headers={'X-Authorization-Token': f'Bearer {refresh_token}', 'User-Agent': fake.chrome()},
     )
 
     assert response.status == HTTPStatus.UNAUTHORIZED
@@ -63,7 +68,9 @@ async def test_refresh_token_invalid_error(make_request, generate_users):
         claims={'sub': '6f2819c9-957b-45b6-8348-853f71bb6adf', 'exp': datetime.timestamp(datetime.now())}
     )
     response = await make_request(
-        method='post', target='auth/token/refresh', headers={'X-Authorization-Token': f'Bearer {access_token}'}
+        method='post',
+        target='auth/token/refresh',
+        headers={'X-Authorization-Token': f'Bearer {access_token}', 'User-Agent': fake.chrome()},
     )
 
     assert response.status == HTTPStatus.UNPROCESSABLE_ENTITY

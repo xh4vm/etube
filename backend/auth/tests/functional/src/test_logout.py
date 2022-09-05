@@ -7,6 +7,7 @@ import pytest
 
 from ..utils.auth.jwt import create_token
 from ..utils.errors.token import TokenError
+from ..utils.fake_models.base import fake
 
 pytestmark = pytest.mark.asyncio
 
@@ -34,7 +35,7 @@ async def test_logout_success(make_request, redis_client, generate_users):
     response = await make_request(
         method='delete',
         target='auth/action/logout',
-        headers={'X-Authorization-Token': f'Bearer {access_token}'},
+        headers={'X-Authorization-Token': f'Bearer {access_token}', 'User-Agent': fake.chrome()},
         json={'refresh_token': refresh_token},
     )
 
@@ -67,7 +68,7 @@ async def test_logout_error_double_logoute(make_request, redis_client, generate_
     response = await make_request(
         method='delete',
         target='auth/action/logout',
-        headers={'X-Authorization-Token': f'Bearer {access_token}'},
+        headers={'X-Authorization-Token': f'Bearer {access_token}', 'User-Agent': fake.chrome()},
         json={'refresh_token': refresh_token},
     )
 

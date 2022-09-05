@@ -6,6 +6,7 @@ from .superuser import SuperUser
 
 bp = Blueprint('superuser', __name__)
 
+
 @bp.cli.command('create')
 @click.argument('login')
 @click.argument('email')

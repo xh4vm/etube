@@ -22,8 +22,11 @@ from api.services.roles import RolesService
 from api.services.sign_in_history import SignInHistoryService
 from api.services.token.base import BaseTokenService
 from api.services.user import UserService
-from api.utils.decorators import json_response, unpack_models
+from api.utils.decorators import (access_exception_handler, json_response,
+                                  token_extractor, unpack_models)
 from api.utils.system import json_abort
+from auth_client.src.decorators import access_required
+from core.config import CONFIG
 from dependency_injector.wiring import Provide, inject
 from flask import Blueprint
 from flask_jwt_extended.view_decorators import jwt_required
@@ -31,9 +34,13 @@ from flask_pydantic_spec import Request, Response
 
 bp = Blueprint('user', __name__, url_prefix='/user')
 TAG = 'Manager'
+URL = f'{CONFIG.APP.AUTH_APP_HOST}:{CONFIG.APP.AUTH_APP_PORT}/api/v1/auth/manager/user'
 
 
 @bp.route('', methods=['GET'])
+@token_extractor
+@access_exception_handler
+@access_required({URL: 'GET'})
 @spec.validate(headers=GetUserHeader, resp=Response(HTTP_200=GetUserResponse, HTTP_403=None), tags=[TAG])
 @unpack_models
 @jwt_required()
@@ -51,6 +58,9 @@ def get_user(
 
 
 @bp.route('', methods=['PUT'])
+@token_extractor
+@access_exception_handler
+@access_required({URL: 'PUT'})
 @spec.validate(
     body=Request(UpdateUserBodyParams),
     headers=UpdateUserHeader,
@@ -79,6 +89,9 @@ def update_user(
 
 
 @bp.route('/role', methods=['POST'])
+@token_extractor
+@access_exception_handler
+@access_required({URL: 'POST'})
 @spec.validate(
     body=Request(UserSetRoleBodyParams),
     headers=UserSetRoleHeader,
@@ -111,6 +124,9 @@ def set_role(
 
 
 @bp.route('/role', methods=['DELETE'])
+@token_extractor
+@access_exception_handler
+@access_required({URL: 'DELETE'})
 @spec.validate(
     body=Request(UserRetriveRoleBodyParams),
     headers=UserRetriveRoleHeader,
@@ -143,6 +159,9 @@ def retrive_role(
 
 
 @bp.route('/history', methods=['GET'])
+@token_extractor
+@access_exception_handler
+@access_required({URL + '/history': 'GET'})
 @spec.validate(
     query=GetHistoryUserQuery,
     headers=GetHistoryUserHeader,

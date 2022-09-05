@@ -1,6 +1,7 @@
 from typing import Any, Optional
 
 from elasticsearch import AsyncElasticsearch, NotFoundError
+from jaeger_telemetry.tracer import tracer
 
 from .base import BaseSearch, SearchParams, SearchResult
 
@@ -9,6 +10,7 @@ class ElasticSearch(BaseSearch):
     def __init__(self, elastic: AsyncElasticsearch):
         self.elastic = elastic
 
+    @tracer.start_as_current_span('elascticsearch::get_by_id')
     async def get_by_id(self, index: str, id: str) -> Optional[dict[str, Any]]:
         try:
             doc = await self.elastic.get(index=index, id=id)
@@ -16,6 +18,7 @@ class ElasticSearch(BaseSearch):
             return None
         return doc
 
+    @tracer.start_as_current_span('elascticsearch::search')
     async def search(self, index: str, params: SearchParams) -> SearchResult:
         query = {'query': {'bool': {'must': [{'match_all': {}}]}}}
 

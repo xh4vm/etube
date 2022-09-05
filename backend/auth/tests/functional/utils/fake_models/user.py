@@ -1,7 +1,10 @@
+import hashlib
+import hmac
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, Field
+import orjson
+from pydantic import BaseModel, EmailStr, Field
 from werkzeug.security import generate_password_hash
 
 from .base import fake, get_new_id
@@ -20,3 +23,13 @@ class FakeUser(BaseModel):
             data.get('password') or fake.password(), method='pbkdf2:sha256', salt_length=16
         )
         super().__init__(**data)
+
+
+class FakeUserSocial(BaseModel):
+    user_service_id: str = Field(title='Идентификатор пользователя в соц сервисе', default_factory=get_new_id)
+    email: EmailStr = Field(title='Email пользователя', default_factory=fake.email)
+    service_name: str = Field(title='Название сервиса', default='yandex')
+
+    def sig(self, secret: str) -> str:
+        packed_data = str(orjson.dumps(self.dict()))
+        return hmac.new(bytes(secret, 'utf-8'), msg=bytes(packed_data, 'utf-8'), digestmod=hashlib.sha256).hexdigest()

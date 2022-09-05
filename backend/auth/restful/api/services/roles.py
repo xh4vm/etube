@@ -10,6 +10,7 @@ from api.model.base import db
 from api.model.models import Role, RolePermission
 from api.schema.base import Role as RoleSchema
 from api.schema.base import RoleMap
+from api.utils.decorators import traced
 from api.utils.system import json_abort
 
 from .base import BaseService
@@ -29,14 +30,15 @@ class RolesService(BaseService):
         if role is not None:
             return self.schema(**role)
 
-        if (role := self.model.query.filter_by(**kwargs).first()) is None:
-            json_abort(HTTPStatus.NOT_FOUND, RolesError.NOT_EXISTS)
+        result = None
+        if (role := self.model.query.filter_by(**kwargs).first()) is not None:
+            role = self.schema(title=role.title, description=role.description,)
+            result = role.dict()
 
-        role = self.schema(title=role.title, description=role.description,)
-
-        self.storage_svc.set(key=storage_key, data=role.dict())
+        self.storage_svc.set(key=storage_key, data=result)
         return role
 
+    @traced('role::all')
     def all(self) -> schema:
         storage_key: str = f'{self.model.__tablename__}::all'
         roles = self.storage_svc.get(key=storage_key)
@@ -49,10 +51,12 @@ class RolesService(BaseService):
         self.storage_svc.set(key=storage_key, data=[role.dict() for role in roles])
         return roles
 
+    @traced('role::set_permission')
     def set_permission(self, role_id: uuid.UUID, permission_id: uuid.UUID) -> None:
         # Добавление разрешения роли.
         RolePermission(id=uuid.uuid4(), role_id=role_id, permission_id=permission_id).insert_and_commit()
 
+    @traced('role::retrieve_permission')
     def retrieve_permission(self, role_id: uuid.UUID, permission_id: uuid.UUID) -> None:
         # Удаление разрешения роли.
         role_permission = RolePermission.query.filter_by(role_id=role_id, permission_id=permission_id,).first()
