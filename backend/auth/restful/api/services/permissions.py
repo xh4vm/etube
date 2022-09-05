@@ -26,12 +26,12 @@ class PermissionsService(BaseService):
         if perm is not None:
             return self.schema(**perm)
 
-        if (perm := self.model.query.filter_by(**kwargs).first()) is None:
-            json_abort(HTTPStatus.NOT_FOUND, self.error.NOT_EXISTS)
+        result = None
+        if (perm := self.model.query.filter_by(**kwargs).first()) is not None:
+            perm = self.schema(title=perm.title, description=perm.description, http_method=perm.http_method, url=perm.url,)
+            result = perm.dict()
 
-        perm = self.schema(title=perm.title, description=perm.description, http_method=perm.http_method, url=perm.url,)
-
-        self.storage_svc.set(key=storage_key, data=perm.dict())
+        self.storage_svc.set(key=storage_key, data=result)
         return perm
 
     @traced('permission::all')

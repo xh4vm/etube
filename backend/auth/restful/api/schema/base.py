@@ -1,10 +1,18 @@
 import uuid
+from http import HTTPStatus
 from typing import Any, Generic, Optional, TypeVar
+from faker import Faker
+import orjson
+import hashlib
+import hmac
 
 from pydantic import BaseModel, EmailStr, Field, validator
 from pydantic.generics import GenericModel
 from user_agents import parse
 
+from api.utils.system import json_abort
+
+fake = Faker()
 
 def get_new_id() -> str:
     return str(uuid.uuid4())
@@ -46,6 +54,26 @@ class UserAgentHeader(BaseModel):
     @validator('user_agent')
     def load_user_agent(cls, user_agent: str):
         return parse(user_agent)
+
+    
+class IntegrityTokenHeader(UserAgentHeader):
+    """Схема заголовков с подписью данных
+    ---
+    """
+
+    integrety_token: str = Field(
+        title='Заголовок токена целостности',
+        alias='X-Integrity-Token',
+        example='adcb671e8e24572464c31e8f9ffc5f638ab302a0b673f72554d3cff96a692740',
+    )
+
+    # TODO: plz smarter checker
+    @validator('integrety_token')
+    def load_integrety_token(cls, integrety_token: str):
+        if len(integrety_token) == 64:
+            return integrety_token
+
+        json_abort(HTTPStatus.BAD_REQUEST, 'Сигнатура не найдена')
 
 
 class JWT(BaseModel):
@@ -109,7 +137,7 @@ class RoleMap(BaseModel):
 
 
 class User(BaseModel):
-    id: uuid.UUID = Field(title='Идентификатор роли', default_factory=get_new_id)
+    id: uuid.UUID = Field(title='Идентификатор пользователя', default_factory=get_new_id)
     login: str = Field(title='Логин пользователя')
     email: EmailStr = Field(title='Email пользователя')
     roles: list[str] = Field(title='Список ролей', default=[])
@@ -128,9 +156,23 @@ class User(BaseModel):
 
 class UserMap(BaseModel):
     id: uuid.UUID = Field(title='Идентификатор пользователя', default_factory=get_new_id)
-    login: str = Field(title='Логин пользователя')
-    password: str = Field(title='Пароль пользователя')
+    login: str = Field(title='Логин пользователя', default_factory=fake.user_name)
+    password: str = Field(title='Пароль пользователя', default_factory=fake.password)
+    email: EmailStr = Field(title='Email пользователя', default_factory=fake.email)
+
+
+class UserSocial(BaseModel):
+    user_service_id: str = Field(title='Идентификатор пользователя в соц сервисе')
     email: EmailStr = Field(title='Email пользователя')
+    service_name: str = Field(title='Название сервиса')
+
+    def sig(self, secret: str) -> str:
+        packed_data = str(orjson.dumps(self.dict()))
+        return hmac.new(bytes(secret, 'utf-8'), msg=bytes(packed_data, 'utf-8'),
+                    digestmod=hashlib.sha256).hexdigest()
+
+    def sig_check(self, secret: str, signature: str) -> bool:
+        return signature == self.sig(secret)
 
 
 class UserSocialMap(BaseModel):

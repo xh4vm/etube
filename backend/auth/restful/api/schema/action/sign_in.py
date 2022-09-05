@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from ..base import JWT, UserAgentHeader
+from ..base import JWT, UserAgentHeader, IntegrityTokenHeader
 
 
 class SignInBodyParams(BaseModel):
@@ -19,6 +19,7 @@ class OAuthSignInBodyParams(BaseModel):
 
     user_service_id: str = Field(title='ID пользователя в стороннем сервисе')
     email: str = Field(title='Почта пользователя в стороннем сервисе')
+    service_name: str = Field(title='Наименование сервиса для внешней авторизации')
 
 
 class SignInResponse(JWT):
@@ -37,9 +38,9 @@ class SignInHeader(UserAgentHeader):
     pass
 
 
-class OAuthSignInHeader(UserAgentHeader):
+class OAuthSignInHeader(IntegrityTokenHeader):
     """Схема заголовков авторизации пользователя через сторонний сервис
     ---
     """
 
-    user_data_signature: str = Field(title='Подпись данных пользователя', alias='User-Data-Signature')
+    pass

@@ -1,10 +1,12 @@
+from typing import Optional
 import uuid
 from http import HTTPStatus
+
 from api.utils.decorators import traced
 
 from api.model.base import db
 from api.model.models import User, UserRole
-from api.schema.base import User as UserSchema
+from api.schema.base import User as UserSchema, fake
 from api.schema.base import UserMap
 
 from ..errors.user import UserError
@@ -26,20 +28,20 @@ class UserService(BaseService):
         if user is not None:
             return self.schema(**user)
 
-        if (user := self.model.query.filter_by(**kwargs).first()) is None:
-            json_abort(HTTPStatus.NOT_FOUND, self.error.NOT_EXISTS)
+        result = None
+        if (user := self.model.query.filter_by(**kwargs).first()) is not None:
+            roles_with_permissions = user.roles_with_permissions
 
-        roles_with_permissions = user.roles_with_permissions
+            user = self.schema(
+                id=user.id,
+                login=user.login,
+                email=user.email,
+                roles=roles_with_permissions.get('roles'),
+                permissions=roles_with_permissions.get('permissions'),
+            )
+            result = user.dict()
 
-        user = self.schema(
-            id=user.id,
-            login=user.login,
-            email=user.email,
-            roles=roles_with_permissions.get('roles'),
-            permissions=roles_with_permissions.get('permissions'),
-        )
-
-        self.storage_svc.set(key=storage_key, data=user.dict())
+        self.storage_svc.set(key=storage_key, data=result)
         return user
 
     @traced('user::all')

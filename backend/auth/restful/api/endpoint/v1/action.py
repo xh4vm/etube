@@ -1,9 +1,10 @@
 import asyncio
 from http import HTTPStatus
+import orjson
 
 from api.app import spec, limiter
 from api.containers.logout import ServiceContainer as LogoutServiceContainer
-from api.containers.oauth import VKAuthContainer, YandexAuthContainer
+from api.containers.oauth import VKAuthContainer, YandexAuthContainer, OAuthContainer
 from api.containers.sign_in import ServiceContainer as SignInServiceContainer
 from api.containers.sign_up import ServiceContainer as SignUpServiceContainer
 from api.errors.action.sign_in import SignInActionError
@@ -15,19 +16,20 @@ from api.schema.action.sign_in import (OAuthSignInBodyParams,
                                        SignInHeader, SignInResponse)
 from api.schema.action.sign_up import (SignUpBodyParams, SignUpHeader,
                                        SignUpResponse)
-from api.schema.base import User as UserSchema
+from api.schema.base import User as UserSchema, UserSocial as UserSocialSchema
 from api.services.authorization.base import BaseAuthService
+from api.services.user_social import UserSocialService
 from api.services.sign_in_history import SignInHistoryService
 from api.services.token.base import BaseTokenService
 from api.services.user import UserService
-from api.utils.decorators import captcha_needed, json_response, unpack_models
-from api.utils.signature import check_signature
+from api.utils.decorators import json_response, unpack_models
 from api.utils.system import json_abort
 from api.utils.rate_limit import check_error_status_response
 from dependency_injector.wiring import Provide, inject
 from faker import Faker
 from flask import Blueprint, make_response, request
 from flask_jwt_extended.view_decorators import jwt_required
+from core.config import OAUTH_CONFIG
 from flask_pydantic_spec import Request, Response
 from api.utils.rate_limit import check_bots
 
@@ -43,7 +45,6 @@ TAG = 'Action'
     tags=[TAG],
 )
 @unpack_models
-@captcha_needed
 @jwt_required(optional=True)
 @json_response
 @limiter.limit('5/minute', deduct_when=check_error_status_response, override_defaults=False)
@@ -84,7 +85,6 @@ def sign_in(
     tags=[TAG],
 )
 @unpack_models
-@captcha_needed
 @jwt_required(optional=True)
 @json_response
 @limiter.limit('1/hour', exempt_when=lambda: not check_bots(), override_defaults=False)
@@ -105,9 +105,9 @@ def sign_up(
     if user_service.exists(login=body.login, email=body.email):
         json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignUpActionError.ALREADY_EXISTS)
 
-    user_id = user_service.create(login=body.login, email=body.email, password=body.password)
+    user: UserSchema = user_service.create(login=body.login, email=body.email, password=body.password)
 
-    return SignUpResponse(id=user_id, message='Пользователь успешно зарегистрирован.')
+    return SignUpResponse(id=user.id, message='Пользователь успешно зарегистрирован.')
 
 
 @bp.route('/logout', methods=['DELETE'])
@@ -170,19 +170,12 @@ def yandex_user_data(
         для получения данных пользователя в стороннем сервисе.
     """
     api_access_token = asyncio.run(auth_service.get_api_tokens(request))
-    user_data, signature = asyncio.run(auth_service.get_api_data(api_access_token))
+    user_social: UserSocialSchema = asyncio.run(auth_service.get_api_data(api_access_token))
 
-    return make_response(
-        {
-            'user_service_id': user_data.get('user_service_id'),
-            'email': user_data.get('email'),
-        },
-        200,
-        {'user_data_signature': signature}
-    )
+    return user_social.dict(), 200, {'X-Integrity-Token': user_social.sig(secret=OAUTH_CONFIG.SECRET)}
 
 
-@bp.route('/sign_in/yandex', methods=['POST'])
+@bp.route('/sign_in/oauth', methods=['POST'])
 @spec.validate(
     body=Request(OAuthSignInBodyParams),
     headers=OAuthSignInHeader,
@@ -190,52 +183,45 @@ def yandex_user_data(
     tags=[TAG],
 )
 @unpack_models
-@captcha_needed
 @json_response
 @inject
-def sign_in_yandex(
+def sign_oauth(
     body: OAuthSignInBodyParams,
     headers: OAuthSignInHeader,
     access_token_service: BaseTokenService = Provide[SignInServiceContainer.access_token_service],
     refresh_token_service: BaseTokenService = Provide[SignInServiceContainer.refresh_token_service],
-    auth_service: BaseAuthService = Provide[YandexAuthContainer.auth_service],
+    user_social_service: BaseAuthService = Provide[OAuthContainer.user_social_service],
+    auth_service: BaseAuthService = Provide[OAuthContainer.auth_service],
     user_service: UserService = Provide[SignUpServiceContainer.user_service],
     sign_in_history_service: SignInHistoryService = Provide[SignInServiceContainer.sign_in_history_service],
 ) -> SignInResponse:
-    """ Авторизация пользователя через Яндекс.
+    """ Внешняя авторизация пользователя.
         ---
     """
-    service_name = 'yandex'
 
-    signature = headers.user_data_signature
-    if signature is None:
-        json_abort(HTTPStatus.BAD_REQUEST, SignInActionError.SIGNATURE_DOES_NOT_EXIST)
+    signature = headers.integrety_token
 
-    if not check_signature(body, signature):
+    user_data = UserSocialSchema(**body.dict())
+
+    if not user_data.sig_check(secret=OAUTH_CONFIG.SECRET, signature=signature):
         json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_SIGNATURE)
 
-    user_service_id = body.user_service_id
-    user_email = body.email
-
-    user_social = auth_service.get_user_social(
-        user_service_id=user_service_id,
-        service_name=service_name,
+    user_social = user_social_service.get(
+        user_service_id=user_data.user_service_id,
+        service_name=user_data.service_name,
     )
+
     if user_social is None:
-        if user_service.exists(email=user_email):
-            user = user_service.get(email=user_email)
-            user_id = user.id
+        if user_service.exists(email=user_data.email):
+            user = user_service.get(email=user_data.email)
         else:
-            user_id = user_service.create(
-                login=Faker().user_name(),
-                email=user_email,
-                password=Faker().password(length=12),
-            )
-        user_social = auth_service.create_social_user(
-                user_id=user_id,
-                user_service_id=user_service_id,
-                email=user_email,
-                service_name=service_name,
+            user = user_service.create(email=user_data.email)
+
+        user_social = user_social_service.create(
+                user_id=user.id,
+                user_service_id=user_data.user_service_id,
+                email=user_data.email,
+                service_name=user_data.service_name,
         )
 
     user: UserSchema = auth_service.authorization(user_id=user_social.user_id)
@@ -278,82 +264,6 @@ def vk_user_data(
         Запрос на получение токенов, которые используются
         для получения данных пользователя в стороннем сервисе.
     """
-    user_data, signature = asyncio.run(auth_service.get_api_data(request))
+    user_social: UserSocialSchema = asyncio.run(auth_service.get_api_data(request))
 
-    return make_response(
-        {
-            'user_service_id': user_data.get('user_service_id'),
-            'email': user_data.get('email'),
-        },
-        200,
-        {'user_data_signature': signature}
-    )
-
-
-@bp.route('/sign_in/vk', methods=['POST'])
-@spec.validate(
-    body=Request(OAuthSignInBodyParams),
-    headers=OAuthSignInHeader,
-    resp=Response(HTTP_200=SignInResponse, HTTP_403=None, HTTP_400=None, HTTP_422=None),
-    tags=[TAG],
-)
-@unpack_models
-@captcha_needed
-@json_response
-@inject
-def sign_in_vk(
-    body: OAuthSignInBodyParams,
-    headers: OAuthSignInHeader,
-    access_token_service: BaseTokenService = Provide[SignInServiceContainer.access_token_service],
-    refresh_token_service: BaseTokenService = Provide[SignInServiceContainer.refresh_token_service],
-    auth_service: BaseAuthService = Provide[VKAuthContainer.auth_service],
-    user_service: UserService = Provide[SignUpServiceContainer.user_service],
-    sign_in_history_service: SignInHistoryService = Provide[SignInServiceContainer.sign_in_history_service],
-) -> SignInResponse:
-    """ Авторизация пользователя через VK.
-        ---
-    """
-    service_name = 'vk'
-
-    signature = headers.user_data_signature
-    if signature is None:
-        json_abort(HTTPStatus.BAD_REQUEST, SignInActionError.SIGNATURE_DOES_NOT_EXIST)
-
-    if not check_signature(body, signature):
-        json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, SignInActionError.NOT_VALID_SIGNATURE)
-
-    user_service_id = body.user_service_id
-    user_email = body.email
-
-    if user_service_id == 'None':
-        json_abort(HTTPStatus.OK, SignInActionError.ALREADY_AUTH)
-
-    user_social = auth_service.get_user_social(
-        user_service_id=user_service_id,
-        service_name=service_name,
-    )
-    if user_social is None:
-        if user_service.exists(email=user_email):
-            user = user_service.get(email=user_email)
-            user_id = user.id
-        else:
-            user_id = user_service.create(
-                login=Faker().user_name(),
-                email=user_email,
-                password=Faker().password(length=12),
-            )
-        user_social = auth_service.create_social_user(
-                user_id=user_id,
-                user_service_id=user_service_id,
-                email=user_email,
-                service_name=service_name,
-        )
-
-    user: UserSchema = auth_service.authorization(user_id=user_social.user_id)
-
-    access_token: str = access_token_service.create(identity=user.id, claims=user.get_claims())
-    refresh_token: str = refresh_token_service.create(identity=user.id)
-
-    sign_in_history_service.create_record(user_id=user.id, user_agent=headers.user_agent)
-
-    return SignInResponse(access_token=access_token, refresh_token=refresh_token)
+    return user_social.dict(), 200, {'X-Integrity-Token': user_social.sig(secret=OAUTH_CONFIG.SECRET)}

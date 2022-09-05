@@ -55,3 +55,13 @@ CREATE TABLE IF NOT EXISTS auth_etube.sign_in_history (
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
 ); 
+
+CREATE TABLE IF NOT EXISTS auth_etube.user_socials (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL,
+    user_service_id TEXT,
+    email TEXT,
+    service_name TEXT,
+    created_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE
+); 

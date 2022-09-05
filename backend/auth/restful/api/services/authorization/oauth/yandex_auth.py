@@ -6,7 +6,7 @@ from requests import request
 
 from .base import BaseOAuth
 
-from api.utils.signature import create_signature
+from api.schema.base import UserSocial
 from core.config import OAUTH_CONFIG
 
 
@@ -24,6 +24,7 @@ class YandexAuth(BaseOAuth):
     async def get_api_tokens(self, request: request) -> str:
         # Получение токенов от стороннего сервиса.
         # Токены используются для запроса к API.
+        #TODO: Как-то обрабатывать этот код, а не просто пересылать
         code = request.args.get('code')
         async with aiohttp.ClientSession() as session:
             params = {
@@ -40,17 +41,15 @@ class YandexAuth(BaseOAuth):
 
                 return api_access_token
 
-    async def get_api_data(self, access_token: str) -> tuple[dict, str]:
+    async def get_api_data(self, access_token: str) -> UserSocial:
         # Получение данных пользователя от API.
         async with aiohttp.ClientSession() as session:
             url = 'https://login.yandex.ru/info'
             headers = {'Authorization': f'OAuth {access_token}'}
+
             async with session.get(url, headers=headers) as response:
                 data = await response.json()
-                user_service_id = data.get('id')
-                email = data.get('default_email')
-                user_data = {'user_service_id': user_service_id, 'email': email}
-                user_data_as_str = ' '.join([f"{k}='{v}'" for k, v in user_data.items()])
-                signature = create_signature(user_data_as_str)
+                user_service_id = str(data.get('id'))
+                email = data.get('default_email') or self.faker.email()
 
-                return user_data, signature
+                return UserSocial(user_service_id=user_service_id, email=email, service_name='yandex')

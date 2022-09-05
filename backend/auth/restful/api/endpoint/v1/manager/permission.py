@@ -4,6 +4,7 @@ from typing import Union
 from api.app import spec
 from api.containers.permissions import ServiceContainer
 from api.errors.manager.permissions import PermissionsError
+from api.schema.base import Permission as PermissionSchema 
 from api.schema.manager.permission.create import (CreatePermissionHeader,
                                                   CreatePermissionParams,
                                                   CreatePermissionResponse)
@@ -79,11 +80,11 @@ def create_permission(
     if permissions_service.exists(title=body.title):
         json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, PermissionsError.ALREADY_EXISTS)
 
-    permission = permissions_service.create(
+    permission: PermissionSchema = permissions_service.create(
         title=body.title, description=body.description, http_method=body.http_method, url=body.url,
     )
 
-    return CreatePermissionResponse(id=permission, message=f'Разрешение {body.title} создано.',)
+    return CreatePermissionResponse(id=permission.id, message=f'Разрешение {body.title} создано.',)
 
 
 @bp.route('', methods=['PUT'])

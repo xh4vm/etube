@@ -63,7 +63,7 @@ class BaseService(ABC):
         elem = self.model(**map_data.dict())
         elem.insert_and_commit()
 
-        return elem.id
+        return elem
 
     @traced('service::update')
     def update(self, id: str, **kwargs) -> ModelMetaclass:

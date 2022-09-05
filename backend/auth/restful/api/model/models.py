@@ -177,26 +177,3 @@ class UserSocial(BaseModel):
     service_name = Column(String(255))
 
     user = relationship('User')
-
-
-
-
-# class UserSignIn(BaseModel):
-#     __tablename__ = 'users_sign_in'
-#     __table_args__ = (
-#         UniqueConstraint('id', 'user_device_type'),
-#         {
-#             'schema': CONFIG.DB.SCHEMA_NAME,
-#             'postgresql_partition_by': 'LIST (user_device_type)',
-#         }
-#     )
-#
-#     # id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
-#     id: int = Column(UUID(as_uuid=True), nullable=False, primary_key=True)
-#     user_id = Column(
-#         UUID(as_uuid=True), ForeignKey(f'{CONFIG.DB.SCHEMA_NAME}.users.id', ondelete='CASCADE'), nullable=False
-#     )
-#     logged_in_at = db.Column(db.DateTime, default=datetime.utcnow)
-#     user_agent = db.Column(db.Text)
-#     user_device_type = db.Column(db.Text, primary_key=True)
-

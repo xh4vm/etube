@@ -4,6 +4,7 @@ from api.app import spec
 from api.containers.roles import ServiceContainer
 from api.errors.manager.permissions import PermissionsError
 from api.errors.manager.roles import RolesError
+from api.schema.base import RoleMap
 from api.schema.manager.role.create import (CreateRoleBodyParams,
                                             CreateRoleHeader,
                                             CreateRoleResponse)
@@ -82,9 +83,9 @@ def create_role(
     if roles_service.exists(title=body.title):
         json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, RolesError.ALREADY_EXISTS)
 
-    role_id = roles_service.create(title=body.title, description=body.description)
+    role: RoleMap = roles_service.create(title=body.title, description=body.description)
 
-    return CreateRoleResponse(id=role_id, message=f'Роль {body.title} создана.')
+    return CreateRoleResponse(id=role.id, message=f'Роль {body.title} создана.')
 
 
 @bp.route('', methods=['PUT'])

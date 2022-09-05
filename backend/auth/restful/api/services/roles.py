@@ -29,12 +29,12 @@ class RolesService(BaseService):
         if role is not None:
             return self.schema(**role)
 
-        if (role := self.model.query.filter_by(**kwargs).first()) is None:
-            json_abort(HTTPStatus.NOT_FOUND, RolesError.NOT_EXISTS)
+        result = None
+        if (role := self.model.query.filter_by(**kwargs).first()) is not None:
+            role = self.schema(title=role.title, description=role.description,)
+            result = role.dict()
 
-        role = self.schema(title=role.title, description=role.description,)
-
-        self.storage_svc.set(key=storage_key, data=role.dict())
+        self.storage_svc.set(key=storage_key, data=result)
         return role
 
     @traced('role::all')
