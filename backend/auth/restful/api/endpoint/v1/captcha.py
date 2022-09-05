@@ -3,12 +3,13 @@ from math import tan
 from random import randrange
 
 from api.app import spec
+from core.config import CAPTCHA_CONFIG
 from api.errors.captcha import CaptchaError
 from api.schema.captcha.check import (CaptchaCheckBodyParams,
                                       CaptchaCheckHeader, CaptchaCheckResponse)
+from api.schema.base import CaptchaTask
 from api.schema.captcha.create import CaptchaCreateHeader
 from api.utils.decorators import json_response, unpack_models
-from api.utils.signature import check_signature, create_signature
 from api.utils.system import json_abort
 from flask import Blueprint, Response, make_response
 
@@ -29,15 +30,12 @@ def create_captcha(
     ---
     """
 
-    x = randrange(-1000, 1000)
-    answer = round(tan(x + 1), 3)
-    data_string = f"x='{x}' answer='{answer}'"
-    signature = create_signature(data_string)
+    task = CaptchaTask(parameter=randrange(-1000, 1000), message='Вычислите тангенс числа')
     return make_response(
-        {'x': x, 'message': 'Вычислите тангенс числа'},
+        {'parameter': task.parameter, 'message': task.message},
         200,
         {
-            'data_signature': signature,
+            'data_signature': task.sig(secret=CAPTCHA_CONFIG.SECRET),
             'redirect_url': headers.redirect_url,
             'redirect_data': headers.redirect_data,
         },
@@ -64,7 +62,9 @@ def check_captcha(
     if signature is None:
         json_abort(HTTPStatus.BAD_REQUEST, CaptchaError.SIGNATURE_DOES_NOT_EXIST)
 
-    if not check_signature(body, signature):
+    task = CaptchaTask(parameter=body.parameter, message=body.message, answer=body.answer)
+
+    if not task.sig_check(signature=signature, secret=CAPTCHA_CONFIG.SECRET):
         json_abort(HTTPStatus.UNPROCESSABLE_ENTITY, CaptchaError.NOT_VALID_SIGNATURE)
 
     return CaptchaCheckResponse(

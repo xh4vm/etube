@@ -102,3 +102,10 @@ class OAuthConfig(BaseSettings):
 
 
 OAUTH_CONFIG = OAuthConfig()
+
+
+class CaptchaSettings(BaseSettings):
+    SECRET: str = Field(..., env='CAPTCHA_SECRET')
+
+
+CAPTCHA_CONFIG = CaptchaSettings()

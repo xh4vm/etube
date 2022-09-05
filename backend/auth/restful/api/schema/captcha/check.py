@@ -6,7 +6,8 @@ class CaptchaCheckBodyParams(BaseModel):
     ---
     """
 
-    x: str = Field(title='Переменная x')
+    parameter: str = Field(title='Параметр задачи')
+    message: str = Field(title='Текст задачи')
     answer: str = Field(title='Ответ на задачу')
 
 
