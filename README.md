@@ -2,7 +2,7 @@
 
 [Ссылка на работу](https://github.com/xh4vm/etube-FastAPI)
 
-## Запуск проекта (пока что без сервиса авторизации)
+## Запуск проекта
 ``` 
 cp .env.example .env
 cp ./backend/sqlite_to_postgres/.env.example ./backend/sqlite_to_postgres/.env
@@ -12,14 +12,18 @@ cd backend/jaeger && python3 setup.py sdist && mv dist/* ../../modules && rm -rf
 cp -r ./modules backend/auth/restful && cp -r ./modules backend/client/
 rm -rf ./backend/nginx/static && cp -r ./backend/nginx/static_defaults/ ./backend/nginx/static
 make build
+echo -e "\nauth @ file://`pwd`/modules/auth-0.1.0.tar.gz" | tee -a requirements-test-auth.txt
+make test-auth
 ```
 
 ## Запуск сервиса авторизации
 ```
 cp .env.example .env
-cd backend/auth && python3 setup.py sdist && mv dist ../../modules && rm -rf auth.egg-info dist && cd ../..
+rm -rf modules backend/auth/restful/modules backend/client/modules && mkdir modules
+cd backend/auth && python3 setup.py sdist && mv dist/* ../../modules && rm -rf auth.egg-info dist && cd ../..
+cd backend/jaeger && python3 setup.py sdist && mv dist/* ../../modules && rm -rf jaeger_telemetry.egg-info dist && cd ../..
 cp -r ./modules backend/auth/restful
-echo -e "\nauth @ file://`pwd`/modules/auth-0.1.0.tar.gz" | tee -a requirements-test-auth.txt 
+echo -e "\nauth @ file://`pwd`/modules/auth-0.1.0.tar.gz" | tee -a requirements-test-auth.txt
 make build-auth
 make test-auth
 ```
