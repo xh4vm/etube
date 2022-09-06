@@ -84,6 +84,7 @@ class YandexAppConfig(BaseSettings):
     CLIENT_ID: str = Field(..., env='YANDEX_CLIENT_ID')
     CLIENT_SECRET: str = Field(..., env='YANDEX_CLIENT_SECRET')
     BASEURL: str = Field(..., env='YANDEX_BASEURL')
+    LOGINURL: str = Field(..., env='YANDEX_LOGINURL')
 
 
 class VKAppConfig(BaseSettings):
