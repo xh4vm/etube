@@ -35,7 +35,7 @@ from flask_pydantic_spec import Request, Response
 
 bp = Blueprint('role', __name__, url_prefix='/role')
 TAG = 'Manager'
-URL = f'{CONFIG.APP.AUTH_APP_HOST}:{CONFIG.APP.AUTH_APP_PORT}/api/v1/auth/manager/role'
+URL = f'{CONFIG.APP.APP_HOST}:{CONFIG.APP.APP_PORT}/api/v1/auth/manager/role'
 
 
 @bp.route('', methods=['GET'])

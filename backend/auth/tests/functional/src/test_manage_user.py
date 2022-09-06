@@ -10,7 +10,7 @@ from ..utils.errors.user import UserError
 from ..utils.fake_models.user import FakeUser, fake
 
 pytestmark = pytest.mark.asyncio
-url = f'{CONFIG.API.HOST}:{CONFIG.API.PORT}/api/v1/auth/manager/user'
+url = f'{CONFIG.API.APP_HOST}:{CONFIG.API.APP_PORT}/api/v1/auth/manager/user'
 claims = {
     'sub': '6f2819c9-957b-45b6-8348-853f71bb6adf',
     'login': 'cheburashka',
