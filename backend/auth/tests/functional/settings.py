@@ -59,7 +59,7 @@ class Config(BaseSettings):
 
 
 class CaptchaSettings(BaseSettings):
-    SECRET: str = Field('2nc@hyy$4y(m+5c52ahsg_#&aet6_rm=9g1d^h1ge1$uy^@r7a', env='CAPTCHA_SECRET')
+    SECRET: str = Field('2nc@hyyd4y(m+5c52ahsg_j&aet6_rm=9g1d^h1ge1$uy^@r7a', env='CAPTCHA_SECRET')
 
 
 CONFIG = Config()
