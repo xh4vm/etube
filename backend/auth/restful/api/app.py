@@ -117,8 +117,9 @@ def create_app(config_classes=[CONFIG.APP, INTERACTION_CONFIG]):
     register_error_handlers(app)
     register_di_containers()
 
-    configure_tracer(service_name='auth-restful', host=CONFIG.JAEGER.AGENT.HOST, port=CONFIG.JAEGER.AGENT.PORT)
-    FlaskInstrumentor().instrument_app(app)
+    if CONFIG.JAEGER.ENABLED:
+        configure_tracer(service_name='auth-restful', host=CONFIG.JAEGER.AGENT.HOST, port=CONFIG.JAEGER.AGENT.PORT)
+        FlaskInstrumentor().instrument_app(app)
 
     redis_storage = RedisStorage(redis=redis_client)
     register_jwt_handelers(storage_service=redis_storage)

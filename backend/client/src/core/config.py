@@ -45,6 +45,7 @@ class JaegerAgentSettings(BaseSettings):
 
 class JaegerSettings(BaseSettings):
     agent: JaegerAgentSettings = JaegerAgentSettings()
+    enabled: bool = Field(..., env='ENABLED_TRACER')
 
 
 class Config(Settings):
