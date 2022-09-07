@@ -1,20 +1,20 @@
 FROM python:3.10-slim AS admin-builder
 
 WORKDIR /opt
-COPY requirements.txt ./
+COPY requirements.txt .
 
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential python-dev python3-dev \
-     && pip install --upgrade "pip>=22.1" \
-     && pip install -r requirements.txt
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential python-dev python3-dev gcc musl-dev libc-dev \
+     && pip install --upgrade pip \
+     && pip3 install wheel && pip3 wheel -r requirements.txt --wheel-dir=/opt/wheels
 
 
 FROM python:3.10-slim
 
-WORKDIR /opt/app
+COPY --from=admin-builder /opt /opt
+
+WORKDIR /opt/admin
 EXPOSE ${ADMIN_APP_PORT}
 ENTRYPOINT ["uwsgi", "--strict", "--ini", "uwsgi.ini"]
 
-COPY --from=admin-builder /usr/local /usr/local
-RUN  mkdir -p /var/www/static/
-
 COPY . .
+RUN  mkdir -p /var/www/static/ && pip install --no-index --find-links=/opt/wheels -r requirements.txt

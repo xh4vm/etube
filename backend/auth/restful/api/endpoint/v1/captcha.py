@@ -31,9 +31,9 @@ def create_captcha(headers: CaptchaCreateHeader,) -> Response:
         {'parameter': task.parameter, 'message': task.message},
         HTTPStatus.OK,
         {
-            'data_signature': task.sig(secret=CAPTCHA_CONFIG.SECRET),
-            'redirect_url': headers.redirect_url,
-            'redirect_data': headers.redirect_data,
+            'Data-Signature': task.sig(secret=CAPTCHA_CONFIG.SECRET),
+            'Redirect-Url': headers.redirect_url,
+            'Redirect-Data': headers.redirect_data,
         },
     )
 
