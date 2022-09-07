@@ -58,8 +58,10 @@ def create_app():
 
     register_routers(app=app)
     register_di_containers()
-    configure_tracer(service_name='content', host=CONFIG.JAEGER.agent.host, port=CONFIG.JAEGER.agent.port)
-    FastAPIInstrumentor.instrument_app(app)
+
+    if CONFIG.JAEGER.enabled:
+        configure_tracer(service_name='content', host=CONFIG.JAEGER.agent.host, port=CONFIG.JAEGER.agent.port)
+        FastAPIInstrumentor.instrument_app(app)
 
     return app
 

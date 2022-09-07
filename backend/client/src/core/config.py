@@ -25,26 +25,36 @@ class AppSettings(Settings):
 
 
 class RedisSettings(Settings):
-    host: str = Field(..., env='REDIS_HOST')
-    port: int = Field(..., env='REDIS_PORT')
-    expire: int = Field(..., env='CACHE_EXPIRE')
+    host: str
+    port: int
+    cache_expire: int
+
+    class Config:
+        env_prefix = 'REDIS_'
 
 
 class ElasticsearchSettings(Settings):
-    protocol: str = Field(..., env='ES_PROTOCOL')
-    user: str = Field(..., env='ES_USER')
-    password: str = Field(..., env='ES_PASSWORD')
-    host: str = Field(..., env='ES_HOST')
-    port: int = Field(..., env='ES_PORT')
+    protocol: str
+    user: str
+    password: str
+    host: str
+    port: int
+
+    class Config:
+        env_prefix = 'ES_'
 
 
 class JaegerAgentSettings(BaseSettings):
-    host: str = Field(..., env='JAEGER_AGENT_HOST')
-    port: int = Field(..., env='JAEGER_AGENT_PORT')
+    host: str
+    port: int
+
+    class Config:
+        env_prefix = 'JAEGER_AGENT_'
 
 
 class JaegerSettings(BaseSettings):
     agent: JaegerAgentSettings = JaegerAgentSettings()
+    enabled: bool = Field(..., env='ENABLED_TRACER')
 
 
 class Config(Settings):

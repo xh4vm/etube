@@ -11,7 +11,7 @@ from ..utils.fake_models.base import fake
 from ..utils.fake_models.role import FakeRole
 
 pytestmark = pytest.mark.asyncio
-url = f'{CONFIG.API.HOST}:{CONFIG.API.PORT}/api/v1/auth/manager/role'
+url = f'{CONFIG.API.APP_HOST}:{CONFIG.API.APP_PORT}/api/v1/auth/manager/role'
 claims = {
     'sub': '6f2819c9-957b-45b6-8348-853f71bb6adf',
     'login': 'cheburashka',

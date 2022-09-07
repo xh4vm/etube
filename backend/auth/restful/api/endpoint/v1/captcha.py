@@ -29,11 +29,11 @@ def create_captcha(headers: CaptchaCreateHeader,) -> Response:
     task = CaptchaTask(parameter=randrange(-1000, 1000), message='Вычислите тангенс числа')
     return make_response(
         {'parameter': task.parameter, 'message': task.message},
-        200,
+        HTTPStatus.OK,
         {
-            'data_signature': task.sig(secret=CAPTCHA_CONFIG.SECRET),
-            'redirect_url': headers.redirect_url,
-            'redirect_data': headers.redirect_data,
+            'Data-Signature': task.sig(secret=CAPTCHA_CONFIG.SECRET),
+            'Redirect-Url': headers.redirect_url,
+            'Redirect-Data': headers.redirect_data,
         },
     )
 

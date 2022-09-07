@@ -4,37 +4,49 @@ from pydantic import BaseSettings, Field
 
 
 class ApiSettings(BaseSettings):
-    HOST: str = Field('localhost', env='AUTH_APP_HOST')
-    URL: str = Field('http://localhost', env='AUTH_API_URL')
-    PORT: str = Field('9090', env='AUTH_APP_PORT')
-    API_PATH: str = Field('/api', env='AUTH_API_PATH')
-    API_VERSION: str = Field('v1', env='AUTH_API_VERSION')
-    JWT_DECODE_ALGORITHMS: list[str] = Field(['HS256'], env='AUTH_JWT_DECODE_ALGORITHMS')
-    JWT_SECRET_KEY: str = Field('fn_jj!qd2*mcd4kev#s+8o53sfnc!@(jda9&guxual=7#9#n^$', env='AUTH_JWT_SECRET_KEY')
-    JWT_ALGORITHM: str = Field('HS256', env='AUTH_JWT_ALGORITHM')
-    JWT_HEADER_NAME: str = Field('X-Authorization-Token', env='AUTH_JWT_HEADER_NAME')
-    JWT_TOKEN_LOCATION: str = Field('headers', env='AUTH_JWT_TOKEN_LOCATION')
+    APP_HOST: str = Field('localhost')
+    API_URL: str = Field('http://localhost')
+    APP_PORT: str = Field('9090')
+    API_PATH: str = Field('/api')
+    API_VERSION: str = Field('v1')
+    JWT_DECODE_ALGORITHMS: list[str] = Field(['HS256'])
+    JWT_SECRET_KEY: str = Field('fn_jj!qd2*mcd4kev#s+8o53sfnc!@(jda9&guxual=7#9#n^$')
+    JWT_ALGORITHM: str = Field('HS256')
+    JWT_HEADER_NAME: str = Field('X-Authorization-Token')
+    JWT_TOKEN_LOCATION: str = Field('headers')
+
+    class Config:
+        env_prefix = 'AUTH_'
 
 
 class GRPCSettings(BaseSettings):
-    HOST: str = Field('localhost', env='AUTH_GRPC_HOST')
-    PORT: str = Field('56567', env='AUTH_GRPC_PORT')
+    HOST: str = Field('localhost')
+    PORT: str = Field('56567')
+
+    class Config:
+        env_prefix = 'AUTH_GRPC_'
 
 
 class RedisSettings(BaseSettings):
-    HOST: str = Field('localhost', env='REDIS_HOST')
-    PORT: int = Field(6379, env='REDIS_PORT')
-    EXPIRE: int = Field(600, env='CACHE_EXPIRE')
+    HOST: str = Field('localhost')
+    PORT: int = Field(6379)
+    CACHE_EXPIRE: int = Field(600)
+
+    class Config:
+        env_prefix = 'REDIS_'
 
 
 class DatabaseSettings(BaseSettings):
-    USER: str = Field('auth', env='AUTH_DB_USER')
-    PASSWORD: str = Field('123qwe', env='AUTH_DB_PASSWORD')
-    HOST: str = Field('localhost', env='AUTH_DB_HOST')
-    PORT: int = Field('5433', env='AUTH_DB_PORT')
-    NAME: str = Field('auth_database', env='AUTH_DB_NAME')
-    SCHEMA_NAME: str = Field('auth_etube', env='AUTH_DB_SCHEMA')
-    SCHEMA_FILE_NAME: str = Field('schema.sql', env='AUTH_DB_SCHEMA_FILE_PATH')
+    USER: str = Field('auth')
+    PASSWORD: str = Field('123qwe')
+    HOST: str = Field('localhost')
+    PORT: int = Field('5433')
+    NAME: str = Field('auth_database')
+    SCHEMA_NAME: str = Field('auth_etube')
+    SCHEMA_FILE_NAME: str = Field('schema.sql')
+
+    class Config:
+        env_prefix = 'AUTH_DB_'
 
     def dsn(self):
         return {
@@ -47,7 +59,10 @@ class DatabaseSettings(BaseSettings):
 
 
 class OAuthConfig(BaseSettings):
-    SECRET: str = Field('P2yV0aGyYs6MDEODdbbd6bf17', env='OAUTH_SECRET')
+    SECRET: str = Field('P2yV0aGyYs6MDEODdbbd6bf17')
+
+    class Config:
+        env_prefix = 'OAUTH_'
 
 
 class Config(BaseSettings):
@@ -59,7 +74,10 @@ class Config(BaseSettings):
 
 
 class CaptchaSettings(BaseSettings):
-    SECRET: str = Field('2nc@hyy$4y(m+5c52ahsg_#&aet6_rm=9g1d^h1ge1$uy^@r7a', env='CAPTCHA_SECRET')
+    SECRET: str = Field('2nc@hyyd4y(m+5c52ahsg_j&aet6_rm=9g1d^h1ge1$uy^@r7a')
+
+    class Config:
+        env_prefix = 'CAPTCHA_'
 
 
 CONFIG = Config()

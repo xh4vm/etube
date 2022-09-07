@@ -18,9 +18,9 @@ async def test_captcha(make_request):
         target='auth/captcha',
         json=task.dict(),
         headers={
-            'data_signature': task.sig(secret=CAPTCHA_CONFIG.SECRET),
-            'redirect_url': 'some url',
-            'redirect_data': 'some data',
+            'Data-Signature': task.sig(secret=CAPTCHA_CONFIG.SECRET),
+            'Redirect-Url': 'some url',
+            'Redirect-Data': 'some data',
         },
     )
 
@@ -37,9 +37,9 @@ async def test_captcha_error(make_request):
         target='auth/captcha',
         json={'parameter': task.parameter, 'message': task.message, 'answer': 1.12},
         headers={
-            'data_signature': task.sig(secret=CAPTCHA_CONFIG.SECRET),
-            'redirect_url': 'some url',
-            'redirect_data': 'some data',
+            'Data-Signature': task.sig(secret=CAPTCHA_CONFIG.SECRET),
+            'Redirect-Url': 'some url',
+            'Redirect-Data': 'some data',
         },
     )
 

@@ -9,7 +9,7 @@ from .base import BaseCache
 
 
 class RedisCache(BaseCache):
-    def __init__(self, redis: Redis, expire: int = CONFIG.REDIS.expire):
+    def __init__(self, redis: Redis, expire: int = CONFIG.REDIS.cache_expire):
         self.redis = redis
         self.expire = expire
 

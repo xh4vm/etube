@@ -20,7 +20,7 @@ from .utils.data_generators.postgres.role_permission import \
 from .utils.data_generators.postgres.user import UserDataGenerator
 from .utils.data_generators.postgres.user_role import UserRoleDataGenerator
 
-SERVICE_URL = f'{CONFIG.API.URL}:{CONFIG.API.PORT}'
+SERVICE_URL = f'{CONFIG.API.API_URL}:{CONFIG.API.APP_PORT}'
 
 
 @dataclass

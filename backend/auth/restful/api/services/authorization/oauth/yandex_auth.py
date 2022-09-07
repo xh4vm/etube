@@ -41,7 +41,7 @@ class YandexAuth(BaseOAuth):
     async def get_api_data(self, access_token: str) -> UserSocial:
         # Получение данных пользователя от API.
         async with aiohttp.ClientSession() as session:
-            url = 'https://login.yandex.ru/info'
+            url = OAUTH_CONFIG.YANDEX.LOGINURL
             headers = {'Authorization': f'OAuth {access_token}'}
 
             async with session.get(url, headers=headers) as response:
