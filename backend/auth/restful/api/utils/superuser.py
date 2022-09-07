@@ -15,11 +15,14 @@ from werkzeug.security import generate_password_hash
 
 
 class Settings(BaseSettings):
-    user: str = Field('auth', env='AUTH_DB_USER')
-    password: str = Field('123qwe', env='AUTH_DB_PASSWORD')
-    host: str = Field('localhost', env='AUTH_DB_HOST')
-    port: int = Field('5432', env='AUTH_DB_PORT')
+    user: str = Field('auth')
+    password: str = Field('123qwe')
+    host: str = Field('localhost')
+    port: int = Field('5432')
     dbname: str = Field('auth_database', env='AUTH_DB_NAME')
+
+    class Config:
+        env_prefix = 'AUTH_DB_'
 
 
 class SuperUser:

@@ -6,16 +6,22 @@ from pydantic import BaseSettings, Field
 
 
 class AuthSettings(BaseSettings):
-    JWT_SECRET_KEY: str = Field(..., env='AUTH_JWT_SECRET_KEY')
-    JWT_DECODE_ALGORITHMS: list[str] = Field(..., env='AUTH_JWT_DECODE_ALGORITHMS')
-    JWT_ALGORITHM: str = Field(..., env='AUTH_JWT_ALGORITHM')
-    JWT_HEADER_NAME: str = Field(..., env='AUTH_JWT_HEADER_NAME')
-    JWT_TOKEN_LOCATION: str = Field('headers', env='AUTH_JWT_TOKEN_LOCATION')
+    JWT_SECRET_KEY: str
+    JWT_DECODE_ALGORITHMS: list[str]
+    JWT_ALGORITHM: str
+    JWT_HEADER_NAME: str
+    JWT_TOKEN_LOCATION: str = Field('headers')
+
+    class Config:
+        env_prefix = 'AUTH_'
 
 
 class GRPCSettings(BaseSettings):
-    HOST: str = Field(..., env='AUTH_GRPC_HOST')
-    PORT: int = Field(..., env='AUTH_GRPC_PORT')
+    HOST: str
+    PORT: int
+
+    class Config:
+        env_prefix = 'AUTH_GRPC_'
 
 
 class Config(BaseSettings):

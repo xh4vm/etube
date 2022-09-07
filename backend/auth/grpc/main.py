@@ -21,9 +21,9 @@ async def serve(logger: logging.Logger):
     )
     add_PermissionServicer_to_server(PermissionServer(), server)
 
-    server.add_insecure_port(f'{CONFIG.AUTH_GRPC_HOST}:{CONFIG.AUTH_GRPC_PORT}')
+    server.add_insecure_port(f'{CONFIG.GRPC_HOST}:{CONFIG.GRPC_PORT}')
 
-    logger.info(f'GRPC server running on {CONFIG.AUTH_GRPC_HOST}:{CONFIG.AUTH_GRPC_PORT}.')
+    logger.info(f'GRPC server running on {CONFIG.GRPC_HOST}:{CONFIG.GRPC_PORT}.')
 
     await server.start()
     await server.wait_for_termination()
