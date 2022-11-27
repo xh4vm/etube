@@ -140,3 +140,4 @@ commands.md
 *._cache
 .env_local
 backend/auth/api/migrations
+modules/
